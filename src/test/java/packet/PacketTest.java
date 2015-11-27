@@ -28,8 +28,8 @@ public class PacketTest {
 
     @Test
     public void youGetCommandFromPacket() throws Exception {
-        packet.setCommand(Command.FREQUENCY_STAND);
-        assertEquals(Command.FREQUENCY_STAND, packet.getCommand());
+        packet.setCommand(Command.FREQUENCY_DEVICE);
+        assertEquals(Command.FREQUENCY_DEVICE, packet.getCommand());
     }
 
     @Test
@@ -49,12 +49,12 @@ public class PacketTest {
     public void youPackPacket() throws Exception {
         Packet packet = new Packet();
         packet.setCRC(1234);
-        packet.setCommand(Command.FREQUENCY_STAND);
+        packet.setCommand(Command.FREQUENCY_DEVICE);
         packet.setData(new byte[] {6,7,8,9});
 
         byte[] result = new byte[0];
         result = ArrayUtils.addAll(result, ByteBuffer.allocate(Integer.SIZE/Byte.SIZE).putInt(1234).array());
-        result = ArrayUtils.addAll(result, ByteBuffer.allocate(Integer.SIZE/Byte.SIZE).putInt(Command.FREQUENCY_STAND.ordinal()).array());
+        result = ArrayUtils.addAll(result, ByteBuffer.allocate(Integer.SIZE/Byte.SIZE).putInt(Command.FREQUENCY_DEVICE.ordinal()).array());
         result = ArrayUtils.addAll(result, new byte[] {6,7,8,9});
 
         assertArrayEquals(result, packet.pack());
@@ -66,7 +66,7 @@ public class PacketTest {
         assertNotNull(packet);
 
         packet.setCRC(9876);
-        packet.setCommand(Command.GAIN_STAND);
+        packet.setCommand(Command.GAIN_DEVICE);
         packet.setData(new byte[] {4,3,2,1});
         byte[] packedPack = packet.pack();
 
@@ -76,7 +76,7 @@ public class PacketTest {
         somePacket.unpack(packedPack);
 
         assertEquals(9876, somePacket.getCRC());
-        assertEquals(Command.GAIN_STAND, somePacket.getCommand());
+        assertEquals(Command.GAIN_DEVICE, somePacket.getCommand());
         assertArrayEquals(new byte[] {4,3,2,1}, somePacket.getData());
     }
 }
