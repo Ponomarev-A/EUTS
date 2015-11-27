@@ -1,5 +1,6 @@
 package packet;
 
+import exception.InvalidCRCException;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.ByteBuffer;
@@ -16,19 +17,52 @@ import java.util.Arrays;
 public class Packet {
 
     private Command command;
-    private int CRC;
+
+    private short CRC;
+
     private byte[] data;
+    private static final short CRC_POLYNOMIAL = (short)0x8005;
 
     public Packet(Packet packet) {
         this.command = packet.command;
-        this.CRC     = packet.CRC;
         this.data    = packet.data;
+        this.CRC     = packet.CRC;
     }
 
     public Packet() {
         this.command = null;
-        this.CRC     = 0;
         this.data    = null;
+        this.CRC     = 0;
+    }
+
+    public Packet(Command command, byte[] data) {
+        this.command = command;
+        this.data    = data;
+        this.CRC     = 0;
+    }
+
+    public Command getCommand() {
+        return command;
+    }
+
+    public void setCommand(Command command) {
+        this.command = command;
+    }
+
+    public short getCRC() {
+        return CRC;
+    }
+
+    public void setCRC(short CRC) {
+        this.CRC = CRC;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 
     @Override
@@ -51,49 +85,82 @@ public class Packet {
         return result;
     }
 
-    public Command getCommand() {
-        return command;
-    }
+    public short updateCRC() {
 
-    public void setCommand(Command command) {
-        this.command = command;
-    }
+        byte[] buffer = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), data);
+        CRC = calculateCRC16(buffer);
 
-    public int getCRC() {
         return CRC;
     }
 
-    public void setCRC(int CRC) {
-        this.CRC = CRC;
-    }
+    protected short calculateCRC16(byte[] buffer) {
+        short crc_value = 0;
 
-    public void setData(byte[] data) {
-        this.data = data;
-    }
+        for (byte value : buffer) {
 
-    public byte[] getData() {
-        return data;
-    }
+            for (int i = 0x80; i != 0; i >>= 1) {
 
+                if ((crc_value & 0x8000) != 0) {
+                    crc_value = (short) ((crc_value << 1) ^ CRC_POLYNOMIAL);
+                } else {
+                    crc_value = (short) (crc_value << 1);
+                }
+
+                if ((value & i) != 0) {
+                    crc_value ^= CRC_POLYNOMIAL;
+                }
+            }
+        }
+        return crc_value;
+    }
 
     public byte[] pack() {
+        byte[] packedData;
+
+        // Pack command and data into byte array
+        packedData = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), getData());
+
+        // Calculate CRC packetData byte array
+        CRC = updateCRC();
+
+        // Then pack CRC to packedData
+        packedData = ArrayUtils.addAll(getByteArrayFromShort(CRC), packedData);
+
+        return packedData;
+    }
+
+    public void unpack(byte[] sentData) throws InvalidCRCException {
+
+        // Parse input sentData array into 3 byte arrays: CRC, command and data
+        byte[] CRC  = ArrayUtils.subarray(sentData, 0,   2);
+        byte[] cmd  = ArrayUtils.subarray(sentData, 2,   4);
+        byte[] data = ArrayUtils.subarray(sentData, 4,   sentData.length);
+
+        // Check CRC
+        short sentDataCRC = getShortFromByteArray(CRC);
+        if (sentDataCRC != calculateCRC16(concatCommandAndData(cmd, data)))
+            throw new InvalidCRCException();
+
+        setCRC(sentDataCRC);
+        setCommand(Command.values()[getShortFromByteArray(cmd)]);
+        setData(data);
+    }
+
+    protected byte[] getByteArrayFromShort(short value) {
+        return ByteBuffer.allocate(Short.SIZE/Byte.SIZE).putShort(value).array();
+    }
+
+    protected short getShortFromByteArray(byte[] array) {
+        return ByteBuffer.wrap(array).getShort();
+    }
+
+    protected byte[] concatCommandAndData(byte[] command, byte[] data) {
+
         byte[] result = new byte[0];
 
-        result = ArrayUtils.addAll(result, ByteBuffer.allocate(Integer.SIZE/Byte.SIZE).putInt(CRC).array());
-        result = ArrayUtils.addAll(result, ByteBuffer.allocate(Integer.SIZE/Byte.SIZE).putInt(command.ordinal()).array());
+        result = ArrayUtils.addAll(result, command);
         result = ArrayUtils.addAll(result, data);
 
         return result;
-    }
-
-    public void unpack(byte[] packedPack) {
-
-        byte[] ba_CRC       = ArrayUtils.subarray(packedPack, 0,   4);
-        byte[] ba_command   = ArrayUtils.subarray(packedPack, 4,   8);
-        byte[] ba_data      = ArrayUtils.subarray(packedPack, 8,   packedPack.length);
-
-        setCRC(ByteBuffer.wrap(ba_CRC).getInt());
-        setCommand(Command.values()[ByteBuffer.wrap(ba_command).getInt()]);
-        setData(ba_data);
     }
 }
