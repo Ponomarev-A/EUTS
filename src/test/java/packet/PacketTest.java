@@ -1,8 +1,7 @@
 package packet;
 
+import exception.InvalidCRCException;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 import static org.junit.Assert.*;
 
@@ -11,21 +10,34 @@ import static org.junit.Assert.*;
  */
 public class PacketTest {
 
-    public static final byte[] DATA_6789 = new byte[]{0x06, 0x07, 0x08, 0x09};
     public static final byte[] DATA_1234 = new byte[]{0x01, 0x02, 0x03, 0x04};
+    public static final byte[] DATA_6789 = new byte[]{0x06, 0x07, 0x08, 0x09};
 
     Packet packet = new Packet();
 
     @Test
-    public void youCreateNewPacket() throws Exception {
-        assertNotNull(new Packet());
+    public void youCreateNewEmptyPacket() throws Exception {
+        assertNotNull(packet);
+        assertNull(packet.getCommand());
+        assertNull(packet.getData());
+        assertEquals(0, packet.getCRC());
+    }
+
+    @Test
+    public void youCreatePacketWithParameters() throws Exception {
+        Packet somePacket = new Packet(Command.BACKLIGHT_DEVICE, DATA_1234);
+
+        assertNotNull(somePacket);
+        assertEquals(Command.BACKLIGHT_DEVICE, somePacket.getCommand());
+        assertArrayEquals(DATA_1234, somePacket.getData());
     }
 
     @Test
     public void youCreatePacketFromExistingPacket() throws Exception {
-        Packet existingPacket = new Packet();
-        Packet somePacket = new Packet(existingPacket);
-        assertTrue(existingPacket.equals(somePacket));
+        Packet somePacket = new Packet(packet);
+
+        assertNotNull(somePacket);
+        assertTrue(somePacket.equals(packet));
     }
 
     @Test
@@ -36,7 +48,6 @@ public class PacketTest {
 
     @Test
     public void youGetCRCFromPacket() throws Exception {
-        Packet packet = new Packet();
         packet.setCommand(Command.CHECK_KEYBOARD_DEVICE);
         packet.setData(DATA_1234);
         packet.updateCRC();
@@ -57,42 +68,11 @@ public class PacketTest {
     }
 
     @Test
-    public void youPackPacket() throws Exception {
+    public void youWantToUpdateCRC() throws Exception {
+        packet.setCommand(Command.ERROR_DEVICE);
+        packet.setData(DATA_6789);
 
-        Command command = Command.FREQUENCY_DEVICE;
-        byte[] data = DATA_6789;
-
-        Packet packet = new Packet(command, data);
-        packet.setCommand(command);
-        packet.setData(data);
-        packet.updateCRC();
-
-        byte[] cmd  = packet.getByteArrayFromShort((short) command.ordinal());
-        byte[] CRC  = ByteBuffer.allocate(Short.SIZE/Byte.SIZE).putShort(packet.getCRC()).array();
-
-        byte[] result = new byte[CRC.length + cmd.length + data.length];
-        System.arraycopy(CRC,   0, result, 0,                       CRC.length  );
-        System.arraycopy(cmd,   0, result, CRC.length,              cmd.length  );
-        System.arraycopy(data,  0, result, CRC.length + cmd.length, data.length );
-
-        assertArrayEquals(result, packet.pack());
-    }
-
-    @Test
-    public void youUnpackValidPacket() throws Exception {
-
-        Packet sendPacket = new Packet();
-        sendPacket.setCommand(Command.GAIN_DEVICE);
-        sendPacket.setData(DATA_6789);
-
-        byte[] sentData = sendPacket.pack();
-
-        Packet receivedPacket = new Packet();
-        receivedPacket.unpack(sentData);
-
-        assertEquals(sendPacket.getCRC(),       receivedPacket.getCRC());
-        assertEquals(sendPacket.getCommand(),   receivedPacket.getCommand());
-        assertArrayEquals(sendPacket.getData(), receivedPacket.getData());
+        assertEquals((short) 0x4B6A, packet.updateCRC());
     }
 
     @Test
@@ -102,15 +82,98 @@ public class PacketTest {
     }
 
     @Test
+    public void youPackPacket() throws Exception {
+
+        // Test parameters
+        Command command = Command.FREQUENCY_DEVICE;
+        byte[] data = DATA_6789;
+        short CRC = (short)0x485A;
+
+        // Create new packet
+        packet.setCommand(command);
+        packet.setData(data);
+        packet.updateCRC();
+
+        //  Create byte arrays
+        byte[] aCmd  = packet.getByteArrayFromShort((short) command.ordinal());
+        byte[] aCRC  = packet.getByteArrayFromShort(CRC);
+
+        // Create byte array packed packet
+        byte[] result = new byte[aCRC.length + aCmd.length + data.length];
+        System.arraycopy(aCRC,   0, result, 0,                          aCRC.length  );
+        System.arraycopy(aCmd,   0, result, aCRC.length,                aCmd.length  );
+        System.arraycopy(data,  0, result, aCRC.length + aCmd.length,   data.length );
+
+        assertArrayEquals(result, packet.pack());
+    }
+
+    @Test
+    public void youUnpackValidPacket() throws Exception {
+
+        // Create send packet
+        Packet sendPacket = new Packet(Command.GAIN_DEVICE, DATA_6789);
+
+        // Pack send packet
+        byte[] sentData = sendPacket.pack();
+
+        // Create empty received packet
+        Packet receivedPacket = new Packet();
+
+        // Unpack sent data to received packet
+        receivedPacket.unpack(sentData);
+
+        assertEquals(sendPacket.getCRC(),       receivedPacket.getCRC());
+        assertEquals(sendPacket.getCommand(),   receivedPacket.getCommand());
+        assertArrayEquals(sendPacket.getData(), receivedPacket.getData());
+    }
+
+    @Test(expected = InvalidCRCException.class)
+    public void youUnpackInvalidPacket() throws Exception {
+
+        // Create send packet
+        Packet sendPacket = new Packet(Command.GAIN_DEVICE, DATA_6789);
+
+        // Pack send packet
+        byte[] sentData = sendPacket.pack();
+
+        // Spoil sent packet
+        sentData[sentData.length - 1] = (byte) ~sentData[sentData.length - 1];
+
+        // Create empty received packet
+        Packet receivedPacket = new Packet();
+
+        // Unpack sent data to received packet
+        receivedPacket.unpack(sentData);
+
+        assertEquals(sendPacket.getCRC(),       receivedPacket.getCRC());
+        assertEquals(sendPacket.getCommand(),   receivedPacket.getCommand());
+        assertArrayEquals(sendPacket.getData(), receivedPacket.getData());
+    }
+
+    @Test
+    public void getByteArrayFromShort() throws Exception {
+        assertArrayEquals(new byte[] {0x04, (byte) 0xD2}, packet.getByteArrayFromShort((short) 1234));
+    }
+
+    @Test
+    public void getShortFromByteArray() throws Exception {
+        assertEquals((short) 4660, packet.getShortFromByteArray(new byte[] {0x12, 0x34}));
+    }
+
+
+    @Test
     public void concatCommandAndData() throws Exception {
-        Packet packet = new Packet();
+
+        // Push data to packet
         packet.setCommand(Command.BACKLIGHT_DEVICE);
         packet.setData(DATA_6789);
 
-        byte[] cmd = packet.getByteArrayFromShort((short) packet.getCommand().ordinal());
-        byte[] result = new byte[cmd.length + DATA_6789.length];
-        System.arraycopy(cmd,       0, result, 0,           cmd.length);
-        System.arraycopy(DATA_6789, 0, result, cmd.length,  DATA_6789.length);
+        // Create byte arrays and sum them
+        byte[] aCmd = packet.getByteArrayFromShort((short) packet.getCommand().ordinal());
+        byte[] aData = packet.getData();
+        byte[] result = new byte[aCmd.length + aData.length];
+        System.arraycopy(aCmd,  0, result, 0,           aCmd.length);
+        System.arraycopy(aData, 0, result, aCmd.length, aData.length);
 
         assertArrayEquals(result, packet.concatCommandAndData(
                 packet.getByteArrayFromShort((short) packet.getCommand().ordinal()),

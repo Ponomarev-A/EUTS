@@ -10,18 +10,18 @@ import java.util.Arrays;
  * Packet class.
  *
  * Packet structure:
- *  CRC32 - const 4 byte length
- *  Command - const 4 byte length
+ *  CRC - const 4 byte length
+ *  Command - const 2 byte length
  *  Data - various length
  */
 public class Packet {
 
-    private Command command;
+    private static final short CRC_POLYNOMIAL = (short)0x8005;
 
+    private Command command;
+    private byte[] data;
     private short CRC;
 
-    private byte[] data;
-    private static final short CRC_POLYNOMIAL = (short)0x8005;
 
     public Packet(Packet packet) {
         this.command = packet.command;
@@ -85,6 +85,10 @@ public class Packet {
         return result;
     }
 
+
+    /**
+     * @return CRC sum of Command+Data byte array
+     */
     public short updateCRC() {
 
         byte[] buffer = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), data);
@@ -93,6 +97,10 @@ public class Packet {
         return CRC;
     }
 
+    /**
+     * @param buffer byte array buffer
+     * @return CRC16 sum
+     */
     protected short calculateCRC16(byte[] buffer) {
         short crc_value = 0;
 

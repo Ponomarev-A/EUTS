@@ -11,53 +11,37 @@ import static org.junit.Assert.*;
  */
 public class UARTTest {
 
+    public static final int PORT = 1234;
+    public static final int COM_PORT = 5;
+    UART connection = new UART(PORT);
+
     @Test
     public void youCreateNewConnection() throws Exception {
-        UART connection = new UART(1234);
         assertNotNull(connection);
     }
 
     @Test
     public void youGetPortUsedByUARTConnection() throws Exception {
-        UART connection = new UART(7777);
-        assertEquals(7777, connection.getPort());
+        assertEquals(PORT, connection.getPort());
     }
 
     @Test
-    public void youCreateSerialPort() throws Exception {
-        String portName = "COM5";
+    public void youGetSerialPortFromConnection() throws Exception {
+        String portName = "COM" + COM_PORT;
         SerialPort serialPort = new SerialPort(portName);
-
-        assertEquals(portName, serialPort.getPortName());
-    }
-
-    @Test
-    public void youSetSerialPortToConnection() throws Exception {
-        UART connection = new UART(5555);
-        String portName = "COM" + connection.getPort();
-
-        SerialPort serialPort = new SerialPort("COM" + connection.getPort());
-        assertEquals(portName, serialPort.getPortName());
-
         connection.setSerialPort(serialPort);
+
+        assertEquals(portName, serialPort.getPortName());
         assertEquals(serialPort, connection.getSerialPort());
     }
 
     @Test
-    public void youGetSerialPortNameFromConnection() throws Exception {
-        UART connection = new UART(1234);
-        connection.setSerialPort(new SerialPort("COM9"));
-
-        assertEquals("COM9", connection.getSerialPort().getPortName());
-    }
-
     @Ignore
-    @Test
     public void youReadByteArrayFromConnection() throws Exception {
-        UART connection = new UART(1234);
+        UART connection = new UART(PORT);
         connection.setSerialPort(new SerialPort("COM10"));
 
-        byte[] buffer = new byte[] {1,2,3,4};
+        byte[] buffer = new byte[]{1, 2, 3, 4};
 
         assertArrayEquals(buffer, connection.read());
     }
@@ -65,10 +49,10 @@ public class UARTTest {
     @Ignore
     @Test
     public void youWriteByteArrayToConnection() throws Exception {
-        UART connection = new UART(1234);
+        UART connection = new UART(PORT);
         connection.setSerialPort(new SerialPort("COM10"));
 
-        byte[] buffer = new byte[] {1,2,3,4};
+        byte[] buffer = new byte[]{1, 2, 3, 4};
         connection.write(buffer);
 
         assertArrayEquals(buffer, connection.read());

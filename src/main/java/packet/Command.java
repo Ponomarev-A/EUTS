@@ -3,7 +3,7 @@ package packet;
 /**
  *  Available commands enumeration
  */
-enum Command {
+public enum Command {
     FREQUENCY_DEVICE,
     GAIN_DEVICE,
     TYPE_OF_SIGNAL_DEVICE,
