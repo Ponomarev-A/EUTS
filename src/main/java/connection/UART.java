@@ -1,38 +1,89 @@
 package connection;
 
-import jssc.SerialPort;
-import jssc.SerialPortException;
+import jssc.*;
 
 /**
  * UART connection class
  */
-public class UART {
-    private final int port;
-    private SerialPort serialPort;
+public class UART extends Connection {
 
-    public UART(int port) {
-        this.port = port;
+    public static final int BAUDRATE = SerialPort.BAUDRATE_128000;
+    public static final int DATABITS = SerialPort.DATABITS_8;
+    public static final int STOPBITS = SerialPort.STOPBITS_1;
+    public static final int PARITY = SerialPort.PARITY_NONE;
+
+    private String portName;
+    private SerialPort serialPort;
+    private byte[] readData;
+
+    public UART() {
+        portName = askPortName();
+        serialPort = new SerialPort(portName);
     }
 
-    public int getPort() {
-        return port;
+    public String askPortName() {
+        // TODO: realize askPortName() method
+        String[] portNames = SerialPortList.getPortNames();
+        if (portNames != null && portNames.length > 0)
+            return portNames[0];
+        else
+            return null;
+    }
+
+    public String getPortName() {
+        return portName;
     }
 
     public SerialPort getSerialPort() {
         return serialPort;
     }
 
-    public void setSerialPort(SerialPort serialPort) {
-        this.serialPort = serialPort;
+    @Override
+    public boolean init() {
+        boolean result = false;
+        try {
+            result = serialPort.openPort();
+            result = serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
+
+            serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
-    public byte[] read() throws SerialPortException {
-
-        return new byte[0];
+    @Override
+    public byte[] read() {
+        return readData;
     }
 
+    @Override
     public void write(byte[] buffer) {
+        try {
+            if (serialPort.isOpened())
+                serialPort.writeBytes(buffer);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public boolean isOpened() {
+        return serialPort != null && serialPort.isOpened();
+    }
 
+    private class PortReader implements SerialPortEventListener {
+
+        @Override
+        public void serialEvent(SerialPortEvent event) {
+
+            if (event.isRXCHAR() && event.getEventValue() > 0) {
+                try {
+                    readData = serialPort.readBytes();
+                } catch (SerialPortException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

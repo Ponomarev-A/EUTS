@@ -100,9 +100,9 @@ public class PacketTest {
 
         // Create byte array packed packet
         byte[] result = new byte[aCRC.length + aCmd.length + data.length];
-        System.arraycopy(aCRC,   0, result, 0,                          aCRC.length  );
-        System.arraycopy(aCmd,   0, result, aCRC.length,                aCmd.length  );
-        System.arraycopy(data,  0, result, aCRC.length + aCmd.length,   data.length );
+        System.arraycopy(aCRC,  0, result, 0,                           aCRC.length);
+        System.arraycopy(aCmd,  0, result, aCRC.length,                 aCmd.length);
+        System.arraycopy(data,  0, result, aCRC.length + aCmd.length,   data.length);
 
         assertArrayEquals(result, packet.pack());
     }
@@ -178,5 +178,19 @@ public class PacketTest {
         assertArrayEquals(result, packet.concatCommandAndData(
                 packet.getByteArrayFromShort((short) packet.getCommand().ordinal()),
                 packet.getData()));
+    }
+
+    @Test
+    public void testEquals() throws Exception {
+        Packet somePacket = new Packet(packet);
+
+        assertTrue(somePacket.equals(packet));
+    }
+
+    @Test
+    public void testHashCode() throws Exception {
+        Packet somePacket = new Packet(packet);
+
+        assertEquals(packet.hashCode(), somePacket.hashCode());
     }
 }

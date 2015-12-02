@@ -5,8 +5,7 @@ import org.junit.Test;
 import packet.Command;
 import packet.Packet;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Test Protocol class
@@ -15,6 +14,10 @@ public class ProtocolTest {
 
     Packet packet = new Packet(Command.BACKLIGHT_DEVICE, new byte[] {1,2,3,4});
 
+    @Test
+    public void testProtocol() throws Exception {
+        assertNotNull(new Protocol());
+    }
 
     @Test
     public void youWrapPacketByProtocolRules() throws Exception {

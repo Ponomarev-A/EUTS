@@ -1,60 +1,66 @@
 package connection;
 
 import jssc.SerialPort;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 /**
  * Test class
  */
 public class UARTTest {
 
-    public static final int PORT = 1234;
-    public static final int COM_PORT = 5;
-    UART connection = new UART(PORT);
+    public static final String COM1_PORT = "COM1";
+    UART connection;
 
-    @Test
-    public void youCreateNewConnection() throws Exception {
-        assertNotNull(connection);
+    @Before
+    public void initMockCOMPortList() throws Exception {
+
+        UART uart = new UART();
+        UART spyConnection = spy(uart);
+
+        doReturn(COM1_PORT).when(spyConnection).askPortName();
+        doReturn(COM1_PORT).when(spyConnection).getPortName();
+        doReturn(new SerialPort(COM1_PORT)).when(spyConnection).getSerialPort();
+        doReturn(true).when(spyConnection).isOpened();
+        doReturn(true).when(spyConnection).init();
+
+        // Choose connection for testing: real or mock
+        String portNames = uart.askPortName();
+        connection = (portNames != null) ? uart : spyConnection;
     }
 
     @Test
-    public void youGetPortUsedByUARTConnection() throws Exception {
-        assertEquals(PORT, connection.getPort());
+    public void youCreateNewUARTConnection() throws Exception {
+        assertNotNull(new UART());
     }
 
     @Test
-    public void youGetSerialPortFromConnection() throws Exception {
-        String portName = "COM" + COM_PORT;
-        SerialPort serialPort = new SerialPort(portName);
-        connection.setSerialPort(serialPort);
-
-        assertEquals(portName, serialPort.getPortName());
-        assertEquals(serialPort, connection.getSerialPort());
+    public void testGetPortName() throws Exception {
+        assertEquals(COM1_PORT, connection.getPortName());
     }
 
     @Test
-    @Ignore
-    public void youReadByteArrayFromConnection() throws Exception {
-        UART connection = new UART(PORT);
-        connection.setSerialPort(new SerialPort("COM10"));
-
-        byte[] buffer = new byte[]{1, 2, 3, 4};
-
-        assertArrayEquals(buffer, connection.read());
+    public void testGetSerialPort() throws Exception {
+        assertNotNull(connection.getSerialPort());
     }
 
-    @Ignore
     @Test
-    public void youWriteByteArrayToConnection() throws Exception {
-        UART connection = new UART(PORT);
-        connection.setSerialPort(new SerialPort("COM10"));
+    public void testInit() throws Exception {
+        assertTrue(connection.init());
+    }
 
-        byte[] buffer = new byte[]{1, 2, 3, 4};
-        connection.write(buffer);
+    @Test
+    public void testAskPortName() throws Exception {
+        assertEquals(COM1_PORT, connection.askPortName());
+    }
 
-        assertArrayEquals(buffer, connection.read());
+    @Test
+    public void testIsOpened() throws Exception {
+        connection.init();
+        assertTrue(connection.isOpened());
     }
 }
