@@ -1,6 +1,7 @@
 package connection;
 
 import exception.FailedProtocolException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -15,18 +16,36 @@ public class Protocol {
         byte[] result = new byte[0];
 
         result = ArrayUtils.addAll(result, OPEN_CODE_SEQ);
-        result = ArrayUtils.addAll(result, data);
+        result = ArrayUtils.addAll(result, byteArrayToASCIICodeArray(data));
         result = ArrayUtils.addAll(result, CLOSE_CODE_SEQ);
 
         return result;
     }
 
-    public static byte[] unwrap(byte[] data) throws FailedProtocolException {
+    protected static byte[] byteArrayToASCIICodeArray(byte[] data) {
+        return String.valueOf(Hex.encodeHex(data)).getBytes();
+    }
 
-        if (data[0] != OPEN_CODE_SEQ[0] ||
-            data[data.length - 1] != CLOSE_CODE_SEQ[1] || data[data.length - 2] != CLOSE_CODE_SEQ[0])
+    public static byte[] unwrap(byte[] code) throws FailedProtocolException {
+
+        if (code[0] != OPEN_CODE_SEQ[0] ||
+                code[code.length - 1] != CLOSE_CODE_SEQ[1] || code[code.length - 2] != CLOSE_CODE_SEQ[0])
             throw new FailedProtocolException();
 
-        return ArrayUtils.subarray(data, Protocol.OPEN_CODE_SEQ.length, data.length - Protocol.CLOSE_CODE_SEQ.length);
+        byte[] subarray = ArrayUtils.subarray(code, Protocol.OPEN_CODE_SEQ.length, code.length - Protocol.CLOSE_CODE_SEQ.length);
+        return ASCIICodeArrayToByteArray(subarray);
+    }
+
+    protected static byte[] ASCIICodeArrayToByteArray(byte[] code) {
+
+        byte[] bytes = new byte[code.length / 2];
+        for (int i = 0; i < code.length; i += 2) {
+            byte b1 = (byte) Character.digit(code[i], 16);
+            byte b2 = (byte) Character.digit(code[i + 1], 16);
+            bytes[i / 2] |= b1 << 4;
+            bytes[i / 2] |= b2;
+        }
+
+        return bytes;
     }
 }

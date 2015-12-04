@@ -28,10 +28,11 @@ public class ProtocolTest {
         // Create byte arrays from open and close codes sequences and sent packet data
         byte[] openCodeSeq  = Protocol.OPEN_CODE_SEQ;
         byte[] closeCodeSeq = Protocol.CLOSE_CODE_SEQ;
-        byte[] result = new byte[openCodeSeq.length + sentData.length + closeCodeSeq.length];
-        System.arraycopy(openCodeSeq,   0, result, 0,                                       openCodeSeq.length);
-        System.arraycopy(sentData,      0, result, openCodeSeq.length,                      sentData.length);
-        System.arraycopy(closeCodeSeq,  0, result, openCodeSeq.length + sentData.length,    closeCodeSeq.length);
+        byte[] data = Protocol.byteArrayToASCIICodeArray(sentData);
+        byte[] result = new byte[openCodeSeq.length + data.length + closeCodeSeq.length];
+        System.arraycopy(openCodeSeq, 0, result, 0, openCodeSeq.length);
+        System.arraycopy(data, 0, result, openCodeSeq.length, data.length);
+        System.arraycopy(closeCodeSeq, 0, result, openCodeSeq.length + data.length, closeCodeSeq.length);
 
         assertArrayEquals(result, Protocol.wrap(sentData));
     }
@@ -77,5 +78,21 @@ public class ProtocolTest {
         assertEquals(packet1.getCRC(),       packet2.getCRC());
         assertEquals(packet1.getCommand(),   packet2.getCommand());
         assertArrayEquals(packet1.getData(), packet2.getData());
+    }
+
+    @Test
+    public void testByteArrayToASCIICodeArray() throws Exception {
+        byte[] data = new byte[]{1, 0x0a, (byte) 0xb0, (byte) 0xc1, (byte) 0xdf};
+        byte[] code = new byte[]{0x30, 0x31, 0x30, 0x61, 0x62, 0x30, 0x63, 0x31, 0x64, 0x66};
+
+        assertArrayEquals(code, Protocol.byteArrayToASCIICodeArray(data));
+    }
+
+    @Test
+    public void testASCIICodeArrayToByteArray() throws Exception {
+        byte[] data = new byte[]{1, 0x0a, (byte) 0xb0, (byte) 0xc1, (byte) 0xdf};
+        byte[] code = new byte[]{0x30, 0x31, 0x30, 0x61, 0x62, 0x30, 0x63, 0x31, 0x64, 0x66};
+
+        assertArrayEquals(data, Protocol.ASCIICodeArrayToByteArray(code));
     }
 }

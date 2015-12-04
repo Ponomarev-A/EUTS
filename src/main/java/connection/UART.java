@@ -5,7 +5,7 @@ import jssc.*;
 /**
  * UART connection class
  */
-public class UART extends Connection {
+public class UART implements Connect {
 
     public static final int BAUDRATE = SerialPort.BAUDRATE_128000;
     public static final int DATABITS = SerialPort.DATABITS_8;
