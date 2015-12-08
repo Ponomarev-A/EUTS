@@ -42,10 +42,12 @@ public class UART implements Connect {
     public boolean init() {
         boolean result = false;
         try {
-            result = serialPort.openPort();
-            result = serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
+            if (serialPort != null) {
+                result = serialPort.openPort();
+                result = serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
 
-            serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
+                serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
+            }
         } catch (SerialPortException e) {
             e.printStackTrace();
         }
@@ -54,18 +56,15 @@ public class UART implements Connect {
     }
 
     @Override
-    public byte[] read() {
+    public byte[] read() throws SerialPortException {
+
         return readData;
     }
 
     @Override
-    public void write(byte[] buffer) {
-        try {
-            if (serialPort.isOpened())
-                serialPort.writeBytes(buffer);
-        } catch (SerialPortException e) {
-            e.printStackTrace();
-        }
+    public void write(byte[] buffer) throws SerialPortException {
+        if (serialPort.isOpened())
+            serialPort.writeBytes(buffer);
     }
 
     public boolean isOpened() {

@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class
@@ -14,23 +14,39 @@ import static org.mockito.Mockito.spy;
 public class UARTTest {
 
     public static final String COM1_PORT = "COM1";
-    UART connection;
+    UART uart;
 
     @Before
-    public void initMockCOMPortList() throws Exception {
+    public void chooseSpyOrRealUARTUse() throws Exception {
+        // Choose uart for testing: real or spy
+        UART realUART = new UART();
+        UART spyUART = spyUART(realUART);
 
-        UART uart = new UART();
-        UART spyConnection = spy(uart);
+        boolean isRealUARTUsed = realUART.askPortName() != null;
 
-        doReturn(COM1_PORT).when(spyConnection).askPortName();
-        doReturn(COM1_PORT).when(spyConnection).getPortName();
-        doReturn(new SerialPort(COM1_PORT)).when(spyConnection).getSerialPort();
-        doReturn(true).when(spyConnection).isOpened();
-        doReturn(true).when(spyConnection).init();
+        uart = isRealUARTUsed ? realUART : spyUART;
+    }
 
-        // Choose connection for testing: real or mock
-        String portNames = uart.askPortName();
-        connection = (portNames != null) ? uart : spyConnection;
+    public UART spyUART(UART realUART) {
+//        UART spyUART = spy(realUART);
+//
+//        doReturn(COM1_PORT).when(spyUART).askPortName();
+//        doReturn(COM1_PORT).when(spyUART).getPortName();
+//        doReturn(new SerialPort(COM1_PORT)).when(spyUART).getSerialPort();
+//        doReturn(true).when(spyUART).isOpened();
+//        doReturn(true).when(spyUART).init();
+
+//        return spyUART;
+
+        UART mockUART = mock(UART.class);
+
+        when(mockUART.askPortName()).thenReturn(COM1_PORT);
+        when(mockUART.getPortName()).thenReturn(COM1_PORT);
+        when(mockUART.getSerialPort()).thenReturn(new SerialPort(COM1_PORT));
+        when(mockUART.isOpened()).thenReturn(true);
+        when(mockUART.init()).thenReturn(true);
+
+        return mockUART;
     }
 
     @Test
@@ -40,27 +56,27 @@ public class UARTTest {
 
     @Test
     public void testGetPortName() throws Exception {
-        assertEquals(COM1_PORT, connection.getPortName());
+        assertEquals(COM1_PORT, uart.getPortName());
     }
 
     @Test
     public void testGetSerialPort() throws Exception {
-        assertNotNull(connection.getSerialPort());
+        assertNotNull(uart.getSerialPort());
     }
 
     @Test
     public void testInit() throws Exception {
-        assertTrue(connection.init());
+        assertTrue(uart.init());
     }
 
     @Test
     public void testAskPortName() throws Exception {
-        assertEquals(COM1_PORT, connection.askPortName());
+        assertEquals(COM1_PORT, uart.askPortName());
     }
 
     @Test
     public void testIsOpened() throws Exception {
-        connection.init();
-        assertTrue(connection.isOpened());
+        uart.init();
+        assertTrue(uart.isOpened());
     }
 }

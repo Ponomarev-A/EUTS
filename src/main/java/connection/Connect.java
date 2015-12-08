@@ -7,7 +7,7 @@ public interface Connect {
 
     boolean init();
 
-    byte[] read();
+    byte[] read() throws Exception;
 
-    void write(byte[] data);
+    void write(byte[] data) throws Exception;
 }

@@ -3,6 +3,9 @@ package packet;
 import exception.InvalidCRCException;
 import org.junit.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import static org.junit.Assert.*;
 
 /**
@@ -72,13 +75,33 @@ public class PacketTest {
         packet.setCommand(Command.ERROR_DEVICE);
         packet.setData(DATA_6789);
 
-        assertEquals((short) 0x4B6A, packet.updateCRC());
+        assertEquals((short) 0xCB11, packet.updateCRC());
     }
 
     @Test
     public void checkCRC16Calculation() throws Exception {
-        assertEquals((short) 0xAF7E, packet.calculateCRC16(new byte[] {0x31, 0x32, 0x33}));
-        assertEquals((short) 0xFEE8, packet.calculateCRC16("123456789".getBytes()));
+
+        assertEquals((short) 0xAF7E, invokePrivateMethod(
+                packet,
+                "calculateCRC16",
+                new Class[]{byte[].class},
+                new Object[]{new byte[]{0x31, 0x32, 0x33}}));
+        assertEquals((short) 0xFEE8, invokePrivateMethod(
+                packet,
+                "calculateCRC16",
+                new Class[]{byte[].class},
+                new Object[]{"123456789".getBytes()}));
+    }
+
+    private Object invokePrivateMethod(Object targetObject, String methodName, Class[] argClasses, Object[] argObjects) {
+        try {
+            Method method = targetObject.getClass().getDeclaredMethod(methodName, argClasses);
+            method.setAccessible(true);
+            return method.invoke(targetObject, argObjects);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Test
@@ -95,8 +118,8 @@ public class PacketTest {
         packet.updateCRC();
 
         //  Create byte arrays
-        byte[] aCmd  = packet.getByteArrayFromShort((short) command.ordinal());
-        byte[] aCRC  = packet.getByteArrayFromShort(CRC);
+        byte[] aCmd = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{(short) command.ordinal()});
+        byte[] aCRC = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{CRC});
 
         // Create byte array packed packet
         byte[] result = new byte[aCRC.length + aCmd.length + data.length];
@@ -142,42 +165,52 @@ public class PacketTest {
         // Create empty received packet
         Packet receivedPacket = new Packet();
 
-        // Unpack sent data to received packet
+        // Unpack sent data to received packet, catch InvalidCRCException here!
         receivedPacket.unpack(sentData);
-
-        assertEquals(sendPacket.getCRC(),       receivedPacket.getCRC());
-        assertEquals(sendPacket.getCommand(),   receivedPacket.getCommand());
-        assertArrayEquals(sendPacket.getData(), receivedPacket.getData());
     }
 
     @Test
-    public void getByteArrayFromShort() throws Exception {
-        assertArrayEquals(new byte[] {0x04, (byte) 0xD2}, packet.getByteArrayFromShort((short) 1234));
+    public void testGetByteArrayFromShort() throws Exception {
+
+        byte[] result = (byte[]) invokePrivateMethod(
+                packet,
+                "getByteArrayFromShort",
+                new Class[]{short.class}, new Object[]{(short) 1234});
+        assertArrayEquals(new byte[]{0x04, (byte) 0xD2}, result);
     }
 
     @Test
-    public void getShortFromByteArray() throws Exception {
-        assertEquals((short) 4660, packet.getShortFromByteArray(new byte[] {0x12, 0x34}));
+    public void testGetShortFromByteArray() throws Exception {
+        short result = (short) invokePrivateMethod(
+                packet,
+                "getShortFromByteArray",
+                new Class[]{byte[].class}, new Object[]{new byte[]{0x12, 0x34}});
+        assertEquals((short) 4660, result);
     }
 
 
     @Test
-    public void concatCommandAndData() throws Exception {
+    public void testConcatCommandAndData() throws Exception {
 
         // Push data to packet
         packet.setCommand(Command.BACKLIGHT_DEVICE);
         packet.setData(DATA_6789);
 
         // Create byte arrays and sum them
-        byte[] aCmd = packet.getByteArrayFromShort((short) packet.getCommand().ordinal());
+
+        byte[] aCmd = (byte[]) invokePrivateMethod(
+                packet,
+                "getByteArrayFromShort",
+                new Class[]{short.class}, new Object[]{(short) packet.getCommand().ordinal()});
         byte[] aData = packet.getData();
         byte[] result = new byte[aCmd.length + aData.length];
         System.arraycopy(aCmd,  0, result, 0,           aCmd.length);
         System.arraycopy(aData, 0, result, aCmd.length, aData.length);
 
-        assertArrayEquals(result, packet.concatCommandAndData(
-                packet.getByteArrayFromShort((short) packet.getCommand().ordinal()),
-                packet.getData()));
+        assertArrayEquals(result, (byte[]) invokePrivateMethod(
+                packet,
+                "concatCommandAndData",
+                new Class[]{byte[].class, byte[].class}, new Object[]{aCmd, aData}));
     }
 
     @Test

@@ -41,28 +41,12 @@ public class Packet {
         this.CRC     = 0;
     }
 
-    public Command getCommand() {
-        return command;
-    }
-
-    public void setCommand(Command command) {
-        this.command = command;
-    }
-
-    public short getCRC() {
-        return CRC;
-    }
-
-    public void setCRC(short CRC) {
-        this.CRC = CRC;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
-    public byte[] getData() {
-        return data;
+    @Override
+    public int hashCode() {
+        int result = getCommand() != null ? getCommand().hashCode() : 0;
+        result = 31 * result + getCRC();
+        result = 31 * result + Arrays.hashCode(getData());
+        return result;
     }
 
     @Override
@@ -72,19 +56,71 @@ public class Packet {
 
         Packet packet = (Packet) o;
 
-        return  getCRC() == packet.getCRC() &&
+        return getCRC() == packet.getCRC() &&
                 getCommand() == packet.getCommand() &&
                 Arrays.equals(getData(), packet.getData());
     }
 
-    @Override
-    public int hashCode() {
-        int result = getCommand() != null ? getCommand().hashCode() : 0;
-        result = 31 * result + getCRC();
-        result = 31 * result + Arrays.hashCode(getData());
+    public Command getCommand() {
+        return command;
+    }
+
+    public short getCRC() {
+        return CRC;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
+    public void setCRC(short CRC) {
+        this.CRC = CRC;
+    }
+
+    public void setCommand(Command command) {
+        this.command = command;
+    }
+
+    /**
+     * Packed packet format:
+     * <p> CRC16 (2 byte) </p>
+     * <p> Command (2 byte) </p>
+     * <p> Data (N byte(s)) </p>
+     * @return packed packet array
+     */
+    public byte[] pack() {
+
+        byte[] packedData;
+
+        // Pack command and data into byte array
+        packedData = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), getData());
+
+        // Calculate CRC packetData byte array
+        CRC = updateCRC();
+
+        // Then pack CRC to packedData
+        packedData = ArrayUtils.addAll(getByteArrayFromShort(CRC), packedData);
+
+        return packedData;
+    }
+
+    private byte[] concatCommandAndData(byte[] command, byte[] data) {
+
+        byte[] result = new byte[0];
+
+        result = ArrayUtils.addAll(result, command);
+        result = ArrayUtils.addAll(result, data);
+
         return result;
     }
 
+    private byte[] getByteArrayFromShort(short value) {
+        return ByteBuffer.allocate(Short.SIZE / Byte.SIZE).putShort(value).array();
+    }
 
     /**
      * @return CRC sum of Command+Data byte array
@@ -101,7 +137,7 @@ public class Packet {
      * @param buffer byte array buffer
      * @return CRC16 sum
      */
-    protected short calculateCRC16(byte[] buffer) {
+    private short calculateCRC16(byte[] buffer) {
         short crc_value = 0;
 
         for (byte value : buffer) {
@@ -122,27 +158,12 @@ public class Packet {
         return crc_value;
     }
 
-    public byte[] pack() {
-        byte[] packedData;
-
-        // Pack command and data into byte array
-        packedData = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), getData());
-
-        // Calculate CRC packetData byte array
-        CRC = updateCRC();
-
-        // Then pack CRC to packedData
-        packedData = ArrayUtils.addAll(getByteArrayFromShort(CRC), packedData);
-
-        return packedData;
-    }
-
     public void unpack(byte[] sentData) throws InvalidCRCException {
 
         // Parse input sentData array into 3 byte arrays: CRC, command and data
-        byte[] CRC  = ArrayUtils.subarray(sentData, 0,   2);
-        byte[] cmd  = ArrayUtils.subarray(sentData, 2,   4);
-        byte[] data = ArrayUtils.subarray(sentData, 4,   sentData.length);
+        byte[] CRC = ArrayUtils.subarray(sentData, 0, 2);
+        byte[] cmd = ArrayUtils.subarray(sentData, 2, 4);
+        byte[] data = ArrayUtils.subarray(sentData, 4, sentData.length);
 
         // Check CRC
         short sentDataCRC = getShortFromByteArray(CRC);
@@ -154,21 +175,7 @@ public class Packet {
         setData(data);
     }
 
-    protected byte[] getByteArrayFromShort(short value) {
-        return ByteBuffer.allocate(Short.SIZE/Byte.SIZE).putShort(value).array();
-    }
-
-    protected short getShortFromByteArray(byte[] array) {
+    private short getShortFromByteArray(byte[] array) {
         return ByteBuffer.wrap(array).getShort();
-    }
-
-    protected byte[] concatCommandAndData(byte[] command, byte[] data) {
-
-        byte[] result = new byte[0];
-
-        result = ArrayUtils.addAll(result, command);
-        result = ArrayUtils.addAll(result, data);
-
-        return result;
     }
 }
