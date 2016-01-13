@@ -22,7 +22,7 @@ public class PacketTest {
     public void youCreateNewEmptyPacket() throws Exception {
         assertNotNull(packet);
         assertNull(packet.getCommand());
-        assertNull(packet.getData());
+        assertArrayEquals(new byte[0], packet.getData());
         assertEquals(0, packet.getCRC());
     }
 
@@ -51,7 +51,6 @@ public class PacketTest {
 
     @Test
     public void youGetCRCFromPacket() throws Exception {
-        packet.setCommand(Command.CHECK_KEYBOARD_DEVICE);
         packet.setData(DATA_1234);
         packet.updateCRC();
 
@@ -60,7 +59,7 @@ public class PacketTest {
         // Initial value    (hex)   0
         // Final XOR value  (hex)   0
 
-        assertEquals((short) 0x9D8B, packet.getCRC());
+        assertEquals((short) 0x9E33, packet.getCRC());
     }
 
     @Test
@@ -72,10 +71,9 @@ public class PacketTest {
 
     @Test
     public void youWantToUpdateCRC() throws Exception {
-        packet.setCommand(Command.ERROR_DEVICE);
         packet.setData(DATA_6789);
 
-        assertEquals((short) 0xCB11, packet.updateCRC());
+        assertEquals((short) 0x485A, packet.updateCRC());
     }
 
     @Test
@@ -112,20 +110,29 @@ public class PacketTest {
         byte[] data = DATA_6789;
         short CRC = (short)0x485A;
 
+        int command_length = Short.SIZE / Byte.SIZE;
+        int CRC_length = Short.SIZE / Byte.SIZE;
+        int frameLength = command_length + data.length + CRC_length;
+
         // Create new packet
         packet.setCommand(command);
         packet.setData(data);
         packet.updateCRC();
 
         //  Create byte arrays
-        byte[] aCmd = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{(short) command.ordinal()});
+        byte[] aCnt = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{(short) frameLength});
+        byte[] aCmd = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{(short) command.getId()});
         byte[] aCRC = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{CRC});
+        assert aCnt != null;
+        assert aCmd != null;
+        assert aCRC != null;
 
         // Create byte array packed packet
-        byte[] result = new byte[aCRC.length + aCmd.length + data.length];
-        System.arraycopy(aCRC,  0, result, 0,                           aCRC.length);
-        System.arraycopy(aCmd,  0, result, aCRC.length,                 aCmd.length);
-        System.arraycopy(data,  0, result, aCRC.length + aCmd.length,   data.length);
+        byte[] result = new byte[aCnt.length + aCmd.length + data.length + aCRC.length];
+        System.arraycopy(aCnt, 0, result, 0, aCnt.length);
+        System.arraycopy(aCmd, 0, result, aCnt.length, aCmd.length);
+        System.arraycopy(data, 0, result, aCnt.length + aCmd.length, data.length);
+        System.arraycopy(aCRC, 0, result, aCnt.length + aCmd.length + data.length, aCRC.length);
 
         assertArrayEquals(result, packet.pack());
     }
@@ -186,31 +193,6 @@ public class PacketTest {
                 "getShortFromByteArray",
                 new Class[]{byte[].class}, new Object[]{new byte[]{0x12, 0x34}});
         assertEquals((short) 4660, result);
-    }
-
-
-    @Test
-    public void testConcatCommandAndData() throws Exception {
-
-        // Push data to packet
-        packet.setCommand(Command.BACKLIGHT_DEVICE);
-        packet.setData(DATA_6789);
-
-        // Create byte arrays and sum them
-
-        byte[] aCmd = (byte[]) invokePrivateMethod(
-                packet,
-                "getByteArrayFromShort",
-                new Class[]{short.class}, new Object[]{(short) packet.getCommand().ordinal()});
-        byte[] aData = packet.getData();
-        byte[] result = new byte[aCmd.length + aData.length];
-        System.arraycopy(aCmd,  0, result, 0,           aCmd.length);
-        System.arraycopy(aData, 0, result, aCmd.length, aData.length);
-
-        assertArrayEquals(result, (byte[]) invokePrivateMethod(
-                packet,
-                "concatCommandAndData",
-                new Class[]{byte[].class, byte[].class}, new Object[]{aCmd, aData}));
     }
 
     @Test

@@ -1,4 +1,4 @@
-package connection;
+package connections;
 
 import exception.FailedProtocolException;
 import exception.InvalidCRCException;
@@ -9,20 +9,20 @@ import packet.Packet;
  */
 public class ConnectionManager {
 
-    private Connect connection;
+    private Connection connection;
     private Protocol protocol;
 
-    public ConnectionManager(Connect connection, Protocol protocol) {
+    public ConnectionManager(Connection connection, Protocol protocol) {
         this.connection = connection;
         this.protocol = protocol;
     }
 
     public void init() {
-        connection.init();
+        connection.open();
     }
 
 
-    public Connect getConnection() {
+    public Connection getConnection() {
         return connection;
     }
 

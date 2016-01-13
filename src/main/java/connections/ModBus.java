@@ -1,4 +1,4 @@
-package connection;
+package connections;
 
 import exception.FailedProtocolException;
 import org.apache.commons.codec.binary.Hex;
@@ -46,6 +46,9 @@ public class ModBus implements Protocol {
     }
 
     private static byte[] ASCIICodeArrayToByteArray(byte[] code) {
+
+        if (code.length % 2 != 0)
+            return null;
 
         byte[] bytes = new byte[code.length / 2];
         for (int i = 0; i < code.length; i += 2) {

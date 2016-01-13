@@ -1,13 +1,15 @@
-package connection;
+package connections;
 
 /**
  * Interface for connect realization
  */
-public interface Connect {
+public interface Connection {
 
-    boolean init();
+    boolean open();
 
     byte[] read() throws Exception;
 
     void write(byte[] data) throws Exception;
+
+    boolean close();
 }

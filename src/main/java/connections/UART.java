@@ -1,13 +1,13 @@
-package connection;
+package connections;
 
 import jssc.*;
 
 /**
- * UART connection class
+ * UART connections class
  */
-public class UART implements Connect {
+public class UART implements Connection {
 
-    public static final int BAUDRATE = SerialPort.BAUDRATE_128000;
+    public static final int BAUDRATE = SerialPort.BAUDRATE_115200;
     public static final int DATABITS = SerialPort.DATABITS_8;
     public static final int STOPBITS = SerialPort.STOPBITS_1;
     public static final int PARITY = SerialPort.PARITY_NONE;
@@ -39,25 +39,22 @@ public class UART implements Connect {
     }
 
     @Override
-    public boolean init() {
-        boolean result = false;
+    public boolean open() {
         try {
             if (serialPort != null) {
-                result = serialPort.openPort();
-                result = serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
-
+                serialPort.openPort();
+                serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
                 serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
             }
         } catch (SerialPortException e) {
             e.printStackTrace();
         }
 
-        return result;
+        return isOpened();
     }
 
     @Override
     public byte[] read() throws SerialPortException {
-
         return readData;
     }
 
@@ -67,7 +64,16 @@ public class UART implements Connect {
             serialPort.writeBytes(buffer);
     }
 
-    public boolean isOpened() {
+    @Override
+    public boolean close() {
+        try {
+            return isOpened() && serialPort.closePort();
+        } catch (SerialPortException e) {
+            return false;
+        }
+    }
+
+    private boolean isOpened() {
         return serialPort != null && serialPort.isOpened();
     }
 
@@ -78,7 +84,7 @@ public class UART implements Connect {
 
             if (event.isRXCHAR() && event.getEventValue() > 0) {
                 try {
-                    readData = serialPort.readBytes();
+                    readData = serialPort.readBytes(event.getEventValue());
                 } catch (SerialPortException e) {
                     e.printStackTrace();
                 }

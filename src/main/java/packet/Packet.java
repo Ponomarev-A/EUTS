@@ -1,20 +1,36 @@
 package packet;
 
 import exception.InvalidCRCException;
+import exception.InvalidPacketSize;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-/**
+/*
  * Packet class.
  *
  * Packet structure:
- *  CRC - const 4 byte length
- *  Command - const 2 byte length
- *  Data - various length
+ *  | SOF | LENGTH | COMMAND |     DATA     | CRC16 | EOF |
+ *
+ *  1) SOF (const value with const size 1 byte) - start of frame (0x3a)
+ *
+ *  2) Length (var value with const size 2 bytes) - length of command (2 bytes), data array (N bytes) and CRC16 (2 bytes)
+ *     LENGTH = COMMAND + DATA + CRC16
+ *
+ *  3) Command (var value with const size 2 bytes) - one of enum
+ *
+ *  4) Data (var value with var size N bytes) - data array (may be missing, i.e. have 0 size)
+ *
+ *  5) CRC16 (var value with const size 2 bytes) - CRC of data array
+ *
+ *  6) EOF (const value with const size 2 bytes) - end of frame (0x0d, 0x0a)
  */
 public class Packet {
+
+    private static final int FRAME_SIZE = Short.SIZE / Byte.SIZE;   // 2 bytes
+    private static final int CRC_SIZE = Short.SIZE / Byte.SIZE;   // 2 bytes
+    private static final int COMMAND_SIZE = Short.SIZE / Byte.SIZE;   // 2 bytes
 
     private static final short CRC_POLYNOMIAL = (short)0x8005;
 
@@ -31,14 +47,41 @@ public class Packet {
 
     public Packet() {
         this.command = null;
-        this.data    = null;
+        this.data = new byte[0];
         this.CRC     = 0;
+    }
+
+    public Packet(Command command) {
+        this.command = command;
+        this.data = new byte[0];
+        this.CRC = 0;
     }
 
     public Packet(Command command, byte[] data) {
         this.command = command;
         this.data    = data;
         this.CRC     = 0;
+    }
+
+    public Packet(Command command, short data) {
+        this.command = command;
+        this.data = getByteArrayFromShort(data);
+        this.CRC = 0;
+    }
+
+    private byte[] getByteArrayFromShort(short value) {
+        return ByteBuffer.allocate(Short.SIZE / Byte.SIZE).putShort(value).array();
+    }
+
+
+    public Packet(Command command, int data) {
+        this.command = command;
+        this.data = getByteArrayFromInt(data);
+        this.CRC = 0;
+    }
+
+    private byte[] getByteArrayFromInt(int value) {
+        return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(value).array();
     }
 
     @Override
@@ -59,6 +102,15 @@ public class Packet {
         return getCRC() == packet.getCRC() &&
                 getCommand() == packet.getCommand() &&
                 Arrays.equals(getData(), packet.getData());
+    }
+
+    @Override
+    public String toString() {
+        return "Packet{" +
+                "CRC=" + CRC +
+                ", command=" + command +
+                ", data=" + Arrays.toString(data) +
+                '}';
     }
 
     public Command getCommand() {
@@ -87,49 +139,29 @@ public class Packet {
 
     /**
      * Packed packet format:
-     * <p> CRC16 (2 byte) </p>
      * <p> Command (2 byte) </p>
      * <p> Data (N byte(s)) </p>
+     * <p> CRC16 (2 byte) </p>
      * @return packed packet array
      */
     public byte[] pack() {
 
-        byte[] packedData;
+        int length = COMMAND_SIZE + data.length + CRC_SIZE;
+        byte[] packedData = new byte[0];
 
-        // Pack command and data into byte array
-        packedData = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), getData());
-
-        // Calculate CRC packetData byte array
-        CRC = updateCRC();
-
-        // Then pack CRC to packedData
-        packedData = ArrayUtils.addAll(getByteArrayFromShort(CRC), packedData);
+        packedData = ArrayUtils.addAll(packedData, getByteArrayFromShort((short) length));              // length
+        packedData = ArrayUtils.addAll(packedData, getByteArrayFromShort((short) command.getId()));     // command
+        packedData = ArrayUtils.addAll(packedData, getData());                                          // data
+        packedData = ArrayUtils.addAll(packedData, getByteArrayFromShort(updateCRC()));                 // CRC16
 
         return packedData;
-    }
-
-    private byte[] concatCommandAndData(byte[] command, byte[] data) {
-
-        byte[] result = new byte[0];
-
-        result = ArrayUtils.addAll(result, command);
-        result = ArrayUtils.addAll(result, data);
-
-        return result;
-    }
-
-    private byte[] getByteArrayFromShort(short value) {
-        return ByteBuffer.allocate(Short.SIZE / Byte.SIZE).putShort(value).array();
     }
 
     /**
      * @return CRC sum of Command+Data byte array
      */
     public short updateCRC() {
-
-        byte[] buffer = concatCommandAndData(getByteArrayFromShort((short) command.ordinal()), data);
-        CRC = calculateCRC16(buffer);
-
+        CRC = calculateCRC16(data);
         return CRC;
     }
 
@@ -158,20 +190,27 @@ public class Packet {
         return crc_value;
     }
 
-    public void unpack(byte[] sentData) throws InvalidCRCException {
+    public void unpack(byte[] sentData) throws InvalidCRCException, InvalidPacketSize {
 
-        // Parse input sentData array into 3 byte arrays: CRC, command and data
-        byte[] CRC = ArrayUtils.subarray(sentData, 0, 2);
-        byte[] cmd = ArrayUtils.subarray(sentData, 2, 4);
-        byte[] data = ArrayUtils.subarray(sentData, 4, sentData.length);
+        // Get first 2 bytes - frameLength (in bytes)
+        short frameLength = getShortFromByteArray(ArrayUtils.subarray(sentData, 0, FRAME_SIZE));
+
+        if ((FRAME_SIZE + frameLength) != sentData.length)
+            throw new InvalidPacketSize();
+
+        // Parsing packet
+        short CRC = getShortFromByteArray(ArrayUtils.subarray(sentData, sentData.length - CRC_SIZE, sentData.length));
+        short command = getShortFromByteArray(ArrayUtils.subarray(sentData, FRAME_SIZE, FRAME_SIZE + COMMAND_SIZE));
+        byte[] data = ArrayUtils.subarray(sentData, FRAME_SIZE + COMMAND_SIZE, sentData.length - CRC_SIZE);
 
         // Check CRC
-        short sentDataCRC = getShortFromByteArray(CRC);
-        if (sentDataCRC != calculateCRC16(concatCommandAndData(cmd, data)))
+        if (CRC != calculateCRC16(data)) {
             throw new InvalidCRCException();
+        }
 
-        setCRC(sentDataCRC);
-        setCommand(Command.values()[getShortFromByteArray(cmd)]);
+        // All checks DONE
+        setCRC(CRC);
+        setCommand(Command.getCommand(command));
         setData(data);
     }
 

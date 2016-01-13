@@ -1,4 +1,4 @@
-package connection;
+package connections;
 
 import exception.FailedProtocolException;
 import org.junit.Test;
@@ -33,6 +33,8 @@ public class ModBusTest {
         byte[] openCodeSeq = new byte[]{0x3A};
         byte[] closeCodeSeq = new byte[]{0x0D, 0x0A};
         byte[] data = (byte[]) invokePrivateMethod(modbus, "byteArrayToASCIICodeArray", new Class[]{byte[].class}, new Object[]{sentData});
+        assert data != null;
+
         byte[] result = new byte[openCodeSeq.length + data.length + closeCodeSeq.length];
         System.arraycopy(openCodeSeq, 0, result, 0, openCodeSeq.length);
         System.arraycopy(data, 0, result, openCodeSeq.length, data.length);
