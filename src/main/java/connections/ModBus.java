@@ -8,7 +8,10 @@ import org.apache.commons.lang3.ArrayUtils;
  * Class ModBus used for wrapping transmitted data by control symbols.
  */
 public class ModBus implements Protocol {
-    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x0D, 0x0A};
+//    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x0D, 0x0A}; ]
+
+    // TODO: Don't forgive revert CLOSE_CODE_SEQ values!
+    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x2E, 0x2F};
     public static final byte[] OPEN_CODE_SEQ = new byte[]{0x3A};
 
 

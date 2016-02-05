@@ -31,7 +31,10 @@ public class ModBusTest {
 
         // Create byte arrays from open and close codes sequences and sent packet data
         byte[] openCodeSeq = new byte[]{0x3A};
-        byte[] closeCodeSeq = new byte[]{0x0D, 0x0A};
+
+        // TODO: Don't forgive revert CLOSE_CODE_SEQ values in TEST!
+//        byte[] closeCodeSeq = new byte[]{0x0D, 0x0A};
+        byte[] closeCodeSeq = new byte[]{0x2E, 0x2F};
         byte[] data = (byte[]) invokePrivateMethod(modbus, "byteArrayToASCIICodeArray", new Class[]{byte[].class}, new Object[]{sentData});
         assert data != null;
 

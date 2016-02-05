@@ -2,6 +2,8 @@ package connections;
 
 import jssc.*;
 
+import java.util.concurrent.*;
+
 /**
  * UART connections class
  */
@@ -14,7 +16,7 @@ public class UART implements Connection {
 
     private String portName;
     private SerialPort serialPort;
-    private byte[] readData;
+    private PortReader portReader = new PortReader();
 
     public UART() {
         portName = askPortName();
@@ -44,7 +46,7 @@ public class UART implements Connection {
             if (serialPort != null) {
                 serialPort.openPort();
                 serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
-                serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
+                serialPort.addEventListener(portReader, SerialPort.MASK_RXCHAR);
             }
         } catch (SerialPortException e) {
             e.printStackTrace();
@@ -55,7 +57,20 @@ public class UART implements Connection {
 
     @Override
     public byte[] read() throws SerialPortException {
-        return readData;
+
+        byte[] result = null;
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        try {
+            result = executor.submit(portReader).get(1000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            System.err.println(getClass().getSimpleName() + " READ: Timeout exception!");
+        }
+
+        return result;
     }
 
     @Override
@@ -63,6 +78,7 @@ public class UART implements Connection {
         if (serialPort.isOpened())
             serialPort.writeBytes(buffer);
     }
+
 
     @Override
     public boolean close() {
@@ -77,18 +93,35 @@ public class UART implements Connection {
         return serialPort != null && serialPort.isOpened();
     }
 
-    private class PortReader implements SerialPortEventListener {
+    private class PortReader implements Callable<byte[]>, SerialPortEventListener {
+
+        private byte[] data = null;
 
         @Override
         public void serialEvent(SerialPortEvent event) {
 
             if (event.isRXCHAR() && event.getEventValue() > 0) {
                 try {
-                    readData = serialPort.readBytes(event.getEventValue());
+                    data = serialPort.readBytes(event.getEventValue());
                 } catch (SerialPortException e) {
                     e.printStackTrace();
                 }
             }
+        }
+
+        /**
+         * Computes a result, or throws an exception if unable to do so.
+         *
+         * @return computed result
+         * @throws Exception if unable to compute a result
+         */
+        @Override
+        public byte[] call() throws Exception {
+            if (data == null) {
+                Thread.sleep(200);
+            }
+
+            return data;
         }
     }
 }

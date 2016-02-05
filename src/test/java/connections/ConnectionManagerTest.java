@@ -51,17 +51,21 @@ public class ConnectionManagerTest {
     }
 
     @Test
-    public void testReceivePacket() throws Exception {
+    public void testSendAndReceivePacket() throws Exception {
         Packet packetTestConnection = new Packet(Command.CHECK_CONNECTION_DEVICE, new byte[]{1, 2, 3, 4});
-        connectionManager.sendPacket(packetTestConnection);
 
-        // TODO: fix receivePacket() func, add time delay to it.
+        assertTrue(connectionManager.sendPacket(packetTestConnection));
         assertEquals(packetTestConnection, connectionManager.receivePacket());
     }
 
     @Test
-    public void testSendPacket() throws Exception {
-        Packet packet = new Packet(Command.MODE_DEVICE, new byte[]{1, 2, 3, 4, 5});
-        assertTrue(connectionManager.sendPacket(packet));
+    public void testMultipleSendingAndRecevingPackets() throws Exception {
+        Packet packetTestConnection = new Packet(Command.CHECK_CONNECTION_DEVICE, new byte[]{1, 2, 3, 4});
+
+        for (int i = 0; i < 10; i++) {
+            assertTrue(connectionManager.sendPacket(packetTestConnection));
+            assertEquals(packetTestConnection, connectionManager.receivePacket());
+
+        }
     }
 }
