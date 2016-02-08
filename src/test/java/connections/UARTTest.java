@@ -29,20 +29,13 @@ public class UARTTest {
     }
 
     public UART createUARTConnection() {
-        UART realUART = new UART();
-        UART mockUART = mockUART();
-
-        boolean isRealUARTUsed = realUART.askPortName() != null;
-
-        return isRealUARTUsed ? realUART : mockUART;
+        return UART.getPortNames().length != 0 ? new UART(COM1_PORT_NAME) : mockUART();
     }
 
     public UART mockUART() {
 
         final UART mockUART = mock(UART.class);
 
-        when(mockUART.askPortName()).thenReturn(COM1_PORT_NAME);
-        when(mockUART.getPortName()).thenReturn(COM1_PORT_NAME);
         when(mockUART.getSerialPort()).thenReturn(new SerialPort(COM1_PORT_NAME));
         when(mockUART.open()).thenReturn(true);
         when(mockUART.close()).thenReturn(true);
@@ -75,21 +68,11 @@ public class UARTTest {
 
     @Test
     public void youCreateNewUARTConnection() throws Exception {
-        assertNotNull(new UART());
-    }
-
-    @Test
-    public void testGetPortName() throws Exception {
-        assertEquals(COM1_PORT_NAME, uart.getPortName());
+        assertNotNull(new UART(UARTTest.COM1_PORT_NAME));
     }
 
     @Test
     public void testGetSerialPort() throws Exception {
         assertNotNull(uart.getSerialPort());
-    }
-
-    @Test
-    public void testAskPortName() throws Exception {
-        assertEquals(COM1_PORT_NAME, uart.askPortName());
     }
 }

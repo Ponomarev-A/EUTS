@@ -1,4 +1,4 @@
-group 'emulatorEUTS'
+group 'EmulatorEUTS'
 version '1.0'
 
 apply plugin: 'java'
@@ -7,10 +7,59 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    download
+    testDownload
+}
+
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    testCompile 'org.mockito:mockito-core:1.10.+'
-    compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'commons-codec:commons-codec:1.9'
-    compile 'org.scream3r:jssc:2.8.0'
+    download(
+            'org.apache.commons:commons-lang3:3.4',
+            'commons-codec:commons-codec:1.9',
+            'org.scream3r:jssc:2.8.0'
+    )
+    testDownload(
+            'junit:junit:4.11+',
+            'org.mockito:mockito-core:1.10.+'
+    )
+
+    compile fileTree(dir: 'libs/compile', include: '**/*.jar')
+    testCompile fileTree(dir: 'libs/testCompile', include: '**/*.jar')
+}
+
+//create a single Jar with all dependencies
+task createExecutiveJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',
+                'Implementation-Version': version,
+                'Main-Class': 'EmulatorEUTS'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task cleanDownloadedDependencies(type: Delete) {
+    delete fileTree('libs/compile/downloaded')
+}
+
+task cleanDownloadedTestDependencies(type: Delete) {
+    delete fileTree('libs/testCompile/downloaded')
+}
+
+task downloadDependencies(type: Copy) {
+    from configurations.download
+    into "libs/compile/downloaded/"
+}
+
+task downloadTestDependencies(type: Copy) {
+    from configurations.testDownload
+    into "libs/testCompile/downloaded/"
+}
+
+task updateDependencies {
+    dependsOn   cleanDownloadedDependencies,
+            cleanDownloadedTestDependencies,
+            downloadDependencies,
+            downloadTestDependencies
 }

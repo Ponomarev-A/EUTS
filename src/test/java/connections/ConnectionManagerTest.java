@@ -31,7 +31,7 @@ public class ConnectionManagerTest {
 
     @Test
     public void youCreateUARTConnectionWithModbusProtocol() throws Exception {
-        Connection uart = new UART();
+        Connection uart = new UART(new UARTTest().COM1_PORT_NAME);
         Protocol modbus = new ModBus();
         ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
 
@@ -42,7 +42,7 @@ public class ConnectionManagerTest {
 
     @Test
     public void testGetConnectionAndProtocol() throws Exception {
-        Connection connection = new UART();
+        Connection connection = new UART(new UARTTest().COM1_PORT_NAME);
         Protocol protocol = new ModBus();
         ConnectionManager cm = new ConnectionManager(connection, protocol);
 

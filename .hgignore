@@ -3,3 +3,4 @@ syntax: glob
 .idea\vcs.xml
 build/
 .gradle/
+out/artifacts

@@ -69,20 +69,12 @@ public class Packet {
         this.CRC = 0;
     }
 
-    private byte[] getByteArrayFromShort(short value) {
-        return ByteBuffer.allocate(Short.SIZE / Byte.SIZE).putShort(value).array();
-    }
-
-
     public Packet(Command command, int data) {
         this.command = command;
         this.data = getByteArrayFromInt(data);
         this.CRC = 0;
     }
 
-    private byte[] getByteArrayFromInt(int value) {
-        return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(value).array();
-    }
 
     @Override
     public int hashCode() {
@@ -107,8 +99,7 @@ public class Packet {
     @Override
     public String toString() {
         return "Packet{" +
-                "CRC=" + CRC +
-                ", command=" + command +
+                "command=" + command +
                 ", data=" + Arrays.toString(data) +
                 '}';
     }
@@ -216,5 +207,17 @@ public class Packet {
 
     private short getShortFromByteArray(byte[] array) {
         return ByteBuffer.wrap(array).getShort();
+    }
+
+    private int getIntFromByteArray(byte[] array) {
+        return ByteBuffer.wrap(array).getInt();
+    }
+
+    private byte[] getByteArrayFromShort(short value) {
+        return ByteBuffer.allocate(Short.SIZE / Byte.SIZE).putShort(value).array();
+    }
+
+    private byte[] getByteArrayFromInt(int value) {
+        return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(value).array();
     }
 }

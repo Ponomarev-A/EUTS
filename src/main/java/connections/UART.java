@@ -14,26 +14,15 @@ public class UART implements Connection {
     public static final int STOPBITS = SerialPort.STOPBITS_1;
     public static final int PARITY = SerialPort.PARITY_NONE;
 
-    private String portName;
     private SerialPort serialPort;
     private PortReader portReader = new PortReader();
 
-    public UART() {
-        portName = askPortName();
+    public UART(String portName) {
         serialPort = new SerialPort(portName);
     }
 
-    public String askPortName() {
-        // TODO: realize askPortName() method
-        String[] portNames = SerialPortList.getPortNames();
-        if (portNames != null && portNames.length > 0)
-            return portNames[0];
-        else
-            return null;
-    }
-
-    public String getPortName() {
-        return portName;
+    public static String[] getPortNames() {
+        return SerialPortList.getPortNames();
     }
 
     public SerialPort getSerialPort() {
