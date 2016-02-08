@@ -1,6 +1,15 @@
 syntax: glob
-.idea\workspace.xml
-.idea\vcs.xml
 build/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/vcs.xml
+.idea/libraries
+.idea/dictionaries
+.idea/gradle.xml
+.idea/libraries
 .gradle/
-out/artifacts
+emulatorEUTS.iml
+out/
+*.ipr
+*.iws
+

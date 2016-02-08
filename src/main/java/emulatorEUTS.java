@@ -28,6 +28,8 @@ public class EmulatorEUTS {
 
         while (true) {
 
+            textReceivePacket();
+
             int N = textChooseCommand();
 
             if (N > 0) {
@@ -39,6 +41,19 @@ public class EmulatorEUTS {
                 textSendedPacket(packet);
             }
         }
+
+    }
+
+    private static void textReceivePacket() {
+
+        Packet receivePacket;
+        if ((receivePacket = manager.receivePacket()) != null) {
+            ConsoleHelper.writeMessageLn("################################");
+            ConsoleHelper.writeMessage("Received packet: ");
+            ConsoleHelper.writeMessageLn(receivePacket.toString());
+            ConsoleHelper.writeMessageLn("################################");
+        }
+
     }
 
     private static void textSendedPacket(Packet packet) {

@@ -57,6 +57,9 @@ public class UART implements Connection {
             e.printStackTrace();
         } catch (TimeoutException e) {
             System.err.println(getClass().getSimpleName() + " READ: Timeout exception!");
+        } finally {
+            portReader.clear();
+
         }
 
         return result;
@@ -107,10 +110,14 @@ public class UART implements Connection {
         @Override
         public byte[] call() throws Exception {
             if (data == null) {
-                Thread.sleep(200);
+                Thread.sleep(500);
             }
 
             return data;
+        }
+
+        public void clear() {
+            data = null;
         }
     }
 }

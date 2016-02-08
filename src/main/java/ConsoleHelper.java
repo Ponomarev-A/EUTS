@@ -25,7 +25,7 @@ public class ConsoleHelper
         try {
             while ((s = bufferedReader.readLine()) == null);
         } catch (IOException e) {
-            writeMessageLn("Произошла ошибка при попытке ввода текста. Попробуйте еще раз.");
+            writeMessageLn("Wrong string entered, try again!");
         }
 
         return s;
@@ -37,7 +37,7 @@ public class ConsoleHelper
             try {
                 return Integer.parseInt(readString());
             } catch (NumberFormatException e) {
-                writeMessageLn("Произошла ошибка при попытке ввода числа. Попробуйте еще раз.");
+                writeMessageLn("Wrong integer entered, try again!");
             }
         }
     }
