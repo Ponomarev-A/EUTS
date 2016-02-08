@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EmulatorEUTS.iml" filepath="$PROJECT_DIR$/EmulatorEUTS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EUTS.iml" filepath="$PROJECT_DIR$/EUTS.iml" />
     </modules>
   </component>
 </project>

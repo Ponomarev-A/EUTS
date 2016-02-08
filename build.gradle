@@ -1,4 +1,4 @@
-group 'EmulatorEUTS'
+group 'EUTS'
 version '1.0'
 
 apply plugin: 'java'
@@ -32,7 +32,7 @@ task createExecutiveJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'Gradle Jar File Example',
                 'Implementation-Version': version,
-                'Main-Class': 'EmulatorEUTS'
+                'Main-Class': 'EUTS'
     }
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
