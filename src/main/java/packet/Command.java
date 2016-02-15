@@ -4,45 +4,42 @@ package packet;
  *  Available commands enumeration
  */
 public enum Command {
-    FREQUENCY_DEVICE(1),
-    GAIN_DEVICE(2),
-    TYPE_OF_SIGNAL_DEVICE(3),
-    BOTTOM_SENSOR_DEVICE(4),
-    MODE_DEVICE(5),
-    SOUND_DEVICE(6),
-    BACKLIGHT_DEVICE(7),
-    EXT_SENSOR_DEVICE(8),
-    CHECK_DISPLAY_DEVICE(9),
-    CHECK_KEYBOARD_DEVICE(10),
-    CHECK_CONNECTION_DEVICE(11),
-    INVALID_CRC_DEVICE(12),
-    INVALID_CMD_DEVICE(13),
-    INVALID_DATA_DEVICE(14),
-    ERROR_DEVICE(15),
+    FREQUENCY_DEVICE,           // 1
+    GAIN_DEVICE,                // 2
+    TYPE_OF_SIGNAL_DEVICE,      // 3
+    BOTTOM_SENSOR_DEVICE,       // 4
+    MODE_DEVICE,                // 5
+    SOUND_DEVICE,               // 6
+    BACKLIGHT_DEVICE,           // 7
+    EXT_SENSOR_DEVICE,          // 8
+    CHECK_DISPLAY_DEVICE,       // 9
+    CHECK_KEYBOARD_DEVICE,      // 10
+    CHECK_CONNECTION_DEVICE,    // 11
+    INVALID_CRC_DEVICE,         // 12
+    INVALID_CMD_DEVICE,         // 13
+    INVALID_DATA_DEVICE,        // 14
+    GET_INFO_DEVICE,      // 15
+    ERROR_DEVICE,               // 16
 
-    FREQUENCY_STAND(16),
-    VOLTAGE_STAND(17),
-    TYPE_OF_SIGNAL_STAND(18),
-    EXT_SENSOR_STAND(19),
-    CHECK_CONNECTION_STAND(20),
-    INVALID_CRC_STAND(21),
-    INVALID_CMD_STAND(22),
-    INVALID_DATA_STAND(23),
-    ERROR_STAND(24);
+    FREQUENCY_STAND,            // 17
+    VOLTAGE_STAND,              // 18
+    TYPE_OF_SIGNAL_STAND,       // 19
+    EXT_SENSOR_STAND,           // 20
+    CHECK_CONNECTION_STAND,     // 21
+    INVALID_CMD_STAND,          // 22
+    INVALID_CRC_STAND,          // 23
+    INVALID_DATA_STAND,         // 24
+    GET_INFO_STAND,             // 25
+    ERROR_STAND;                // 26
 
-    private final int id;
+    private int id = 0;
 
-    Command(int id) {
-        this.id = id;
+    Command() {
+        id = ordinal() + 1;
     }
 
     public static Command getCommand(int id) {
-        for (Command cmd : Command.values()) {
-            if (cmd.getId() == id)
-                return cmd;
-        }
-
-        return null;
+        return  Command.values()[id-1];
     }
 
     public int getId() {

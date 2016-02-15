@@ -6,7 +6,10 @@ import org.junit.Test;
 import packet.Command;
 import packet.Packet;
 
-import static org.junit.Assert.*;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ConnectionManager test class
@@ -18,36 +21,15 @@ public class ConnectionManagerTest {
     @Before
     public void openConnection() throws Exception {
         connectionManager = new ConnectionManager(new UARTTest().createUARTConnection(), new ModBus());
-        connectionManager.init();
+        connectionManager.open();
     }
 
     @After
     public void closeConnection() throws Exception {
         if (connectionManager != null)
-            connectionManager.getConnection().close();
+            connectionManager.close();
 
         connectionManager = null;
-    }
-
-    @Test
-    public void youCreateUARTConnectionWithModbusProtocol() throws Exception {
-        Connection uart = new UART(new UARTTest().COM1_PORT_NAME);
-        Protocol modbus = new ModBus();
-        ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
-
-        assertNotNull(connectionManager);
-        assertEquals(uart, connectionManager.getConnection());
-        assertEquals(modbus, connectionManager.getProtocol());
-    }
-
-    @Test
-    public void testGetConnectionAndProtocol() throws Exception {
-        Connection connection = new UART(new UARTTest().COM1_PORT_NAME);
-        Protocol protocol = new ModBus();
-        ConnectionManager cm = new ConnectionManager(connection, protocol);
-
-        assertEquals(connection, cm.getConnection());
-        assertEquals(protocol, cm.getProtocol());
     }
 
     @Test
@@ -59,7 +41,7 @@ public class ConnectionManagerTest {
     }
 
     @Test
-    public void testMultipleSendingAndRecevingPackets() throws Exception {
+    public void testMultipleSendingAndReceivingSamePackets() throws Exception {
         Packet packetTestConnection = new Packet(Command.CHECK_CONNECTION_DEVICE, new byte[]{1, 2, 3, 4});
 
         for (int i = 0; i < 10; i++) {
@@ -67,5 +49,30 @@ public class ConnectionManagerTest {
             assertEquals(packetTestConnection, connectionManager.receivePacket());
 
         }
+    }
+
+    @Test
+    public void testMultipleSendingAndReceivingDiffPackets() throws Exception {
+        Packet packetTestConnection = new Packet(Command.CHECK_CONNECTION_DEVICE);
+
+        for (int i = 0; i < 10; i++) {
+            packetTestConnection.setData(i * 1234);
+            assertTrue(connectionManager.sendPacket(packetTestConnection));
+            assertEquals(packetTestConnection, connectionManager.receivePacket());
+        }
+    }
+
+    @Test
+    public void testSendAndReceiveBigPacket() throws Exception {
+        Random random = new Random();
+        byte[] bigData = new byte[250];
+        for (int i = 0; i < bigData.length; i++) {
+            bigData[i] = (byte) ('0' + random.nextInt(10));
+        }
+
+
+        Packet bigPacket = new Packet(Command.CHECK_CONNECTION_DEVICE, bigData);
+        assertTrue(connectionManager.sendPacket(bigPacket));
+        assertEquals(bigPacket, connectionManager.receivePacket());
     }
 }

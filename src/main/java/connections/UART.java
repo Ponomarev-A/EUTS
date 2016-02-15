@@ -1,6 +1,8 @@
 package connections;
 
+import exception.InvalidPacketSize;
 import jssc.*;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.concurrent.*;
 
@@ -14,8 +16,12 @@ public class UART implements Connection {
     public static final int STOPBITS = SerialPort.STOPBITS_1;
     public static final int PARITY = SerialPort.PARITY_NONE;
 
+    public static final int READ_PORT_TIMEOUT_MS = 1000;
+    public static final int READ_PORT_DELAY_MS = 600;
+    public static final int MAX_BUFFER_LENGTH = 2048;
+
     private SerialPort serialPort;
-    private PortReader portReader = new PortReader();
+    private PortReader portReader = new PortReader(MAX_BUFFER_LENGTH);
 
     public UART(String portName) {
         serialPort = new SerialPort(portName);
@@ -32,7 +38,7 @@ public class UART implements Connection {
     @Override
     public boolean open() {
         try {
-            if (serialPort != null) {
+            if (!isOpened() && serialPort != null) {
                 serialPort.openPort();
                 serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
                 serialPort.addEventListener(portReader, SerialPort.MASK_RXCHAR);
@@ -49,19 +55,18 @@ public class UART implements Connection {
 
         byte[] result = null;
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newScheduledThreadPool(1);
 
         try {
-            result = executor.submit(portReader).get(1000, TimeUnit.MILLISECONDS);
+            result = ((ScheduledExecutorService) executor).
+                    schedule(portReader, READ_PORT_DELAY_MS, TimeUnit.MILLISECONDS).
+                    get(READ_PORT_DELAY_MS + READ_PORT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
-            System.err.println(getClass().getSimpleName() + " READ: Timeout exception!");
-        } finally {
-            portReader.clear();
-
+            e.printStackTrace();
+            System.err.println(this.getClass().getSimpleName() + " read(): Timeout exception!");
         }
-
         return result;
     }
 
@@ -87,15 +92,31 @@ public class UART implements Connection {
 
     private class PortReader implements Callable<byte[]>, SerialPortEventListener {
 
-        private byte[] data = null;
+        private final int maxBufferLength;
+
+        private int bufferLength = 0;
+        private byte[] buffer;
+
+        public PortReader(int maxBufferLength) {
+            this.maxBufferLength = maxBufferLength;
+        }
 
         @Override
         public void serialEvent(SerialPortEvent event) {
+            byte[] receivedBuffer;
 
-            if (event.isRXCHAR() && event.getEventValue() > 0) {
+            if (event.isRXCHAR()) {
                 try {
-                    data = serialPort.readBytes(event.getEventValue());
-                } catch (SerialPortException e) {
+                    receivedBuffer = serialPort.readBytes();
+                    int receivedBufferLength = receivedBuffer != null ? receivedBuffer.length : 0;
+
+                    if (receivedBufferLength + bufferLength > maxBufferLength)
+                        throw new InvalidPacketSize();
+
+                    buffer = ArrayUtils.addAll(bufferLength > 0 ? buffer : null, receivedBuffer);
+                    bufferLength = buffer.length;
+
+                } catch (SerialPortException | InvalidPacketSize e) {
                     e.printStackTrace();
                 }
             }
@@ -109,15 +130,8 @@ public class UART implements Connection {
          */
         @Override
         public byte[] call() throws Exception {
-            if (data == null) {
-                Thread.sleep(500);
-            }
-
-            return data;
-        }
-
-        public void clear() {
-            data = null;
+            bufferLength = 0;
+            return buffer;
         }
     }
 }

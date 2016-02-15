@@ -8,9 +8,9 @@ import org.apache.commons.lang3.ArrayUtils;
  * Class ModBus used for wrapping transmitted data by control symbols.
  */
 public class ModBus implements Protocol {
-//    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x0D, 0x0A}; ]
 
     // TODO: Don't forgive revert CLOSE_CODE_SEQ values!
+//    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x0D, 0x0A}; ]
     public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x2E, 0x2F};
     public static final byte[] OPEN_CODE_SEQ = new byte[]{0x3A};
 
@@ -31,7 +31,8 @@ public class ModBus implements Protocol {
     public byte[] unwrap(byte[] code) throws FailedProtocolException {
 
         if (code[0] != getOpenSequence()[0] ||
-                code[code.length - 1] != getCloseSequence()[1] || code[code.length - 2] != getCloseSequence()[0])
+                code[code.length - 1] != getCloseSequence()[1] ||
+                code[code.length - 2] != getCloseSequence()[0])
             throw new FailedProtocolException();
 
         byte[] subarray = ArrayUtils.subarray(code, getOpenSequence().length, code.length - getCloseSequence().length);

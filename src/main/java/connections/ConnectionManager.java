@@ -2,6 +2,7 @@ package connections;
 
 import exception.FailedProtocolException;
 import exception.InvalidCRCException;
+import exception.InvalidPacketSize;
 import packet.Packet;
 
 /**
@@ -17,17 +18,12 @@ public class ConnectionManager {
         this.protocol = protocol;
     }
 
-    public void init() {
+    public void open() {
         connection.open();
     }
 
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public Protocol getProtocol() {
-        return protocol;
+    public void close() {
+        connection.close();
     }
 
     public Packet receivePacket() {
@@ -53,14 +49,14 @@ public class ConnectionManager {
     public boolean sendPacket(Packet packet) {
 
         if (packet != null) {
-
-            byte[] packedData = packet.pack();
-            byte[] wrappedData = protocol.wrap(packedData);
-
             try {
+                byte[] packedData = packet.pack();
+                byte[] wrappedData = protocol.wrap(packedData);
                 connection.write(wrappedData);
                 return true;
 
+            } catch (InvalidPacketSize e) {
+                // TODO: handle invalidPacketSize exception
             } catch (Exception e) {
                 // TODO: handle sendPacket() exception
             }

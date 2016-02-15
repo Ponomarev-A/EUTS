@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
@@ -54,11 +56,6 @@ public class PacketTest {
         packet.setData(DATA_1234);
         packet.updateCRC();
 
-        // Manual calculating by http://depa.usst.edu.cn/chenjq/www2/software/crc/CRC_Javascript/CRCcalculation.htm
-        // CRC polynom      (hex)   0x8005
-        // Initial value    (hex)   0
-        // Final XOR value  (hex)   0
-
         assertEquals((short) 0x9E33, packet.getCRC());
     }
 
@@ -67,6 +64,22 @@ public class PacketTest {
         byte[] data = DATA_1234;
         packet.setData(data);
         assertEquals(data, packet.getData());
+    }
+
+    @Test
+    public void youGetDataAsString() throws Exception {
+        byte[] data = "1234".getBytes(StandardCharsets.US_ASCII);
+        packet.setData(data);
+
+        assertEquals("1234", packet.getDataAsString());
+    }
+
+    @Test
+    public void youGetDataAsInt() throws Exception {
+        byte[] data = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(1234).array();
+        packet.setData(data);
+
+        assertEquals(1234, packet.getDataAsInt());
     }
 
     @Test
@@ -174,38 +187,5 @@ public class PacketTest {
 
         // Unpack sent data to received packet, catch InvalidCRCException here!
         receivedPacket.unpack(sentData);
-    }
-
-    @Test
-    public void testGetByteArrayFromShort() throws Exception {
-
-        byte[] result = (byte[]) invokePrivateMethod(
-                packet,
-                "getByteArrayFromShort",
-                new Class[]{short.class}, new Object[]{(short) 1234});
-        assertArrayEquals(new byte[]{0x04, (byte) 0xD2}, result);
-    }
-
-    @Test
-    public void testGetShortFromByteArray() throws Exception {
-        short result = (short) invokePrivateMethod(
-                packet,
-                "getShortFromByteArray",
-                new Class[]{byte[].class}, new Object[]{new byte[]{0x12, 0x34}});
-        assertEquals((short) 4660, result);
-    }
-
-    @Test
-    public void testEquals() throws Exception {
-        Packet somePacket = new Packet(packet);
-
-        assertTrue(somePacket.equals(packet));
-    }
-
-    @Test
-    public void testHashCode() throws Exception {
-        Packet somePacket = new Packet(packet);
-
-        assertEquals(packet.hashCode(), somePacket.hashCode());
     }
 }
