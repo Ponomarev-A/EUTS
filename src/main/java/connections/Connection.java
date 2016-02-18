@@ -9,7 +9,7 @@ public interface Connection {
 
     byte[] read() throws Exception;
 
-    void write(byte[] data) throws Exception;
+    boolean write(byte[] data) throws Exception;
 
     boolean close();
 }

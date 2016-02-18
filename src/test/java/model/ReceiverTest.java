@@ -12,13 +12,13 @@ import static org.junit.Assert.assertTrue;
  * <p/>
  * !!! TESTING ON REAL DEVICE ONLY !!!
  */
-public class DeviceTest {
+public class ReceiverTest {
 
     private final static Connection uart = new UART(UART.getPortNames()[0]);
     private final static Protocol modbus = new ModBus();
     private final static ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
 
-    private Device device = new Device(connectionManager);
+    private Receiver receiver = new Receiver(connectionManager);
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -27,11 +27,11 @@ public class DeviceTest {
 
     @Test
     public void youGetInfo() throws Exception {
-        assertEquals("AP-019.1 3.05 AP019.01.020izm11 000000", device.getInfo());
+        assertEquals("AP-019.1 3.05 AP019.01.020izm11 000000", receiver.getInfo());
     }
 
     @Test
     public void youGetStatusCONNECTED() throws Exception {
-        assertTrue(device.isConnected());
+        assertTrue(receiver.getConnectionStatus() == ConnectionStatus.CONNECTED);
     }
 }

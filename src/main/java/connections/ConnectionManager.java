@@ -28,14 +28,12 @@ public class ConnectionManager {
 
     public Packet receivePacket() {
 
+        Packet receivedPacket = new Packet();
         try {
-            Packet receivedPacket = new Packet();
 
             byte[] readData = connection.read();
             byte[] unwrappedData = protocol.unwrap(readData);
             receivedPacket.unpack(unwrappedData);
-
-            return receivedPacket;
 
         } catch (FailedProtocolException | InvalidCRCException e) {
             // TODO: handle receivePacket() exceptions
@@ -43,17 +41,18 @@ public class ConnectionManager {
             // TODO: handle receivePacket() other exceptions
         }
 
-        return null;
+        return receivedPacket;
     }
 
     public boolean sendPacket(Packet packet) {
+
+        boolean result = false;
 
         if (packet != null) {
             try {
                 byte[] packedData = packet.pack();
                 byte[] wrappedData = protocol.wrap(packedData);
-                connection.write(wrappedData);
-                return true;
+                result = connection.write(wrappedData);
 
             } catch (InvalidPacketSize e) {
                 // TODO: handle invalidPacketSize exception
@@ -62,6 +61,6 @@ public class ConnectionManager {
             }
         }
 
-        return false;
+        return result;
     }
 }

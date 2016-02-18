@@ -28,7 +28,8 @@ public class UART implements Connection {
     }
 
     public static String[] getPortNames() {
-        return SerialPortList.getPortNames();
+        String[] portNames = SerialPortList.getPortNames();
+        return (portNames == null) ? new String[0] : portNames;
     }
 
     public SerialPort getSerialPort() {
@@ -71,9 +72,8 @@ public class UART implements Connection {
     }
 
     @Override
-    public void write(byte[] buffer) throws SerialPortException {
-        if (serialPort.isOpened())
-            serialPort.writeBytes(buffer);
+    public boolean write(byte[] buffer) throws SerialPortException {
+        return serialPort.isOpened() && serialPort.writeBytes(buffer);
     }
 
 
