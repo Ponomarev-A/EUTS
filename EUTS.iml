@@ -14,33 +14,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library name="Gradle: commons-codec-1.9">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/commons-codec-1.9.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Gradle: commons-lang3-3.4">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/commons-lang3-3.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Gradle: jssc-2.8.0">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/jssc-2.8.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library" scope="TEST">
       <library name="Gradle: hamcrest-core-1.3">
         <CLASSES>
@@ -72,6 +45,46 @@
       <library name="Gradle: objenesis-2.1">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/testCompile/downloaded/objenesis-2.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: commons-codec-1.9">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/commons-codec-1.9.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: commons-lang3-3.4">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/commons-lang3-3.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: jssc-2.8.0">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/jssc-2.8.0.jar!/" />
+        </CLASSES>
+        <JAVADOC>
+          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/jssc-2.8.0-javadoc.jar!/javadoc" />
+        </JAVADOC>
+        <SOURCES>
+          <root url="jar://$USER_HOME$/Desktop/jssc/jssc-2.8.0-sources.jar!/src" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: jssc-2.8.0-javadoc">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/compile/downloaded/jssc-2.8.0-javadoc.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

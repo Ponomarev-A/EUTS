@@ -1,11 +1,9 @@
 package view;
 
 import controller.Controller;
-import controller.EventListener;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
@@ -13,110 +11,82 @@ import java.awt.*;
  */
 public class View extends JFrame {
 
+    public static final Font DEFAULT_FONT = new Font(null, Font.PLAIN, 18);
+    public static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
+
+    public static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);
+
     private static final int FRAME_WIDTH = 1100;
     private static final int FRAME_HEIGHT = 800;
 
-    private final Font titleFont = new Font(null, Font.BOLD, 20);
-    private final Border titleBorder = BorderFactory.createLineBorder(Color.BLACK, 3);
-
     private Controller controller;
-    private EventListener eventListener;
-    private MainMenu mainMenu;
+
+    private MenuBar menuBar;
+    private ReceiverInfoPanel jpReceiverInfo;
+    private StandInfoPanel jpStandInfo;
+
 
     public View(Controller controller) {
         this.controller = controller;
-        mainMenu = new MainMenu(this, controller);
-    }
-
-    public void setEventListener(EventListener eventListener) {
-        this.eventListener = eventListener;
     }
 
     public void init() {
 
-        createMainFrame(FRAME_WIDTH, FRAME_HEIGHT);
-        mainMenu.createMainMenu();
+        createMainFrame();
         createMainPanel();
+        createMainMenu();
+
+        updateDeviceInfo();
+        updateMenuStates();
 
         setVisible(true);
     }
 
-    private void createMainFrame(int width, int height) {
+    private void createMainFrame() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(width, height);
+        setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setResizable(false);
         setLocationRelativeTo(null);
         setDefaultLookAndFeelDecorated(true);
         setTitle("Electronic Units Test Stand (EUTS) application");
+
+        // Set new default font to labels
+        UIManager.put("Label.font", DEFAULT_FONT);
     }
 
     private void createMainPanel() {
-        JPanel jpMain = new JPanel();
-        jpMain.setLayout(new BoxLayout(jpMain, BoxLayout.X_AXIS));
+        JPanel jPanel = new JPanel();
+        jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
 
-        JPanel jpDevice = createDeviceInfoPanel(FRAME_WIDTH * 2 / 3, FRAME_HEIGHT / 5);
-        JPanel jpStand = createStandInfoPanel(FRAME_WIDTH * 1 / 3, FRAME_HEIGHT / 5);
+        jpReceiverInfo = new ReceiverInfoPanel(controller);
+        jpStandInfo = new StandInfoPanel(controller);
 
-        jpMain.add(jpDevice);
-        jpMain.add(jpStand);
-
-        add(jpMain);
-    }
-
-    private JPanel createDeviceInfoPanel(int width, int height) {
-        JPanel jPanel = new JPanel(new GridLayout(4, 1));
-        jPanel.setMaximumSize(new Dimension(width, height));
-        jPanel.setBackground(Color.LIGHT_GRAY);
-        jPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-
-        jPanel.setBorder(new TitledBorder(
-                titleBorder,
-                "Device info",
-                TitledBorder.DEFAULT_JUSTIFICATION,
-                TitledBorder.DEFAULT_POSITION,
-                titleFont
-        ));
-        JLabel jlModel = new JLabel("Model: ");
-        JLabel jlFirmware = new JLabel("Firmware: ");
-        JLabel jlScheme = new JLabel("Scheme: ");
-        JLabel jlStatus = new JLabel("Status: ");
+        jPanel.add(jpReceiverInfo.create(FRAME_WIDTH * 2 / 3, FRAME_HEIGHT / 5));
+        jPanel.add(jpStandInfo.create(FRAME_WIDTH * 1 / 3, FRAME_HEIGHT / 5));
 
         add(jPanel);
-        jPanel.add(jlModel);
-        jPanel.add(jlFirmware);
-        jPanel.add(jlScheme);
-        jPanel.add(jlStatus);
-
-        return jPanel;
     }
 
-    private JPanel createStandInfoPanel(int width, int height) {
-        JPanel jPanel = new JPanel(new GridLayout(3, 1));
-        jPanel.setMaximumSize(new Dimension(width, height));
-        jPanel.setBackground(Color.LIGHT_GRAY);
-        jPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-
-        jPanel.setBorder(new TitledBorder(
-                titleBorder,
-                "Stand info",
-                TitledBorder.DEFAULT_JUSTIFICATION,
-                TitledBorder.DEFAULT_POSITION,
-                titleFont
-        ));
-        JLabel jlFirmware = new JLabel("Firmware: ");
-        JLabel jlScheme = new JLabel("Scheme: ");
-        JLabel jlStatus = new JLabel("Status: ");
-
-        add(jPanel);
-        jPanel.add(jlFirmware);
-        jPanel.add(jlScheme);
-        jPanel.add(jlStatus);
-
-        return jPanel;
+    private void createMainMenu() {
+        menuBar = new MenuBar(controller);
+        setJMenuBar(menuBar.createMainMenu());
     }
 
+    public void updateDeviceInfo() {
+        jpReceiverInfo.updateInfo();
+        jpStandInfo.updateInfo();
+    }
 
     public void updateMenuStates() {
-        mainMenu.updateMenuStates();
+        menuBar.updateMenuStates();
+    }
+
+    public void showErrorMessage(String title, Exception e) {
+        JOptionPane.showMessageDialog(
+                View.this,
+                e.getLocalizedMessage(),
+                title,
+                JOptionPane.ERROR_MESSAGE
+        );
     }
 }

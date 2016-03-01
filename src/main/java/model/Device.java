@@ -8,6 +8,7 @@ import connections.ConnectionManager;
 public abstract class Device {
 
     private ConnectionManager connectionManager;
+    private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
     public Device(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
@@ -19,7 +20,15 @@ public abstract class Device {
 
     public abstract String getInfo();
 
+    public void checkConnectionStatus() {
+        connectionStatus = ConnectionStatus.checkStatus(this);
+    }
+
     public ConnectionStatus getConnectionStatus() {
-        return ConnectionStatus.checkStatus(this);
+        return connectionStatus;
+    }
+
+    public void setConnectionStatus(ConnectionStatus connectionStatus) {
+        this.connectionStatus = connectionStatus;
     }
 }

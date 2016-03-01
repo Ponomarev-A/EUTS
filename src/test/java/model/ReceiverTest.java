@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ReceiverTest {
 
-    private final static Connection uart = new UART(UART.getPortNames()[0]);
+    private final static Connection uart = UART.getInstance(UART.getPortNames()[0]);
     private final static Protocol modbus = new ModBus();
     private final static ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
 
@@ -32,6 +32,7 @@ public class ReceiverTest {
 
     @Test
     public void youGetStatusCONNECTED() throws Exception {
+        receiver.checkConnectionStatus();
         assertTrue(receiver.getConnectionStatus() == ConnectionStatus.CONNECTED);
     }
 }

@@ -152,7 +152,14 @@ public class Packet {
     }
 
     private int getIntFromByteArray(byte[] array) {
-        return ByteBuffer.wrap(array).getInt();
+        int result = 0;
+
+        try {
+            result = ByteBuffer.wrap(array).getInt();
+        } catch (Exception e) {
+        }
+
+        return result;
     }
 
     /**
@@ -243,6 +250,13 @@ public class Packet {
     }
 
     private short getShortFromByteArray(byte[] array) {
-        return ByteBuffer.wrap(array).getShort();
+        short result = 0;
+
+        try {
+            result = ByteBuffer.wrap(array).getShort();
+        } catch (Exception e) {
+        }
+
+        return result;
     }
 }

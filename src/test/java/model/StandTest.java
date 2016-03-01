@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 @Ignore
 public class StandTest {
 
-    private final static Connection uart = new UART(UART.getPortNames()[0]);
+    private final static Connection uart = UART.getInstance(UART.getPortNames()[0]);
     private final static Protocol modbus = new ModBus();
     private final static ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
 

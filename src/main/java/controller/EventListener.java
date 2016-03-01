@@ -1,13 +1,11 @@
 package controller;
 
-import model.ConnectionStatus;
-
 /**
  * EventListener interface contains user defined actions
  */
 public interface EventListener {
 
-    String[] getAvailableCOMPorts();
+    String[] getCOMPortList();
 
     void connect();
 
@@ -17,5 +15,19 @@ public interface EventListener {
 
     boolean isCOMPortSelected(String portName);
 
-    ConnectionStatus getConnectionStatus();
+    boolean isReceiverConnected();
+
+    boolean isStandConnected();
+
+    String getStandInfo();
+
+    String getReceiverInfo();
+
+    void showErrorMessage(String title, Exception e);
+
+    void createConnectionManager();
+
+    void destroyConnectionManager();
+
+    boolean isConnectionManagerExist();
 }

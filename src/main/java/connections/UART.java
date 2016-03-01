@@ -4,7 +4,9 @@ import exception.InvalidPacketSize;
 import jssc.*;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * UART connections class
@@ -15,16 +17,32 @@ public class UART implements Connection {
     public static final int DATABITS = SerialPort.DATABITS_8;
     public static final int STOPBITS = SerialPort.STOPBITS_1;
     public static final int PARITY = SerialPort.PARITY_NONE;
-
-    public static final int READ_PORT_TIMEOUT_MS = 1000;
-    public static final int READ_PORT_DELAY_MS = 600;
     public static final int MAX_BUFFER_LENGTH = 2048;
 
-    private SerialPort serialPort;
-    private PortReader portReader = new PortReader(MAX_BUFFER_LENGTH);
+    public static final int READ_WAIT_TIMEOUT_MS = 2000;
+    public static final int READ_EXECUTE_TIMEOUT_MS = 300;
+    public static final int READ_PERIOD_MS = 50;
+    private static UART instance = null;
+    private final SerialPort serialPort;
+    private final PortReader portReader = new PortReader(MAX_BUFFER_LENGTH);
+    private ScheduledExecutorService executor;
 
-    public UART(String portName) {
+    private UART(String portName) {
         serialPort = new SerialPort(portName);
+    }
+
+    public static UART getInstance(String portName) {
+        if (instance == null) {
+            instance = new UART(portName);
+        }
+
+        return (instance.getSerialPort().getPortName().equals(portName)) ?
+                instance :
+                new UART(portName);
+    }
+
+    public SerialPort getSerialPort() {
+        return serialPort;
     }
 
     public static String[] getPortNames() {
@@ -32,43 +50,38 @@ public class UART implements Connection {
         return (portNames == null) ? new String[0] : portNames;
     }
 
-    public SerialPort getSerialPort() {
-        return serialPort;
-    }
-
     @Override
-    public boolean open() {
-        try {
-            if (!isOpened() && serialPort != null) {
-                serialPort.openPort();
-                serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
-                serialPort.addEventListener(portReader, SerialPort.MASK_RXCHAR);
-            }
-        } catch (SerialPortException e) {
-            e.printStackTrace();
+    public boolean open() throws SerialPortException {
+        if (!isOpened()) {
+            serialPort.openPort();
+            serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
+            serialPort.addEventListener(portReader, SerialPort.MASK_RXCHAR);
         }
 
         return isOpened();
     }
 
+    private boolean isOpened() {
+        return serialPort.isOpened();
+    }
+
     @Override
     public byte[] read() throws SerialPortException {
 
-        byte[] result = null;
+        // Clear port data before new read operation
+        portReader.reset();
 
-        ExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor = Executors.newScheduledThreadPool(1);
+        executor.schedule(portReader, READ_PERIOD_MS, TimeUnit.MILLISECONDS);
 
+        // Wait while read operation is cancelled
         try {
-            result = ((ScheduledExecutorService) executor).
-                    schedule(portReader, READ_PORT_DELAY_MS, TimeUnit.MILLISECONDS).
-                    get(READ_PORT_DELAY_MS + READ_PORT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException e) {
+            executor.awaitTermination(READ_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-            System.err.println(this.getClass().getSimpleName() + " read(): Timeout exception!");
         }
-        return result;
+
+        return portReader.buffer;
     }
 
     @Override
@@ -76,26 +89,21 @@ public class UART implements Connection {
         return serialPort.isOpened() && serialPort.writeBytes(buffer);
     }
 
-
     @Override
-    public boolean close() {
-        try {
-            return isOpened() && serialPort.closePort();
-        } catch (SerialPortException e) {
-            return false;
+    public boolean close() throws SerialPortException {
+        if (isOpened()) {
+            serialPort.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+            serialPort.closePort();
         }
+        return isOpened();
     }
 
-    private boolean isOpened() {
-        return serialPort != null && serialPort.isOpened();
-    }
-
-    private class PortReader implements Callable<byte[]>, SerialPortEventListener {
+    private class PortReader implements Runnable, SerialPortEventListener {
 
         private final int maxBufferLength;
-
-        private int bufferLength = 0;
-        private byte[] buffer;
+        public byte[] buffer;
+        private int bufferLength;
+        private int attemptsToRead;     // Количество попыток чтения буфера входных данных
 
         public PortReader(int maxBufferLength) {
             this.maxBufferLength = maxBufferLength;
@@ -113,7 +121,7 @@ public class UART implements Connection {
                     if (receivedBufferLength + bufferLength > maxBufferLength)
                         throw new InvalidPacketSize();
 
-                    buffer = ArrayUtils.addAll(bufferLength > 0 ? buffer : null, receivedBuffer);
+                    buffer = ArrayUtils.addAll(buffer, receivedBuffer);
                     bufferLength = buffer.length;
 
                 } catch (SerialPortException | InvalidPacketSize e) {
@@ -122,16 +130,19 @@ public class UART implements Connection {
             }
         }
 
-        /**
-         * Computes a result, or throws an exception if unable to do so.
-         *
-         * @return computed result
-         * @throws Exception if unable to compute a result
-         */
         @Override
-        public byte[] call() throws Exception {
-            bufferLength = 0;
-            return buffer;
+        public void run() {
+
+            if (bufferLength > 0 && attemptsToRead++ > READ_EXECUTE_TIMEOUT_MS / READ_PERIOD_MS) {
+                executor.shutdown();
+            } else {
+                executor.schedule(this, READ_PERIOD_MS, TimeUnit.MILLISECONDS);
+            }
+        }
+
+        public void reset() {
+            buffer = new byte[0];
+            bufferLength = attemptsToRead = 0;
         }
     }
 }

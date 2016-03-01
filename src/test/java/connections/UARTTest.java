@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -29,7 +28,7 @@ public class UARTTest {
     }
 
     public UART createUARTConnection() {
-        return UART.getPortNames().length != 0 ? new UART(COM1_PORT_NAME) : mockUART();
+        return UART.getPortNames().length != 0 ? UART.getInstance(COM1_PORT_NAME) : mockUART();
     }
 
     public UART mockUART() {
@@ -37,9 +36,12 @@ public class UARTTest {
         final UART mockUART = mock(UART.class);
 
         when(mockUART.getSerialPort()).thenReturn(new SerialPort(COM1_PORT_NAME));
-        when(mockUART.open()).thenReturn(true);
-        when(mockUART.close()).thenReturn(true);
-
+        try {
+            when(mockUART.open()).thenReturn(true);
+            when(mockUART.close()).thenReturn(true);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
         try {
             doAnswer(new Answer<Void>() {
                 @Override
@@ -68,7 +70,7 @@ public class UARTTest {
 
     @Test
     public void youCreateNewUARTConnection() throws Exception {
-        assertNotNull(new UART(UARTTest.COM1_PORT_NAME));
+        assertNotNull(UART.getInstance(UARTTest.COM1_PORT_NAME));
     }
 
     @Test

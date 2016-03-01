@@ -1,61 +1,126 @@
 package model;
 
 import connections.*;
-import controller.EventListener;
+import controller.Controller;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Base model class for data processing
  */
 public class Model {
 
+    private static final String DEFAULT_PORTNAME = "COM1";
+
     private final Protocol protocol = new ModBus();
-    private EventListener eventListener;
-    private ConnectionManager connectionManager;
     private Connection connection;
+    private ConnectionManager connectionManager;
+
+    private Controller controller;
+
     private Receiver receiver;
+    private Stand stand;
 
+    public Model(Controller controller) {
+        this.controller = controller;
+    }
 
-    public void setEventListener(EventListener eventListener) {
-        this.eventListener = eventListener;
+    public void init() {
+        createDefaultConnection(DEFAULT_PORTNAME);
+        createConnectionManager();
+    }
+
+    private void createDefaultConnection(String defaultPortname) {
+        List<String> portList = Arrays.asList(getAvailableCOMPorts());
+        if (portList.contains(defaultPortname)) {
+            createConnection(defaultPortname);
+        }
+    }
+
+    public void createConnectionManager() {
+        if (connection != null && connectionManager == null) {
+            connectionManager = new ConnectionManager(connection, protocol);
+
+            receiver = new Receiver(connectionManager);
+            stand = new Stand(connectionManager);
+        }
     }
 
     public String[] getAvailableCOMPorts() {
         return UART.getPortNames();
     }
 
-    public void createConnectionManager() {
-        if (connectionManager == null && connection != null) {
-            connectionManager = new ConnectionManager(connection, protocol);
-            receiver = new Receiver(connectionManager);
+    public void createConnection(String portName) {
+        Connection newConnection = UART.getInstance(portName);
+
+        // Before create new connection we need close old connection
+        if (connection != null && !connection.equals(newConnection)) {
+            try {
+                connection.close();
+            } catch (Exception e) {
+                controller.showErrorMessage("Create new connection", e);
+            }
         }
-
-        if (connectionManager != null) {
-            connectionManager.close();
-        }
-    }
-
-    public void connectToDevice() {
-        if (connectionManager != null)
-            connectionManager.open();
-    }
-
-    public void disconnectFromDevice() {
-        if (connectionManager != null)
-            connectionManager.close();
-    }
-
-    public void createUARTConnection(String portName) {
-        if (connection != null) {
-            connection.close();
-        }
-        connection = new UART(portName);
+        connection = newConnection;
     }
 
     public boolean isCOMPortSelected(String portName) {
         return connection instanceof UART && ((UART) connection).getSerialPort().getPortName().equals(portName);
     }
 
-    public ConnectionStatus getConnectionStatus() {
-        return receiver.getConnectionStatus();
+    public void destroyConnectionManager() {
+        if (connectionManager != null) {
+            disconnectFromDevice();
+            connectionManager = null;
+            receiver = null;
+            stand = null;
+        }
+    }
+
+    public void disconnectFromDevice() {
+        if (connectionManager != null) {
+            try {
+                connectionManager.close();
+
+                receiver.checkConnectionStatus();
+                stand.checkConnectionStatus();
+            } catch (Exception e) {
+                controller.showErrorMessage("Close connection", e);
+            }
+        }
+    }
+
+    public void connectToDevice() {
+        if (connectionManager != null) {
+            try {
+                connectionManager.open();
+
+                receiver.checkConnectionStatus();
+                stand.checkConnectionStatus();
+            } catch (Exception e) {
+                controller.showErrorMessage("Open connection", e);
+            }
+        }
+    }
+
+    public boolean isReceiverConnected() {
+        return receiver != null && receiver.getConnectionStatus() == ConnectionStatus.CONNECTED;
+    }
+
+    public boolean isStandConnected() {
+        return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;
+    }
+
+    public String getStandInfo() {
+        return stand.getInfo();
+    }
+
+    public String getReceiverInfo() {
+        return receiver.getInfo();
+    }
+
+    public boolean isConnectionManagerExist() {
+        return connectionManager != null;
     }
 }

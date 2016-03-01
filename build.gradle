@@ -2,6 +2,7 @@ group 'EUTS'
 version '1.0'
 
 apply plugin: 'java'
+apply plugin: 'idea'
 
 repositories {
     mavenCentral()
@@ -25,6 +26,13 @@ dependencies {
 
     compile fileTree(dir: 'libs/compile', include: '**/*.jar')
     testCompile fileTree(dir: 'libs/testCompile', include: '**/*.jar')
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = false
+    }
 }
 
 //create a single Jar with all dependencies

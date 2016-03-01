@@ -18,11 +18,11 @@ public class ConnectionManager {
         this.protocol = protocol;
     }
 
-    public void open() {
+    public void open() throws Exception {
         connection.open();
     }
 
-    public void close() {
+    public void close() throws Exception {
         connection.close();
     }
 
@@ -56,8 +56,10 @@ public class ConnectionManager {
 
             } catch (InvalidPacketSize e) {
                 // TODO: handle invalidPacketSize exception
+                e.printStackTrace();
             } catch (Exception e) {
                 // TODO: handle sendPacket() exception
+                e.printStackTrace();
             }
         }
 
