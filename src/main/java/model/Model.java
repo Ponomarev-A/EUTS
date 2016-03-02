@@ -27,6 +27,14 @@ public class Model {
         this.controller = controller;
     }
 
+    public Receiver getReceiver() {
+        return receiver;
+    }
+
+    public Stand getStand() {
+        return stand;
+    }
+
     public void init() {
         createDefaultConnection(DEFAULT_PORTNAME);
         createConnectionManager();
@@ -119,14 +127,6 @@ public class Model {
 
     public boolean isStandConnected() {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;
-    }
-
-    public String getStandInfo() {
-        return stand.getInfo();
-    }
-
-    public String getReceiverInfo() {
-        return receiver.getInfo();
     }
 
     public boolean isConnectionManagerExist() {

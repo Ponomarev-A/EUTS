@@ -13,6 +13,7 @@ class StandInfoPanel extends JPanel {
     private JLabel jlFirmware = new JLabel();
     private JLabel jlScheme = new JLabel();
     private JLabel jlStatus = new JLabel();
+    private JLabel jlStandID = new JLabel();
 
     public StandInfoPanel(Controller controller) {
         this.controller = controller;
@@ -20,7 +21,7 @@ class StandInfoPanel extends JPanel {
 
     JPanel create(int width, int height) {
 
-        JPanel jPanel = new JPanel(new GridLayout(3, 1));
+        JPanel jPanel = new JPanel(new GridLayout(4, 1));
         jPanel.setMaximumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
@@ -34,6 +35,8 @@ class StandInfoPanel extends JPanel {
 
         jPanel.add(new JLabel("Firmware:"));    jPanel.add(jlFirmware);
         jPanel.add(new JLabel("Scheme:"));      jPanel.add(jlScheme);
+        jPanel.add(new JLabel("Stand ID:"));
+        jPanel.add(jlStandID);
         jPanel.add(new JLabel("Status:"));      jPanel.add(jlStatus);
 
         return jPanel;
@@ -41,23 +44,16 @@ class StandInfoPanel extends JPanel {
 
     public void updateInfo() {
 
-        if (controller.isStandConnected()) {
+        boolean isConnected = controller.isStandConnected();
 
-            String[] fields = controller.getStandInfo().split(" ");
-            if (fields.length == 2) {
-                jlFirmware.setText(fields[0]);
-                jlScheme.setText(fields[1]);
-            }
-            jlStatus.setText("Connected");
-            jlStatus.setForeground(Color.GREEN);
+        if (isConnected)
+            controller.getStand().readInfo();
 
-        } else {
-            jlFirmware.setText("-");
-            jlScheme.setText("-");
+        jlFirmware.setText(isConnected ? controller.getStand().getFirmware() : "-");
+        jlScheme.setText(isConnected ? controller.getStand().getScheme() : "-");
+        jlStandID.setText(isConnected ? controller.getStand().getID() : "-");
 
-            jlStatus.setText("Disconnected");
-            jlStatus.setForeground(Color.RED);
-        }
-
+        jlStatus.setText(isConnected ? "Connected" : "Disconnected");
+        jlStatus.setForeground(isConnected ? Color.GREEN : Color.RED);
     }
 }

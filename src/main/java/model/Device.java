@@ -18,7 +18,15 @@ public abstract class Device {
         return connectionManager;
     }
 
-    public abstract String getInfo();
+    public abstract boolean readInfo();
+
+    public abstract String getID();
+
+    public abstract String getModel();
+
+    public abstract String getScheme();
+
+    public abstract String getFirmware();
 
     public void checkConnectionStatus() {
         connectionStatus = ConnectionStatus.checkStatus(this);
@@ -26,9 +34,5 @@ public abstract class Device {
 
     public ConnectionStatus getConnectionStatus() {
         return connectionStatus;
-    }
-
-    public void setConnectionStatus(ConnectionStatus connectionStatus) {
-        this.connectionStatus = connectionStatus;
     }
 }

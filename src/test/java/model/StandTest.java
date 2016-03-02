@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Stand test class
@@ -27,8 +27,7 @@ public class StandTest {
     }
 
     @Test
-    public void youGetInfo() throws Exception {
-        assertEquals("1.00 EUTS.00.000izm1", stand.getInfo());
-
+    public void youReadInfo() throws Exception {
+        assertTrue(stand.readInfo());
     }
 }

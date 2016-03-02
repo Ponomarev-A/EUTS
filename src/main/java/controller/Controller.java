@@ -1,5 +1,6 @@
 package controller;
 
+import model.Device;
 import model.Model;
 import view.LogPanel;
 import view.View;
@@ -50,8 +51,8 @@ public class Controller implements EventListener {
         view.updateMenuStates();
         view.updateDeviceInfo();
 
-        updateLog("Stand is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
-        updateLog("Receiver is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
     }
 
     @Override
@@ -62,8 +63,8 @@ public class Controller implements EventListener {
         view.updateMenuStates();
         view.updateDeviceInfo();
 
-        updateLog("Stand is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
-        updateLog("Receiver is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
     }
 
 
@@ -88,13 +89,13 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public String getStandInfo() {
-        return model.getStandInfo();
+    public Device getReceiver() {
+        return model.getReceiver();
     }
 
     @Override
-    public String getReceiverInfo() {
-        return model.getReceiverInfo();
+    public Device getStand() {
+        return model.getStand();
     }
 
     @Override

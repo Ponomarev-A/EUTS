@@ -4,7 +4,6 @@ import connections.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -26,8 +25,8 @@ public class ReceiverTest {
     }
 
     @Test
-    public void youGetInfo() throws Exception {
-        assertEquals("AP-019.1 3.05 AP019.01.020izm11 000000", receiver.getInfo());
+    public void youReadInfo() throws Exception {
+        assertTrue(receiver.readInfo());
     }
 
     @Test

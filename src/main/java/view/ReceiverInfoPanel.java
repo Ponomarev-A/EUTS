@@ -46,26 +46,17 @@ class ReceiverInfoPanel extends JPanel {
 
     public void updateInfo() {
 
-        if (controller.isReceiverConnected()) {
+        boolean isConnected = controller.isReceiverConnected();
 
-            String[] info = controller.getReceiverInfo().split(" ");
-            if (info.length == 4) {
-                jlModel.setText(info[0]);
-                jlFirmware.setText(info[1]);
-                jlScheme.setText(info[2]);
-                jlReceiverID.setText(info[3]);
-            }
+        if (isConnected)
+            controller.getReceiver().readInfo();
 
-            jlStatus.setText("Connected");
-            jlStatus.setForeground(Color.GREEN);
-        } else {
-            jlModel.setText("-");
-            jlFirmware.setText("-");
-            jlScheme.setText("-");
-            jlReceiverID.setText("-");
+        jlModel.setText(isConnected ? controller.getReceiver().getModel() : "-");
+        jlFirmware.setText(isConnected ? controller.getReceiver().getFirmware() : "-");
+        jlScheme.setText(isConnected ? controller.getReceiver().getScheme() : "-");
+        jlReceiverID.setText(isConnected ? controller.getReceiver().getID() : "-");
 
-            jlStatus.setText("Disconnected");
-            jlStatus.setForeground(Color.RED);
-        }
+        jlStatus.setText(isConnected ? "Connected" : "Disconnected");
+        jlStatus.setForeground(isConnected ? Color.GREEN : Color.RED);
     }
 }

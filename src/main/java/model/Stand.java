@@ -10,21 +10,64 @@ import packet.Packet;
 public class Stand extends Device {
 
     private ConnectionManager connectionManager;
-    private String info;
+
+    private String firmware;
+    private String scheme;
+    private String ID;
 
     public Stand(ConnectionManager connectionManager) {
         super(connectionManager);
         this.connectionManager = connectionManager;
     }
 
-    public String getInfo() {
+    @Override
+    public boolean readInfo() {
+        boolean result = false;
+
         // Request for device model name
         if (connectionManager.sendPacket(new Packet(Command.GET_INFO_STAND))) {
 
             // Wait while answer will be received from device
-            info = connectionManager.receivePacket().getDataAsString();
+            String info = connectionManager.receivePacket().getDataAsString();
+
+            String[] infoDetails = info.trim().split(" ");
+            if (infoDetails.length == 3) {
+                firmware = infoDetails[0];
+                scheme = infoDetails[1];
+                ID = infoDetails[2];
+
+                result = true;
+            }
         }
 
-        return info.trim();
+        return result;
+    }
+
+    @Override
+    public String getID() {
+        return ID;
+    }
+
+    @Override
+    public String getModel() {
+        return "";
+    }
+
+    @Override
+    public String getScheme() {
+        return scheme;
+    }
+
+    @Override
+    public String getFirmware() {
+        return firmware;
+    }
+
+    @Override
+    public String toString() {
+        return "Stand { " +
+                "firmware = " + firmware +
+                ", scheme = " + scheme +
+                ", ID= " + ID + " }";
     }
 }

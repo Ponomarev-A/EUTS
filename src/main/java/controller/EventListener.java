@@ -1,5 +1,7 @@
 package controller;
 
+import model.Device;
+
 import javax.swing.text.SimpleAttributeSet;
 
 /**
@@ -21,9 +23,9 @@ public interface EventListener {
 
     boolean isStandConnected();
 
-    String getStandInfo();
+    Device getReceiver();
 
-    String getReceiverInfo();
+    Device getStand();
 
     void showErrorMessage(String title, Exception e);
 
