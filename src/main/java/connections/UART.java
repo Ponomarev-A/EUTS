@@ -51,6 +51,11 @@ public class UART implements Connection {
     }
 
     @Override
+    public String toString() {
+        return "UART { Port name = " + serialPort.getPortName() + " }";
+    }
+
+    @Override
     public boolean open() throws SerialPortException {
         if (!isOpened()) {
             serialPort.openPort();
@@ -95,7 +100,7 @@ public class UART implements Connection {
             serialPort.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
             serialPort.closePort();
         }
-        return isOpened();
+        return !isOpened();
     }
 
     private class PortReader implements Runnable, SerialPortEventListener {

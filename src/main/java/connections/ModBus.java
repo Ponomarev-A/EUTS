@@ -14,6 +14,10 @@ public class ModBus implements Protocol {
     public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x2E, 0x2F};
     public static final byte[] OPEN_CODE_SEQ = new byte[]{0x3A};
 
+    @Override
+    public String toString() {
+        return "ModBus{}";
+    }
 
     @Override
     public byte[] wrap(byte[] data) {

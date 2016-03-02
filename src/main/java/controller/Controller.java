@@ -1,9 +1,12 @@
 package controller;
 
 import model.Model;
+import view.LogPanel;
 import view.View;
 
 import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Base controller class for user events handling, model managing and viewing.
@@ -14,16 +17,23 @@ public class Controller implements EventListener {
 
     public Controller() {
 
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    view = new View(Controller.this);
+                    view.init();
+                }
+            });
+        } catch (InterruptedException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
         model = new Model(this);
         model.init();
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                view = new View(Controller.this);
-                view.init();
-            }
-        });
+        view.updateMenuStates();
+        view.updateDeviceInfo();
     }
 
 
@@ -34,18 +44,26 @@ public class Controller implements EventListener {
 
     @Override
     public void connect() {
+        updateLog("\nConnect...", LogPanel.BOLD);
         model.connectToDevice();
 
         view.updateMenuStates();
         view.updateDeviceInfo();
+
+        updateLog("Stand is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog("Receiver is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
     }
 
     @Override
     public void disconnect() {
+        updateLog("\nDisconnect...", LogPanel.BOLD);
         model.disconnectFromDevice();
 
         view.updateMenuStates();
         view.updateDeviceInfo();
+
+        updateLog("Stand is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog("Receiver is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
     }
 
 
@@ -82,10 +100,18 @@ public class Controller implements EventListener {
     @Override
     public void showErrorMessage(String title, Exception e) {
         view.showErrorMessage(title, e);
+        updateLog(e.getLocalizedMessage(), LogPanel.NORMAL);
+    }
+
+    @Override
+    public void updateLog(String text, SimpleAttributeSet attributeSet) {
+        if (view != null)
+            view.updateLog(text, attributeSet);
     }
 
     @Override
     public void createConnectionManager() {
+        updateLog("\nCreate connection manager...", LogPanel.BOLD);
         model.createConnectionManager();
 
         view.updateMenuStates();
@@ -93,6 +119,7 @@ public class Controller implements EventListener {
 
     @Override
     public void destroyConnectionManager() {
+        updateLog("\nDestroy connection manager...", LogPanel.BOLD);
         model.destroyConnectionManager();
 
         view.updateMenuStates();

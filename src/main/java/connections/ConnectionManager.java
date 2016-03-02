@@ -11,19 +11,23 @@ import packet.Packet;
 public class ConnectionManager {
 
     private Connection connection;
-    private Protocol protocol;
 
+    private Protocol protocol;
     public ConnectionManager(Connection connection, Protocol protocol) {
         this.connection = connection;
         this.protocol = protocol;
     }
 
-    public void open() throws Exception {
-        connection.open();
+    @Override
+    public String toString() {
+        return "ConnectionManager{ " +
+                "connection=" + connection +
+                ", protocol=" + protocol +
+                '}';
     }
 
-    public void close() throws Exception {
-        connection.close();
+    public Connection getConnection() {
+        return connection;
     }
 
     public Packet receivePacket() {

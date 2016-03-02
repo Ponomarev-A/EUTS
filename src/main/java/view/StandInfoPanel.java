@@ -23,7 +23,6 @@ class StandInfoPanel extends JPanel {
         JPanel jPanel = new JPanel(new GridLayout(3, 1));
         jPanel.setMaximumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
-        jPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 
         jPanel.setBorder(new TitledBorder(
                 View.TITLE_BORDER,

@@ -22,7 +22,7 @@ public class ReceiverTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        connectionManager.open();
+        connectionManager.getConnection().open();
     }
 
     @Test

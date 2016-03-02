@@ -4,6 +4,7 @@ import controller.Controller;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
 
 /**
@@ -24,6 +25,7 @@ public class View extends JFrame {
     private MenuBar menuBar;
     private ReceiverInfoPanel jpReceiverInfo;
     private StandInfoPanel jpStandInfo;
+    private LogPanel jpLog;
 
 
     public View(Controller controller) {
@@ -36,9 +38,6 @@ public class View extends JFrame {
         createMainPanel();
         createMainMenu();
 
-        updateDeviceInfo();
-        updateMenuStates();
-
         setVisible(true);
     }
 
@@ -48,6 +47,7 @@ public class View extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setDefaultLookAndFeelDecorated(true);
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         setTitle("Electronic Units Test Stand (EUTS) application");
 
         // Set new default font to labels
@@ -55,16 +55,22 @@ public class View extends JFrame {
     }
 
     private void createMainPanel() {
-        JPanel jPanel = new JPanel();
-        jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.X_AXIS));
+        JPanel jpTop = new JPanel();
+        JPanel jpBottom = new JPanel();
+        jpTop.setLayout(new BoxLayout(jpTop, BoxLayout.X_AXIS));
+        jpBottom.setLayout(new BoxLayout(jpBottom, BoxLayout.X_AXIS));
 
         jpReceiverInfo = new ReceiverInfoPanel(controller);
         jpStandInfo = new StandInfoPanel(controller);
+        jpLog = new LogPanel(controller);
 
-        jPanel.add(jpReceiverInfo.create(FRAME_WIDTH * 2 / 3, FRAME_HEIGHT / 5));
-        jPanel.add(jpStandInfo.create(FRAME_WIDTH * 1 / 3, FRAME_HEIGHT / 5));
+        jpTop.add(jpReceiverInfo.create(FRAME_WIDTH * 2 / 3, FRAME_HEIGHT / 5));
+        jpTop.add(jpStandInfo.create(FRAME_WIDTH / 3, FRAME_HEIGHT / 5));
 
-        add(jPanel);
+        jpBottom.add(jpLog.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
+
+        add(jpTop);
+        add(jpBottom);
     }
 
     private void createMainMenu() {
@@ -88,5 +94,9 @@ public class View extends JFrame {
                 title,
                 JOptionPane.ERROR_MESSAGE
         );
+    }
+
+    public void updateLog(String text, SimpleAttributeSet attributeSet) {
+        jpLog.updateLog(text, attributeSet);
     }
 }

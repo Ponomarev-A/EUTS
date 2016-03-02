@@ -25,7 +25,7 @@ class ReceiverInfoPanel extends JPanel {
         JPanel jPanel = new JPanel(new GridLayout(5, 2));
         jPanel.setMaximumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
-        jPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+
 
         jPanel.setBorder(new TitledBorder(
                 View.TITLE_BORDER,

@@ -23,7 +23,7 @@ public class StandTest {
 
     @Before
     public void setUp() throws Exception {
-        connectionManager.open();
+        connectionManager.getConnection().open();
     }
 
     @Test

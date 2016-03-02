@@ -21,13 +21,13 @@ public class ConnectionManagerTest {
     @Before
     public void openConnection() throws Exception {
         connectionManager = new ConnectionManager(new UARTTest().createUARTConnection(), new ModBus());
-        connectionManager.open();
+        connectionManager.getConnection().open();
     }
 
     @After
     public void closeConnection() throws Exception {
         if (connectionManager != null)
-            connectionManager.close();
+            connectionManager.getConnection().close();
 
         connectionManager = null;
     }

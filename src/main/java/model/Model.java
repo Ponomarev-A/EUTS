@@ -2,6 +2,7 @@ package model;
 
 import connections.*;
 import controller.Controller;
+import view.LogPanel;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,9 +42,12 @@ public class Model {
     public void createConnectionManager() {
         if (connection != null && connectionManager == null) {
             connectionManager = new ConnectionManager(connection, protocol);
+            controller.updateLog("Create " + connectionManager, LogPanel.NORMAL);
 
             receiver = new Receiver(connectionManager);
             stand = new Stand(connectionManager);
+        } else {
+            controller.updateLog(connectionManager + " don't created.", LogPanel.NORMAL);
         }
     }
 
@@ -63,14 +67,13 @@ public class Model {
             }
         }
         connection = newConnection;
-    }
-
-    public boolean isCOMPortSelected(String portName) {
-        return connection instanceof UART && ((UART) connection).getSerialPort().getPortName().equals(portName);
+        controller.updateLog("Create new connection " + connection, LogPanel.NORMAL);
     }
 
     public void destroyConnectionManager() {
         if (connectionManager != null) {
+            controller.updateLog("Destroy " + connectionManager, LogPanel.NORMAL);
+
             disconnectFromDevice();
             connectionManager = null;
             receiver = null;
@@ -81,7 +84,8 @@ public class Model {
     public void disconnectFromDevice() {
         if (connectionManager != null) {
             try {
-                connectionManager.close();
+                controller.updateLog("Close connection " + connection + " is " +
+                        (connectionManager.getConnection().close() ? "success" : "failed"), LogPanel.NORMAL);
 
                 receiver.checkConnectionStatus();
                 stand.checkConnectionStatus();
@@ -91,10 +95,15 @@ public class Model {
         }
     }
 
+    public boolean isCOMPortSelected(String portName) {
+        return connection instanceof UART && ((UART) connection).getSerialPort().getPortName().equals(portName);
+    }
+
     public void connectToDevice() {
         if (connectionManager != null) {
             try {
-                connectionManager.open();
+                controller.updateLog("Open connection " + connection + " is " +
+                        (connectionManager.getConnection().open() ? "success" : "failed"), LogPanel.NORMAL);
 
                 receiver.checkConnectionStatus();
                 stand.checkConnectionStatus();
