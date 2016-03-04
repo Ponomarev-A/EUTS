@@ -65,7 +65,7 @@ public class ConnectionManagerTest {
     @Test
     public void testSendAndReceiveBigPacket() throws Exception {
         Random random = new Random();
-        byte[] bigData = new byte[250];
+        byte[] bigData = new byte[500];
         for (int i = 0; i < bigData.length; i++) {
             bigData[i] = (byte) ('0' + random.nextInt(10));
         }

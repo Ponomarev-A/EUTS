@@ -2,14 +2,14 @@ package model;
 
 import connections.ConnectionManager;
 import packet.Command;
-import packet.Packet;
 
 /**
  * Receiver class: all information about connected receiver
  */
 public class Receiver extends Device {
 
-    private ConnectionManager connectionManager;
+    public final static int MAX_LEVEL = 1024;
+    public final static int MIN_LEVEL = 0;
 
     private String model;
     private String firmware;
@@ -18,7 +18,6 @@ public class Receiver extends Device {
 
     public Receiver(ConnectionManager connectionManager) {
         super(connectionManager);
-        this.connectionManager = connectionManager;
     }
 
     @Override
@@ -26,10 +25,10 @@ public class Receiver extends Device {
         boolean result = false;
 
         // Request for device model name
-        if (connectionManager.sendPacket(new Packet(Command.GET_INFO_DEVICE))) {
+        if (set(Command.GET_INFO_DEVICE)) {
 
             // Wait while answer will be received from device
-            String info = connectionManager.receivePacket().getDataAsString();
+            String info = getString();
 
             String[] infoDetails = info.trim().split(" ");
             if (infoDetails.length == 4) {
@@ -72,5 +71,17 @@ public class Receiver extends Device {
                 ", firmware = " + firmware +
                 ", scheme = " + scheme +
                 ", ID= " + ID + " }";
+    }
+
+    public enum Modes {
+        MODE_INT_COMPASS,
+        MODE_INT_GRAPH,
+        MODE_INT_GRAPH_PLUS,
+        MODE_INT_GRAPH_2,
+        MODE_INT_IFF,
+        MODE_EXT_COMPASS,
+        MODE_EXT_MULTIMETER,
+        MODE_TESTLEVELS,
+        MODE_TESTCOMPASS
     }
 }

@@ -30,7 +30,7 @@ class StandInfoPanel extends JPanel {
                 "Stand info",
                 TitledBorder.DEFAULT_JUSTIFICATION,
                 TitledBorder.DEFAULT_POSITION,
-                View.DEFAULT_FONT
+                View.TITLE_FONT
         ));
 
         jPanel.add(new JLabel("Firmware:"));    jPanel.add(jlFirmware);

@@ -8,7 +8,7 @@ import javax.swing.text.*;
 import java.awt.*;
 
 /**
- * Log class show all application and user actions in the multiline textfield window
+ * Log panel class show all application and user actions in the multiline textfield window
  */
 public class LogPanel extends JPanel {
 
@@ -40,7 +40,7 @@ public class LogPanel extends JPanel {
                 "Log",
                 TitledBorder.DEFAULT_JUSTIFICATION,
                 TitledBorder.DEFAULT_POSITION,
-                View.DEFAULT_FONT
+                View.TITLE_FONT
         ));
 
         jepLog.setEditable(false);

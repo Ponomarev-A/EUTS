@@ -26,6 +26,7 @@ public class View extends JFrame {
     private ReceiverInfoPanel jpReceiverInfo;
     private StandInfoPanel jpStandInfo;
     private LogPanel jpLog;
+    private TestsPanel jpTests;
 
 
     public View(Controller controller) {
@@ -63,11 +64,14 @@ public class View extends JFrame {
         jpReceiverInfo = new ReceiverInfoPanel(controller);
         jpStandInfo = new StandInfoPanel(controller);
         jpLog = new LogPanel(controller);
+        jpTests = new TestsPanel(controller);
 
         jpTop.add(jpReceiverInfo.create(FRAME_WIDTH * 2 / 3, FRAME_HEIGHT / 5));
         jpTop.add(jpStandInfo.create(FRAME_WIDTH / 3, FRAME_HEIGHT / 5));
 
+        jpBottom.add(jpTests.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
         jpBottom.add(jpLog.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
+
 
         add(jpTop);
         add(jpBottom);

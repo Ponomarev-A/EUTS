@@ -1,6 +1,8 @@
 package model;
 
 import connections.ConnectionManager;
+import packet.Command;
+import packet.Packet;
 
 /**
  * Device class: all information about current testing device
@@ -35,4 +37,36 @@ public abstract class Device {
     public ConnectionStatus getConnectionStatus() {
         return connectionStatus;
     }
+
+    public boolean set(Command command) {
+        return connectionManager.sendPacket(new Packet(command));
+    }
+
+    public boolean set(Command command, Short shortValue) {
+        return connectionManager.sendPacket(new Packet(command, shortValue));
+    }
+
+    public boolean set(Command command, Integer integerValue) {
+        return connectionManager.sendPacket(new Packet(command, integerValue));
+    }
+
+    public short[] getArray() {
+        return connectionManager.receivePacket().getDataAsShortArray();
+    }
+
+    public short getShort() {
+        return connectionManager.receivePacket().getDataAsShort();
+    }
+
+    public int getInteger() {
+        return connectionManager.receivePacket().getDataAsInt();
+    }
+
+    public String getString() {
+        return connectionManager.receivePacket().getDataAsString();
+    }
+
+
+
+
 }

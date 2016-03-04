@@ -5,6 +5,7 @@ import exception.InvalidPacketSize;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -32,12 +33,15 @@ public class Packet {
     // Length of packet attributes (bytes)
     public static final short DATA_COUNT_LENGTH = 2;
     private static final short CRC_POLYNOMIAL = (short)0x8005;
+
     // Length of packet parts (bytes)
     private static final short COMMAND_LENGTH = 2;
     private static final short DATA_LENGTH = 512;
     private static final short CRC16_LENGTH = 2;
+
     public static final short MIN_FRAME_LENGTH = COMMAND_LENGTH + CRC16_LENGTH;
     public static final short MAX_FRAME_LENGTH = COMMAND_LENGTH + DATA_LENGTH + CRC16_LENGTH;
+
     private Command command;
     private byte[] data;
     private short CRC;
@@ -143,8 +147,29 @@ public class Packet {
         this.data = getByteArrayFromInt(data);
     }
 
-    public String getDataAsString() {
-        return new String(data, StandardCharsets.US_ASCII);
+    public short[] getDataAsShortArray() {
+        short[] result = new short[data.length / 2];
+        try {
+            ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(result);
+        } catch (Exception e) {
+        }
+
+        return result;
+    }
+
+    public short getDataAsShort() {
+        return getShortFromByteArray(data);
+    }
+
+    private short getShortFromByteArray(byte[] array) {
+        short result = 0;
+
+        try {
+            result = ByteBuffer.wrap(array).getShort();
+        } catch (Exception e) {
+        }
+
+        return result;
     }
 
     public int getDataAsInt() {
@@ -160,6 +185,10 @@ public class Packet {
         }
 
         return result;
+    }
+
+    public String getDataAsString() {
+        return new String(data, StandardCharsets.US_ASCII);
     }
 
     /**
@@ -236,7 +265,7 @@ public class Packet {
 
         // Parsing packet
         short CRC = getShortFromByteArray(ArrayUtils.subarray(sentData, sentData.length - CRC16_LENGTH, sentData.length));
-        short command = getShortFromByteArray(ArrayUtils.subarray(sentData, DATA_COUNT_LENGTH, DATA_COUNT_LENGTH + COMMAND_LENGTH));
+        short command_id = getShortFromByteArray(ArrayUtils.subarray(sentData, DATA_COUNT_LENGTH, DATA_COUNT_LENGTH + COMMAND_LENGTH));
         byte[] data = ArrayUtils.subarray(sentData, DATA_COUNT_LENGTH + COMMAND_LENGTH, sentData.length - CRC16_LENGTH);
 
         // Check CRC
@@ -245,18 +274,7 @@ public class Packet {
 
         // All checks DONE
         setCRC(CRC);
-        setCommand(Command.getCommand(command));
+        setCommand(Command.getCommand(command_id));
         setData(data);
-    }
-
-    private short getShortFromByteArray(byte[] array) {
-        short result = 0;
-
-        try {
-            result = ByteBuffer.wrap(array).getShort();
-        } catch (Exception e) {
-        }
-
-        return result;
     }
 }
