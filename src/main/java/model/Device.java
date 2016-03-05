@@ -1,6 +1,8 @@
 package model;
 
 import connections.ConnectionManager;
+import controller.Controller;
+import exception.FailSendPacket;
 import packet.Command;
 import packet.Packet;
 
@@ -9,15 +11,14 @@ import packet.Packet;
  */
 public abstract class Device {
 
-    private ConnectionManager connectionManager;
+    private final ConnectionManager connectionManager;
+    private final Controller controller;
+
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-    public Device(ConnectionManager connectionManager) {
+    public Device(ConnectionManager connectionManager, Controller controller) {
         this.connectionManager = connectionManager;
-    }
-
-    public ConnectionManager getConnectionManager() {
-        return connectionManager;
+        this.controller = controller;
     }
 
     public abstract boolean readInfo();
@@ -38,32 +39,70 @@ public abstract class Device {
         return connectionStatus;
     }
 
-    public boolean set(Command command) {
-        return connectionManager.sendPacket(new Packet(command));
+    public void set(Command command) {
+        try {
+            if (!connectionManager.sendPacket(new Packet(command)))
+                controller.showErrorMessage("Send packet fail",
+                        new FailSendPacket("Can't send command " + command + "\n  to " + this));
+        } catch (Exception e) {
+            controller.showErrorMessage("Send packet fail", e);
+        }
     }
 
-    public boolean set(Command command, Short shortValue) {
-        return connectionManager.sendPacket(new Packet(command, shortValue));
+    public void set(Command command, Short shortValue) {
+        try {
+            if (!connectionManager.sendPacket(new Packet(command, shortValue)))
+                controller.showErrorMessage("Send packet fail",
+                        new FailSendPacket("Can't send command " + command + "\n  with value " + shortValue + "\n  to " + this));
+        } catch (Exception e) {
+            controller.showErrorMessage("Send packet fail", e);
+        }
     }
 
-    public boolean set(Command command, Integer integerValue) {
-        return connectionManager.sendPacket(new Packet(command, integerValue));
+    public void set(Command command, Integer integerValue) {
+        try {
+            if (!connectionManager.sendPacket(new Packet(command, integerValue)))
+                controller.showErrorMessage("Send packet fail",
+                        new FailSendPacket("Can't send command " + command + "\n  with value " + integerValue + "\n  to " + this));
+        } catch (Exception e) {
+            controller.showErrorMessage("Send packet fail", e);
+        }
     }
 
     public short[] getArray() {
-        return connectionManager.receivePacket().getDataAsShortArray();
+        try {
+            return connectionManager.receivePacket().getDataAsShortArray();
+        } catch (Exception e) {
+            controller.showErrorMessage("Receive packet fail", e);
+        }
+        return new short[0];
     }
 
     public short getShort() {
-        return connectionManager.receivePacket().getDataAsShort();
+        try {
+            return connectionManager.receivePacket().getDataAsShort();
+        } catch (Exception e) {
+            controller.showErrorMessage("Receive packet fail", e);
+        }
+        return 0;
     }
 
     public int getInteger() {
-        return connectionManager.receivePacket().getDataAsInt();
+        try {
+            return connectionManager.receivePacket().getDataAsInt();
+        } catch (Exception e) {
+            controller.showErrorMessage("Receive packet fail", e);
+        }
+        return 0;
     }
 
     public String getString() {
-        return connectionManager.receivePacket().getDataAsString();
+        try {
+            return connectionManager.receivePacket().getDataAsString();
+        } catch (Exception e) {
+            controller.showErrorMessage("Receive packet fail", e);
+        }
+        return "";
     }
 
 

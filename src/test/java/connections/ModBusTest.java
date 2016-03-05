@@ -1,6 +1,6 @@
 package connections;
 
-import exception.FailedProtocolException;
+import exception.InvalidProtocol;
 import org.junit.Test;
 import packet.Command;
 import packet.Packet;
@@ -77,7 +77,7 @@ public class ModBusTest {
         assertArrayEquals(packet1.getData(), packet2.getData());
     }
 
-    @Test(expected = FailedProtocolException.class)
+    @Test(expected = InvalidProtocol.class)
     public void youUnwrapPacketFailed() throws Exception {
 
         // Pack packet to byte array

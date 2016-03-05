@@ -1,6 +1,6 @@
 package packet;
 
-import exception.InvalidCRCException;
+import exception.InvalidCRC;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -170,7 +170,7 @@ public class PacketTest {
         assertArrayEquals(sendPacket.getData(), receivedPacket.getData());
     }
 
-    @Test(expected = InvalidCRCException.class)
+    @Test(expected = InvalidCRC.class)
     public void youUnpackInvalidPacket() throws Exception {
 
         // Create send packet
@@ -185,7 +185,7 @@ public class PacketTest {
         // Create empty received packet
         Packet receivedPacket = new Packet();
 
-        // Unpack sent data to received packet, catch InvalidCRCException here!
+        // Unpack sent data to received packet, catch InvalidCRC here!
         receivedPacket.unpack(sentData);
     }
 }

@@ -1,10 +1,9 @@
 package exception;
 
 /**
- * Invalid packet size exception
+ * Invalid CRC Exception
  */
-public class InvalidPacketSize extends Exception {
-
+public class InvalidCRC extends Exception {
     /**
      * Constructs a new exception with the specified detail message.  The
      * cause is not initialized, and may subsequently be initialized by
@@ -13,7 +12,7 @@ public class InvalidPacketSize extends Exception {
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public InvalidPacketSize(String message) {
+    public InvalidCRC(String message) {
         super(message);
     }
 }

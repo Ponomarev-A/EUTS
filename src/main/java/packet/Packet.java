@@ -1,6 +1,6 @@
 package packet;
 
-import exception.InvalidCRCException;
+import exception.InvalidCRC;
 import exception.InvalidPacketSize;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -123,8 +123,16 @@ public class Packet {
         return command;
     }
 
+    public void setCommand(Command command) {
+        this.command = command;
+    }
+
     public short getCRC() {
         return CRC;
+    }
+
+    public void setCRC(short CRC) {
+        this.CRC = CRC;
     }
 
     public byte[] getData() {
@@ -133,14 +141,6 @@ public class Packet {
 
     public void setData(byte[] data) {
         this.data = data;
-    }
-
-    public void setCRC(short CRC) {
-        this.CRC = CRC;
-    }
-
-    public void setCommand(Command command) {
-        this.command = command;
     }
 
     public void setData(int data) {
@@ -202,7 +202,7 @@ public class Packet {
 
         int frameLength = COMMAND_LENGTH + data.length + CRC16_LENGTH;
         if (frameLength < MIN_FRAME_LENGTH || frameLength > MAX_FRAME_LENGTH)
-            throw new InvalidPacketSize();
+            throw new InvalidPacketSize("Length of frame isn't in the range (" + MIN_FRAME_LENGTH + "," + MAX_FRAME_LENGTH + ")");
 
         byte[] packedData = new byte[0];
 
@@ -255,13 +255,13 @@ public class Packet {
         return crc_value;
     }
 
-    public void unpack(byte[] sentData) throws InvalidCRCException, InvalidPacketSize {
+    public void unpack(byte[] sentData) throws InvalidCRC, InvalidPacketSize {
 
         // Get first 2 bytes - frameLength (in bytes)
         short frameLength = getShortFromByteArray(ArrayUtils.subarray(sentData, 0, DATA_COUNT_LENGTH));
 
         if (frameLength < MIN_FRAME_LENGTH || frameLength > MAX_FRAME_LENGTH)
-            throw new InvalidPacketSize();
+            throw new InvalidPacketSize("Length of frame isn't in the range (" + MIN_FRAME_LENGTH + "," + MAX_FRAME_LENGTH + ")");
 
         // Parsing packet
         short CRC = getShortFromByteArray(ArrayUtils.subarray(sentData, sentData.length - CRC16_LENGTH, sentData.length));
@@ -269,8 +269,9 @@ public class Packet {
         byte[] data = ArrayUtils.subarray(sentData, DATA_COUNT_LENGTH + COMMAND_LENGTH, sentData.length - CRC16_LENGTH);
 
         // Check CRC
-        if (CRC != calculateCRC16(data))
-            throw new InvalidCRCException();
+        short calcCRC = calculateCRC16(data);
+        if (CRC != calcCRC)
+            throw new InvalidCRC("Incorrect CRC: received CRC value - " + CRC + ", calculated CRC value - " + calcCRC);
 
         // All checks DONE
         setCRC(CRC);

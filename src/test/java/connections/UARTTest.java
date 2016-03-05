@@ -1,5 +1,6 @@
 package connections;
 
+import exception.InvalidPacketSize;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import org.junit.After;
@@ -57,7 +58,7 @@ public class UARTTest {
                     return mockData;
                 }
             });
-        } catch (SerialPortException e) {
+        } catch (SerialPortException | InvalidPacketSize e) {
         }
 
         return mockUART;

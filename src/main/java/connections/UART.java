@@ -71,7 +71,7 @@ public class UART implements Connection {
     }
 
     @Override
-    public byte[] read() throws SerialPortException {
+    public byte[] read() throws InvalidPacketSize {
 
         // Clear port data before new read operation
         portReader.reset();
@@ -79,12 +79,15 @@ public class UART implements Connection {
         executor = Executors.newScheduledThreadPool(1);
         executor.schedule(portReader, READ_PERIOD_MS, TimeUnit.MILLISECONDS);
 
-        // Wait while read operation is cancelled
         try {
+            // Wait while read operation is cancelled
             executor.awaitTermination(READ_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        if (portReader.bufferLength == 0)
+            throw new InvalidPacketSize("Read data from port " + this + " is null");
 
         return portReader.buffer;
     }
@@ -124,13 +127,12 @@ public class UART implements Connection {
                     int receivedBufferLength = receivedBuffer != null ? receivedBuffer.length : 0;
 
                     if (receivedBufferLength + bufferLength > maxBufferLength)
-                        throw new InvalidPacketSize();
+                        throw new Exception();
 
                     buffer = ArrayUtils.addAll(buffer, receivedBuffer);
                     bufferLength = buffer.length;
 
-                } catch (SerialPortException | InvalidPacketSize e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                 }
             }
         }

@@ -52,8 +52,8 @@ public class Model {
             connectionManager = new ConnectionManager(connection, protocol);
             controller.updateLog("Create " + connectionManager, LogPanel.NORMAL);
 
-            receiver = new Receiver(connectionManager);
-            stand = new Stand(connectionManager);
+            receiver = new Receiver(connectionManager, controller);
+            stand = new Stand(connectionManager, controller);
         } else {
             controller.updateLog(connectionManager + " don't created.", LogPanel.NORMAL);
         }

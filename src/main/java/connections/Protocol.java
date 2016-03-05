@@ -1,6 +1,6 @@
 package connections;
 
-import exception.FailedProtocolException;
+import exception.InvalidProtocol;
 
 /**
  * Protocol interface
@@ -9,7 +9,7 @@ public interface Protocol {
 
     byte[] wrap(byte[] data);
 
-    byte[] unwrap(byte[] data) throws FailedProtocolException;
+    byte[] unwrap(byte[] data) throws InvalidProtocol;
 
     byte[] getOpenSequence();
 

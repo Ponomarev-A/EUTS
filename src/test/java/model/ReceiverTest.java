@@ -17,7 +17,7 @@ public class ReceiverTest {
     private final static Protocol modbus = new ModBus();
     private final static ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
 
-    private Receiver receiver = new Receiver(connectionManager);
+    private Receiver receiver = new Receiver(connectionManager, null);
 
     @BeforeClass
     public static void setUp() throws Exception {

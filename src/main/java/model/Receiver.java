@@ -1,6 +1,7 @@
 package model;
 
 import connections.ConnectionManager;
+import controller.Controller;
 import packet.Command;
 
 /**
@@ -16,29 +17,27 @@ public class Receiver extends Device {
     private String scheme;
     private String ID;
 
-    public Receiver(ConnectionManager connectionManager) {
-        super(connectionManager);
+    public Receiver(ConnectionManager connectionManager, Controller controller) {
+        super(connectionManager, controller);
     }
+
 
     @Override
     public boolean readInfo() {
+
         boolean result = false;
 
-        // Request for device model name
-        if (set(Command.GET_INFO_DEVICE)) {
+        set(Command.GET_INFO_DEVICE);
+        String info = getString();
 
-            // Wait while answer will be received from device
-            String info = getString();
+        String[] infoDetails = info.trim().split(" ");
+        if (infoDetails.length == 4) {
+            model = infoDetails[0];
+            firmware = infoDetails[1];
+            scheme = infoDetails[2];
+            ID = infoDetails[3];
 
-            String[] infoDetails = info.trim().split(" ");
-            if (infoDetails.length == 4) {
-                model = infoDetails[0];
-                firmware = infoDetails[1];
-                scheme = infoDetails[2];
-                ID = infoDetails[3];
-
-                result = true;
-            }
+            result = true;
         }
 
         return result;

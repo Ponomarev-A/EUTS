@@ -19,7 +19,7 @@ public class StandTest {
     private final static Protocol modbus = new ModBus();
     private final static ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
 
-    Stand stand = new Stand(connectionManager);
+    Stand stand = new Stand(connectionManager, null);
 
     @Before
     public void setUp() throws Exception {

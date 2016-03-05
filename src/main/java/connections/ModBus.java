@@ -1,8 +1,10 @@
 package connections;
 
-import exception.FailedProtocolException;
+import exception.InvalidProtocol;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Arrays;
 
 /**
  * Class ModBus used for wrapping transmitted data by control symbols.
@@ -32,12 +34,15 @@ public class ModBus implements Protocol {
     }
 
     @Override
-    public byte[] unwrap(byte[] code) throws FailedProtocolException {
+    public byte[] unwrap(byte[] code) throws InvalidProtocol {
 
-        if (code[0] != getOpenSequence()[0] ||
-                code[code.length - 1] != getCloseSequence()[1] ||
-                code[code.length - 2] != getCloseSequence()[0])
-            throw new FailedProtocolException();
+        byte[] SOF = new byte[]{code[0]};
+        byte[] EOF = new byte[]{code[code.length - 2], code[code.length - 1]};
+
+        if (!Arrays.equals(SOF, getOpenSequence()) || !Arrays.equals(EOF, getCloseSequence()))
+            throw new InvalidProtocol("The ModBus protocol is broken: " +
+                    "expected " + Arrays.toString(getOpenSequence()) + ", " + Arrays.toString(getCloseSequence()) + ", " +
+                    "actual " + Arrays.toString(SOF) + ", " + Arrays.toString(EOF));
 
         byte[] subarray = ArrayUtils.subarray(code, getOpenSequence().length, code.length - getCloseSequence().length);
         return ASCIICodeArrayToByteArray(subarray);

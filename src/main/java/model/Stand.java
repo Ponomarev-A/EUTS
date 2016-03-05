@@ -1,6 +1,7 @@
 package model;
 
 import connections.ConnectionManager;
+import controller.Controller;
 import packet.Command;
 
 /**
@@ -12,28 +13,25 @@ public class Stand extends Device {
     private String scheme;
     private String ID;
 
-    public Stand(ConnectionManager connectionManager) {
-        super(connectionManager);
+    public Stand(ConnectionManager connectionManager, Controller controller) {
+        super(connectionManager, controller);
     }
+
 
     @Override
     public boolean readInfo() {
         boolean result = false;
 
-        // Request for device model name
-        if (set(Command.GET_INFO_STAND)) {
+        set(Command.GET_INFO_STAND);
+        String info = getString();
 
-            // Wait while answer will be received from device
-            String info = getString();
+        String[] infoDetails = info.trim().split(" ");
+        if (infoDetails.length == 3) {
+            firmware = infoDetails[0];
+            scheme = infoDetails[1];
+            ID = infoDetails[2];
 
-            String[] infoDetails = info.trim().split(" ");
-            if (infoDetails.length == 3) {
-                firmware = infoDetails[0];
-                scheme = infoDetails[1];
-                ID = infoDetails[2];
-
-                result = true;
-            }
+            result = true;
         }
 
         return result;

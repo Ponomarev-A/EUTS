@@ -1,7 +1,6 @@
 package model;
 
 import packet.Command;
-import packet.Packet;
 
 public enum ConnectionStatus {
 
@@ -12,21 +11,20 @@ public enum ConnectionStatus {
 
     public static ConnectionStatus checkStatus(Device device) {
 
-        int request = (int) (System.currentTimeMillis() / 1000);
+        if (device == null)
+            return ConnectionStatus;
 
-        Command command = null;
+        Command command;
         if (device instanceof Receiver)
             command = Command.CHECK_CONNECTION_DEVICE;
-        else if (device instanceof Stand)
+        else
             command = Command.CHECK_CONNECTION_STAND;
 
-        if (command != null && device.getConnectionManager().sendPacket(new Packet(command, request))) {
+        int request = (int) (System.currentTimeMillis() / 1000);
+        device.set(command, request);
+        int response = device.getInteger();
 
-            int response = device.getConnectionManager().receivePacket().getDataAsInt();
-            ConnectionStatus = (response == request) ? CONNECTED : DISCONNECTED;
-        } else {
-            ConnectionStatus = DISCONNECTED;
-        }
+        ConnectionStatus = (response == request) ? CONNECTED : DISCONNECTED;
 
         return ConnectionStatus;
     }
