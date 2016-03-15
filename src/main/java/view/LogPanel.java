@@ -33,6 +33,7 @@ public class LogPanel extends JPanel {
 
         JPanel jPanel = new JPanel(new BorderLayout());
         jPanel.setMaximumSize(new Dimension(width, height));
+        jPanel.setMinimumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
         jPanel.setBorder(new TitledBorder(

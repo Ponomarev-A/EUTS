@@ -14,7 +14,8 @@ public class TestCaseTest {
 
     private BaseTestCase testCase = new BaseTestCase(name, null, null) {
         @Override
-        public void setUp() {
+        public boolean setUp() {
+            return true;
         }
 
         @Override

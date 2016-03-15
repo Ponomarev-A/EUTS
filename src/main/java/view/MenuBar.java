@@ -13,8 +13,12 @@ public class MenuBar implements ActionListener {
     private final JMenu jmPorts = new JMenu("Choose COM-port");
     private final JMenuItem jmiConnect = new JMenuItem("Connect");
     private final JMenuItem jmiDisconnect = new JMenuItem("Disconnect");
+    private final JMenuItem jmiStartTesting = new JMenuItem("Start");
+    private final JMenuItem jmiStopTesting = new JMenuItem("Stop");
     private Controller controller;
     private JMenu connectionMenu;
+    private JMenu testingMenu;
+
 
     public MenuBar(Controller controller) {
         this.controller = controller;
@@ -32,14 +36,21 @@ public class MenuBar implements ActionListener {
                 controller.disconnect();
                 break;
 
+            case "Start":
+                controller.startTesting();
+                break;
+
+            case "Stop":
+                controller.stopTesting();
+                break;
+
             // Clicking on COM-port
             default:
                 // Check port name correctness
                 String portName = command.split(" ")[0].trim();
                 if (portName.matches("^COM\\d{1,2}$")) {
                     controller.destroyConnectionManager();
-                    controller.createConnection(portName);
-                    controller.createConnectionManager();
+                    controller.createConnectionManager(portName);
                 }
                 break;
         }
@@ -49,13 +60,13 @@ public class MenuBar implements ActionListener {
         JMenuBar menuBar = new JMenuBar();
 
         connectionMenu = createConnectionMenu();
-
+        testingMenu = createTestingMenu();
 
         menuBar.add(connectionMenu);
+        menuBar.add(testingMenu);
 
         return menuBar;
     }
-
 
     private JMenu createConnectionMenu() {
 
@@ -74,6 +85,19 @@ public class MenuBar implements ActionListener {
         });
         jmiConnect.addActionListener(this);
         jmiDisconnect.addActionListener(this);
+
+        return menu;
+    }
+
+
+    private JMenu createTestingMenu() {
+        JMenu menu = new JMenu("Testing");
+
+        menu.add(jmiStartTesting);
+        menu.add(jmiStopTesting);
+
+        jmiStartTesting.addActionListener(this);
+        jmiStopTesting.addActionListener(this);
 
         return menu;
     }
@@ -108,6 +132,9 @@ public class MenuBar implements ActionListener {
             jmiConnect.setEnabled(false);
             jmiDisconnect.setEnabled(false);
             jmPorts.setEnabled(true);
+
+            jmiStartTesting.setEnabled(false);
+            jmiStopTesting.setEnabled(false);
             return;
         }
 
@@ -116,5 +143,11 @@ public class MenuBar implements ActionListener {
         jmiConnect.setEnabled(!isConnected);
         jmiDisconnect.setEnabled(isConnected);
         jmPorts.setEnabled(!isConnected);
+
+
+        boolean isTestRunning = controller.isTestRunning();
+
+        jmiStartTesting.setEnabled(isConnected && !isTestRunning);
+        jmiStopTesting.setEnabled(isConnected && isTestRunning);
     }
 }

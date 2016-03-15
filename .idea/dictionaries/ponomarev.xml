@@ -4,6 +4,7 @@
       <w>backlight</w>
       <w>euts</w>
       <w>modbus</w>
+      <w>portname</w>
     </words>
   </dictionary>
 </component>

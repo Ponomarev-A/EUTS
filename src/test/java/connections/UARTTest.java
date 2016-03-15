@@ -18,8 +18,9 @@ import static org.mockito.Mockito.*;
  */
 public class UARTTest {
 
-    public static final String COM1_PORT_NAME = "COM1";
-    private byte[] mockData;
+    public static final String COM_PORTNAME = "COM6";
+
+    private static byte[] mockData;
     private UART uart;
 
     @Before
@@ -28,15 +29,15 @@ public class UARTTest {
         uart.open();
     }
 
-    public UART createUARTConnection() {
-        return UART.getPortNames().length != 0 ? UART.getInstance(COM1_PORT_NAME) : mockUART();
+    public static UART createUARTConnection() {
+        return UART.getPortNames().length != 0 ? UART.getInstance(COM_PORTNAME) : mockUART(COM_PORTNAME);
     }
 
-    public UART mockUART() {
+    public static UART mockUART(String portname) {
 
         final UART mockUART = mock(UART.class);
 
-        when(mockUART.getSerialPort()).thenReturn(new SerialPort(COM1_PORT_NAME));
+        when(mockUART.getSerialPort()).thenReturn(new SerialPort(portname));
         try {
             when(mockUART.open()).thenReturn(true);
             when(mockUART.close()).thenReturn(true);
@@ -71,7 +72,7 @@ public class UARTTest {
 
     @Test
     public void youCreateNewUARTConnection() throws Exception {
-        assertNotNull(UART.getInstance(UARTTest.COM1_PORT_NAME));
+        assertNotNull(UART.getInstance(COM_PORTNAME));
     }
 
     @Test

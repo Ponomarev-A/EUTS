@@ -45,7 +45,7 @@ public abstract class BaseTestCase extends org.junit.Assert {
         this.enabled = enabled;
     }
 
-    public abstract void setUp();
+    public abstract boolean setUp() throws Exception;
 
     public abstract void runTest() throws Exception;
 

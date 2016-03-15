@@ -12,4 +12,6 @@ public interface Connection {
     boolean write(byte[] data) throws Exception;
 
     boolean close() throws Exception;
+
+    boolean isOpened();
 }

@@ -1,7 +1,12 @@
 package model;
 
-import connections.*;
-import org.junit.BeforeClass;
+import connections.ConnectionManager;
+import connections.ModBus;
+import connections.Protocol;
+import connections.UARTTest;
+import controller.Controller;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -13,24 +18,33 @@ import static org.junit.Assert.assertTrue;
  */
 public class ReceiverTest {
 
-    private final static Connection uart = UART.getInstance(UART.getPortNames()[0]);
-    private final static Protocol modbus = new ModBus();
-    private final static ConnectionManager connectionManager = new ConnectionManager(uart, modbus);
+    private final Protocol protocol = new ModBus();
+    private final Controller controller = ModelTest.createMockController();
 
-    private Receiver receiver = new Receiver(connectionManager, null);
+    private ConnectionManager connectionManager;
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        connectionManager = new ConnectionManager(UARTTest.createUARTConnection(), protocol);
         connectionManager.getConnection().open();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (connectionManager != null)
+            connectionManager.getConnection().close();
     }
 
     @Test
     public void youReadInfo() throws Exception {
+        Receiver receiver = new Receiver(connectionManager, controller);
         assertTrue(receiver.readInfo());
     }
 
     @Test
     public void youGetStatusCONNECTED() throws Exception {
+        Receiver receiver = new Receiver(connectionManager, controller);
+
         receiver.checkConnectionStatus();
         assertTrue(receiver.getConnectionStatus() == ConnectionStatus.CONNECTED);
     }

@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Base view class for GUI
@@ -53,6 +55,14 @@ public class View extends JFrame {
 
         // Set new default font to labels
         UIManager.put("Label.font", DEFAULT_FONT);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                controller.destroyConnectionManager();
+                super.windowClosing(e);
+            }
+        });
     }
 
     private void createMainPanel() {
@@ -66,8 +76,8 @@ public class View extends JFrame {
         jpLog = new LogPanel(controller);
         jpTests = new TestsPanel(controller);
 
-        jpTop.add(jpReceiverInfo.create(FRAME_WIDTH * 2 / 3, FRAME_HEIGHT / 5));
-        jpTop.add(jpStandInfo.create(FRAME_WIDTH / 3, FRAME_HEIGHT / 5));
+        jpTop.add(jpReceiverInfo.create(FRAME_WIDTH / 2, FRAME_HEIGHT / 5));
+        jpTop.add(jpStandInfo.create(FRAME_WIDTH / 2, FRAME_HEIGHT / 5));
 
         jpBottom.add(jpTests.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
         jpBottom.add(jpLog.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
@@ -102,5 +112,9 @@ public class View extends JFrame {
 
     public void updateLog(String text, SimpleAttributeSet attributeSet) {
         jpLog.updateLog(text, attributeSet);
+    }
+
+    public void updateTestList() {
+        jpTests.updateList();
     }
 }

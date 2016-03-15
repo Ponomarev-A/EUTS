@@ -1,7 +1,12 @@
 package model;
 
-import connections.*;
+import connections.Connection;
+import connections.ConnectionManager;
+import connections.ModBus;
+import connections.UART;
 import controller.Controller;
+import model.tests.BaseTestCase;
+import model.tests.TestManager;
 import view.LogPanel;
 
 import java.util.Arrays;
@@ -12,19 +17,23 @@ import java.util.List;
  */
 public class Model {
 
-    private static final String DEFAULT_PORTNAME = "COM1";
-
-    private final Protocol protocol = new ModBus();
-    private Connection connection;
-    private ConnectionManager connectionManager;
+    public static final String DEFAULT_PORTNAME = "COM1";
 
     private Controller controller;
 
+    private ConnectionManager connectionManager;
+
     private Receiver receiver;
     private Stand stand;
+    private TestManager testManager;
+    private boolean testRunning = false;
 
     public Model(Controller controller) {
         this.controller = controller;
+    }
+
+    public ConnectionManager getConnectionManager() {
+        return connectionManager;
     }
 
     public Receiver getReceiver() {
@@ -36,26 +45,13 @@ public class Model {
     }
 
     public void init() {
-        createDefaultConnection(DEFAULT_PORTNAME);
-        createConnectionManager();
+        createConnectionManagerIfExistDefaultPortName();
     }
 
-    private void createDefaultConnection(String defaultPortname) {
+    private void createConnectionManagerIfExistDefaultPortName() {
         List<String> portList = Arrays.asList(getAvailableCOMPorts());
-        if (portList.contains(defaultPortname)) {
-            createConnection(defaultPortname);
-        }
-    }
-
-    public void createConnectionManager() {
-        if (connection != null && connectionManager == null) {
-            connectionManager = new ConnectionManager(connection, protocol);
-            controller.updateLog("Create " + connectionManager, LogPanel.NORMAL);
-
-            receiver = new Receiver(connectionManager, controller);
-            stand = new Stand(connectionManager, controller);
-        } else {
-            controller.updateLog(connectionManager + " don't created.", LogPanel.NORMAL);
+        if (portList.contains(DEFAULT_PORTNAME)) {
+            createConnectionManager(DEFAULT_PORTNAME);
         }
     }
 
@@ -63,19 +59,35 @@ public class Model {
         return UART.getPortNames();
     }
 
-    public void createConnection(String portName) {
+    public void createConnectionManager(String portName) {
+        Connection connection = createConnection(portName);
+
+        if (connection != null && connectionManager == null) {
+            connectionManager = new ConnectionManager(connection, new ModBus());
+            controller.updateLog("Create " + connectionManager, LogPanel.NORMAL);
+
+            receiver = new Receiver(connectionManager, controller);
+            stand = new Stand(connectionManager, controller);
+            testManager = new TestManager(receiver, stand);
+        } else {
+            controller.updateLog(connectionManager + " don't created.", LogPanel.NORMAL);
+        }
+    }
+
+    private Connection createConnection(String portName) {
         Connection newConnection = UART.getInstance(portName);
 
         // Before create new connection we need close old connection
-        if (connection != null && !connection.equals(newConnection)) {
+        if (connectionManager != null && !connectionManager.getConnection().equals(newConnection)) {
             try {
-                connection.close();
+                connectionManager.getConnection().close();
             } catch (Exception e) {
-                controller.showErrorMessage("Create new connection", e);
+                controller.showErrorMessage("Close connection " + connectionManager.getConnection(), e);
             }
         }
-        connection = newConnection;
-        controller.updateLog("Create new connection " + connection, LogPanel.NORMAL);
+        controller.updateLog("Create new connection " + newConnection, LogPanel.NORMAL);
+
+        return newConnection;
     }
 
     public void destroyConnectionManager() {
@@ -90,35 +102,32 @@ public class Model {
     }
 
     public void disconnectFromDevice() {
-        if (connectionManager != null) {
-            try {
-                controller.updateLog("Close connection " + connection + " is " +
-                        (connectionManager.getConnection().close() ? "success" : "failed"), LogPanel.NORMAL);
+        try {
+            controller.updateLog("Close connection " + connectionManager.getConnection() + " is " +
+                    (connectionManager.getConnection().close() ? "success" : "failed"), LogPanel.NORMAL);
 
-                receiver.checkConnectionStatus();
-                stand.checkConnectionStatus();
-            } catch (Exception e) {
-                controller.showErrorMessage("Close connection", e);
-            }
+            receiver.checkConnectionStatus();
+            stand.checkConnectionStatus();
+        } catch (Exception e) {
+            controller.showErrorMessage("Close connection", e);
+        }
+    }
+
+    public void connectToDevice() {
+        try {
+            controller.updateLog("Open connection " + connectionManager.getConnection() + " is " +
+                    (connectionManager.getConnection().open() ? "success" : "failed"), LogPanel.NORMAL);
+
+            receiver.checkConnectionStatus();
+            stand.checkConnectionStatus();
+        } catch (Exception e) {
+            controller.showErrorMessage("Open connection", e);
         }
     }
 
     public boolean isCOMPortSelected(String portName) {
+        Connection connection = connectionManager.getConnection();
         return connection instanceof UART && ((UART) connection).getSerialPort().getPortName().equals(portName);
-    }
-
-    public void connectToDevice() {
-        if (connectionManager != null) {
-            try {
-                controller.updateLog("Open connection " + connection + " is " +
-                        (connectionManager.getConnection().open() ? "success" : "failed"), LogPanel.NORMAL);
-
-                receiver.checkConnectionStatus();
-                stand.checkConnectionStatus();
-            } catch (Exception e) {
-                controller.showErrorMessage("Open connection", e);
-            }
-        }
     }
 
     public boolean isReceiverConnected() {
@@ -129,7 +138,26 @@ public class Model {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;
     }
 
-    public boolean isConnectionManagerExist() {
-        return connectionManager != null;
+    public boolean isTestRunning() {
+        return testRunning;
+    }
+
+    public void startTesting() {
+        testRunning = true;
+
+        try {
+            testManager.startTests();
+        } catch (Exception e) {
+            controller.showErrorMessage("Test failed!", e);
+        }
+    }
+
+    public void stopTesting() {
+        testRunning = false;
+
+    }
+
+    public List<BaseTestCase> getTestsList() {
+        return testManager.getTestsList();
     }
 }

@@ -32,7 +32,9 @@ public abstract class Device {
     public abstract String getFirmware();
 
     public void checkConnectionStatus() {
-        connectionStatus = ConnectionStatus.checkStatus(this);
+        connectionStatus = (connectionManager.getConnection().isOpened()) ?
+                ConnectionStatus.checkStatus(this) :
+                ConnectionStatus.DISCONNECTED;
     }
 
     public ConnectionStatus getConnectionStatus() {
@@ -46,6 +48,7 @@ public abstract class Device {
                         new FailSendPacket("Can't send command " + command + "\n  to " + this));
         } catch (Exception e) {
             controller.showErrorMessage("Send packet fail", e);
+            e.printStackTrace();
         }
     }
 
@@ -56,6 +59,7 @@ public abstract class Device {
                         new FailSendPacket("Can't send command " + command + "\n  with value " + shortValue + "\n  to " + this));
         } catch (Exception e) {
             controller.showErrorMessage("Send packet fail", e);
+            e.printStackTrace();
         }
     }
 
@@ -66,6 +70,7 @@ public abstract class Device {
                         new FailSendPacket("Can't send command " + command + "\n  with value " + integerValue + "\n  to " + this));
         } catch (Exception e) {
             controller.showErrorMessage("Send packet fail", e);
+            e.printStackTrace();
         }
     }
 
@@ -74,6 +79,7 @@ public abstract class Device {
             return connectionManager.receivePacket().getDataAsShortArray();
         } catch (Exception e) {
             controller.showErrorMessage("Receive packet fail", e);
+            e.printStackTrace();
         }
         return new short[0];
     }
@@ -83,6 +89,7 @@ public abstract class Device {
             return connectionManager.receivePacket().getDataAsShort();
         } catch (Exception e) {
             controller.showErrorMessage("Receive packet fail", e);
+            e.printStackTrace();
         }
         return 0;
     }
@@ -92,6 +99,7 @@ public abstract class Device {
             return connectionManager.receivePacket().getDataAsInt();
         } catch (Exception e) {
             controller.showErrorMessage("Receive packet fail", e);
+            e.printStackTrace();
         }
         return 0;
     }
@@ -101,6 +109,7 @@ public abstract class Device {
             return connectionManager.receivePacket().getDataAsString();
         } catch (Exception e) {
             controller.showErrorMessage("Receive packet fail", e);
+            e.printStackTrace();
         }
         return "";
     }

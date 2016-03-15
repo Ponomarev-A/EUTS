@@ -1,12 +1,13 @@
 package connections;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import exception.InvalidPacketSize;
-import jssc.*;
+import jssc.SerialPort;
+import jssc.SerialPortException;
+import jssc.SerialPortList;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * UART connections class
@@ -17,15 +18,21 @@ public class UART implements Connection {
     public static final int DATABITS = SerialPort.DATABITS_8;
     public static final int STOPBITS = SerialPort.STOPBITS_1;
     public static final int PARITY = SerialPort.PARITY_NONE;
-    public static final int MAX_BUFFER_LENGTH = 2048;
 
-    public static final int READ_WAIT_TIMEOUT_MS = 2000;
-    public static final int READ_EXECUTE_TIMEOUT_MS = 300;
-    public static final int READ_PERIOD_MS = 50;
+    private static final int READ_PERIOD_MS = 50;
+    private static final int READ_EXECUTE_TIMEOUT_MS = READ_PERIOD_MS * 10;
+    private static final int READ_WAIT_TIMEOUT_MS = READ_EXECUTE_TIMEOUT_MS + 1500;
+
+    private static final int WRITE_PERIOD_MS = 1000;
+    private static final int WRITE_WAIT_TIMEOUT_MS = WRITE_PERIOD_MS + 500;
+
+    private static final ThreadFactory THREAD_FACTORY_WRITER = new ThreadFactoryBuilder().setNameFormat("Writer-%d").setDaemon(true).build();
+    private static final ThreadFactory THREAD_FACTORY_READER = new ThreadFactoryBuilder().setNameFormat("Reader-%d").setDaemon(true).build();
+
     private static UART instance = null;
+
     private final SerialPort serialPort;
-    private final PortReader portReader = new PortReader(MAX_BUFFER_LENGTH);
-    private ScheduledExecutorService executor;
+    private final Object lock = new Object();
 
     private UART(String portName) {
         serialPort = new SerialPort(portName);
@@ -60,41 +67,64 @@ public class UART implements Connection {
         if (!isOpened()) {
             serialPort.openPort();
             serialPort.setParams(BAUDRATE, DATABITS, STOPBITS, PARITY, false, false);
-            serialPort.addEventListener(portReader, SerialPort.MASK_RXCHAR);
         }
 
         return isOpened();
     }
 
-    private boolean isOpened() {
-        return serialPort.isOpened();
-    }
-
     @Override
-    public byte[] read() throws InvalidPacketSize {
+    public byte[] read() throws InvalidPacketSize, SerialPortException {
 
-        // Clear port data before new read operation
-        portReader.reset();
+        ScheduledExecutorService readExecutor = Executors.newScheduledThreadPool(1, THREAD_FACTORY_READER);
+        PortReader portReader = new PortReader(readExecutor);
 
-        executor = Executors.newScheduledThreadPool(1);
-        executor.schedule(portReader, READ_PERIOD_MS, TimeUnit.MILLISECONDS);
+        readExecutor.schedule(portReader, READ_PERIOD_MS, TimeUnit.MILLISECONDS);
 
         try {
-            // Wait while read operation is cancelled
-            executor.awaitTermination(READ_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            readExecutor.awaitTermination(READ_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        if (portReader.bufferLength == 0)
-            throw new InvalidPacketSize("Read data from port " + this + " is null");
+        if (portReader.buffer.length == 0)
+            throw new InvalidPacketSize("Method \"read\":" +
+                    "\n port: " + this + ", " +
+                    "\n read bytes count: " + portReader.buffer.length);
 
         return portReader.buffer;
     }
 
     @Override
-    public boolean write(byte[] buffer) throws SerialPortException {
-        return serialPort.isOpened() && serialPort.writeBytes(buffer);
+    public boolean write(final byte[] buffer) throws SerialPortException {
+
+        Integer leftOutputBufferBytesCount = -1;
+        ScheduledExecutorService writeExecutor = Executors.newScheduledThreadPool(1, THREAD_FACTORY_WRITER);
+
+        try {
+            leftOutputBufferBytesCount = writeExecutor.submit(new Callable<Integer>() {
+
+                @Override
+                public Integer call() throws Exception {
+                    int outputBufferBytesCount = -1;
+
+                    synchronized (lock) {
+                        if (serialPort.isOpened() && serialPort.writeBytes(buffer)) {
+                            outputBufferBytesCount = serialPort.getOutputBufferBytesCount();
+                        }
+                    }
+
+                    TimeUnit.MILLISECONDS.sleep(WRITE_PERIOD_MS);
+                    return outputBufferBytesCount;
+                }
+            }).get();
+
+            writeExecutor.shutdown();
+            writeExecutor.awaitTermination(WRITE_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return leftOutputBufferBytesCount == 0;
     }
 
     @Override
@@ -106,50 +136,43 @@ public class UART implements Connection {
         return !isOpened();
     }
 
-    private class PortReader implements Runnable, SerialPortEventListener {
+    @Override
+    public boolean isOpened() {
+        return serialPort.isOpened();
+    }
 
-        private final int maxBufferLength;
-        public byte[] buffer;
-        private int bufferLength;
-        private int attemptsToRead;     // Количество попыток чтения буфера входных данных
+    private class PortReader implements Runnable {
 
-        public PortReader(int maxBufferLength) {
-            this.maxBufferLength = maxBufferLength;
-        }
+        private final ScheduledExecutorService executor;
+        private byte[] buffer = new byte[0];
 
-        @Override
-        public void serialEvent(SerialPortEvent event) {
-            byte[] receivedBuffer;
+        private int attemptsToRead = 0;     // Количество попыток чтения буфера входных данных
 
-            if (event.isRXCHAR()) {
-                try {
-                    receivedBuffer = serialPort.readBytes();
-                    int receivedBufferLength = receivedBuffer != null ? receivedBuffer.length : 0;
-
-                    if (receivedBufferLength + bufferLength > maxBufferLength)
-                        throw new Exception();
-
-                    buffer = ArrayUtils.addAll(buffer, receivedBuffer);
-                    bufferLength = buffer.length;
-
-                } catch (Exception e) {
-                }
-            }
+        public PortReader(ScheduledExecutorService executor) {
+            this.executor = executor;
         }
 
         @Override
         public void run() {
 
-            if (bufferLength > 0 && attemptsToRead++ > READ_EXECUTE_TIMEOUT_MS / READ_PERIOD_MS) {
+            if (buffer.length > 0 && ++attemptsToRead == READ_EXECUTE_TIMEOUT_MS / READ_PERIOD_MS) {
                 executor.shutdown();
             } else {
+                synchronized (lock) {
+
+                    try {
+                        if (serialPort.isOpened()) {
+                            buffer = ArrayUtils.addAll(buffer, serialPort.readBytes());
+                        }
+                    } catch (SerialPortException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 executor.schedule(this, READ_PERIOD_MS, TimeUnit.MILLISECONDS);
             }
         }
-
-        public void reset() {
-            buffer = new byte[0];
-            bufferLength = attemptsToRead = 0;
-        }
     }
+
 }
+

@@ -20,7 +20,7 @@ public class ConnectionManagerTest {
 
     @Before
     public void openConnection() throws Exception {
-        connectionManager = new ConnectionManager(new UARTTest().createUARTConnection(), new ModBus());
+        connectionManager = new ConnectionManager(UARTTest.createUARTConnection(), new ModBus());
         connectionManager.getConnection().open();
     }
 
@@ -44,10 +44,9 @@ public class ConnectionManagerTest {
     public void testMultipleSendingAndReceivingSamePackets() throws Exception {
         Packet packetTestConnection = new Packet(Command.CHECK_CONNECTION_DEVICE, new byte[]{1, 2, 3, 4});
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             assertTrue(connectionManager.sendPacket(packetTestConnection));
-            assertEquals(packetTestConnection, connectionManager.receivePacket());
-
+            assertEquals("iteration #" + i, packetTestConnection, connectionManager.receivePacket());
         }
     }
 
@@ -55,17 +54,17 @@ public class ConnectionManagerTest {
     public void testMultipleSendingAndReceivingDiffPackets() throws Exception {
         Packet packetTestConnection = new Packet(Command.CHECK_CONNECTION_DEVICE);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             packetTestConnection.setData(i * 1234);
             assertTrue(connectionManager.sendPacket(packetTestConnection));
-            assertEquals(packetTestConnection, connectionManager.receivePacket());
+            assertEquals("iteration #" + i, packetTestConnection, connectionManager.receivePacket());
         }
     }
 
     @Test
     public void testSendAndReceiveBigPacket() throws Exception {
         Random random = new Random();
-        byte[] bigData = new byte[500];
+        byte[] bigData = new byte[512];
         for (int i = 0; i < bigData.length; i++) {
             bigData[i] = (byte) ('0' + random.nextInt(10));
         }
@@ -74,5 +73,16 @@ public class ConnectionManagerTest {
         Packet bigPacket = new Packet(Command.CHECK_CONNECTION_DEVICE, bigData);
         assertTrue(connectionManager.sendPacket(bigPacket));
         assertEquals(bigPacket, connectionManager.receivePacket());
+    }
+
+    @Test
+    public void testMultipleSendDiffPackets() throws Exception {
+
+        Packet packetTestConnection = new Packet(Command.FREQUENCY_DEVICE, 150);
+
+        for (int i = 0; i < 5; i++) {
+            packetTestConnection.setData(i * 1234);
+            assertTrue("iteration #" + i, connectionManager.sendPacket(packetTestConnection));
+        }
     }
 }

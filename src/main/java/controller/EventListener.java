@@ -1,8 +1,10 @@
 package controller;
 
 import model.Device;
+import model.tests.BaseTestCase;
 
 import javax.swing.text.SimpleAttributeSet;
+import java.util.List;
 
 /**
  * EventListener interface contains user defined actions
@@ -14,8 +16,6 @@ public interface EventListener {
     void connect();
 
     void disconnect();
-
-    void createConnection(String portName);
 
     boolean isCOMPortSelected(String portName);
 
@@ -31,9 +31,15 @@ public interface EventListener {
 
     void updateLog(String text, SimpleAttributeSet attributeSet);
 
-    void createConnectionManager();
+    void createConnectionManager(String portName);
 
     void destroyConnectionManager();
 
     boolean isConnectionManagerExist();
+
+    void startTesting();
+
+    void stopTesting();
+
+    List<BaseTestCase> getTestsList();
 }

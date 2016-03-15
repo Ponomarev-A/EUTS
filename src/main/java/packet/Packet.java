@@ -139,10 +139,6 @@ public class Packet {
         return data;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
     public void setData(int data) {
         this.data = getByteArrayFromInt(data);
     }
@@ -150,7 +146,7 @@ public class Packet {
     public short[] getDataAsShortArray() {
         short[] result = new short[data.length / 2];
         try {
-            ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(result);
+            ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN).asShortBuffer().get(result);
         } catch (Exception e) {
         }
 
@@ -196,6 +192,7 @@ public class Packet {
      * <p> Command (2 byte) </p>
      * <p> Data (N byte(s)) </p>
      * <p> CRC16 (2 byte) </p>
+     *
      * @return packed packet array
      */
     public byte[] pack() throws InvalidPacketSize {
@@ -261,7 +258,7 @@ public class Packet {
         short frameLength = getShortFromByteArray(ArrayUtils.subarray(sentData, 0, DATA_COUNT_LENGTH));
 
         if (frameLength < MIN_FRAME_LENGTH || frameLength > MAX_FRAME_LENGTH)
-            throw new InvalidPacketSize("Length of frame isn't in the range (" + MIN_FRAME_LENGTH + "," + MAX_FRAME_LENGTH + ")");
+            throw new InvalidPacketSize("Length of frame " + frameLength + " isn't in the range (" + MIN_FRAME_LENGTH + "," + MAX_FRAME_LENGTH + ")");
 
         // Parsing packet
         short CRC = getShortFromByteArray(ArrayUtils.subarray(sentData, sentData.length - CRC16_LENGTH, sentData.length));
@@ -277,5 +274,9 @@ public class Packet {
         setCRC(CRC);
         setCommand(Command.getCommand(command_id));
         setData(data);
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 }

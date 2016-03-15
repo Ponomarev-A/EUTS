@@ -2,7 +2,6 @@ package view;
 
 import controller.Controller;
 import model.tests.BaseTestCase;
-import model.tests.Test1;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -22,16 +21,9 @@ public class TestsPanel extends JPanel implements TableModelListener {
 
     private Controller controller;
 
-    private ArrayList<BaseTestCase> testList = new ArrayList<>();
-    private TestTableModel tableModel = new TestTableModel(testList);
+    private TestTableModel tableModel = new TestTableModel();
     private JTable jtTests = new JTable(tableModel);
 
-    {
-        testList.add(new Test1("test #1", null, null));
-        testList.add(new Test1("test #2", null, null));
-        testList.add(new Test1("test #3", null, null));
-        testList.add(new Test1("test #4", null, null));
-    }
 
     public TestsPanel(Controller controller) {
         this.controller = controller;
@@ -41,6 +33,7 @@ public class TestsPanel extends JPanel implements TableModelListener {
 
         JPanel jPanel = new JPanel(new BorderLayout());
         jPanel.setMaximumSize(new Dimension(width, height));
+        jPanel.setMinimumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
         jPanel.setBorder(new TitledBorder(
@@ -82,12 +75,21 @@ public class TestsPanel extends JPanel implements TableModelListener {
     public void tableChanged(TableModelEvent e) {
     }
 
+    public void updateList() {
+        List<BaseTestCase> testsList = controller.getTestsList();
+        tableModel.setData(testsList);
+    }
+
     private class TestTableModel extends AbstractTableModel {
 
         private String[] columnNames = {"№", "Check", "Name", "State"};
+
         private List<BaseTestCase> data = new ArrayList<>();
 
-        public TestTableModel(List<BaseTestCase> data) {
+        public TestTableModel() {
+        }
+
+        public void setData(List<BaseTestCase> data) {
             this.data = data;
         }
 
