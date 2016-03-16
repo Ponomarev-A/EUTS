@@ -84,6 +84,9 @@ public class UART implements Connection {
             readExecutor.awaitTermination(READ_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            // Already shutdown executor and kill all "read" threads
+            readExecutor.shutdown();
         }
 
         if (portReader.buffer.length == 0)
