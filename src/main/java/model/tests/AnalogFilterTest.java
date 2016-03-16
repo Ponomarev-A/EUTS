@@ -15,7 +15,7 @@ public class AnalogFilterTest extends BaseTestCase {
 
     public static final double INIT_LEVEL_PRT = 95.0;
     public static final double STEP_LEVEL_PRT = 0.5;
-    public static final double DIFF_LEVEL_PRT = 0.0015;
+    public static final double DIFF_LEVEL_PRT = 0.15;
     public static final double MIN_LEVEL_PRT = 0.950;
     public static final double MAX_LEVEL_PRT = 0.999;
 

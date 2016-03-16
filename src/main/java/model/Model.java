@@ -151,6 +151,7 @@ public class Model {
 
         testRunning = true;
         testManager.startTests();
+        stopTesting();
     }
 
     public void stopTesting() {
