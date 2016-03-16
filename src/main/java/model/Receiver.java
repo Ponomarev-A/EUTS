@@ -25,22 +25,28 @@ public class Receiver extends Device {
     @Override
     public boolean readInfo() {
 
-        boolean result = false;
-
         set(Command.GET_INFO_DEVICE);
-        String info = getString();
 
-        String[] infoDetails = info.trim().split(" ");
-        if (infoDetails.length == 4) {
-            model = infoDetails[0];
-            firmware = infoDetails[1];
-            scheme = infoDetails[2];
-            ID = infoDetails[3];
+        try {
+            String info = getString();
+            String[] infoDetails = info.trim().split(" ");
 
-            result = true;
+            if (infoDetails.length == 4) {
+                model = infoDetails[0];
+                firmware = infoDetails[1];
+                scheme = infoDetails[2];
+                ID = infoDetails[3];
+
+                return true;
+            }
+        } catch (Exception e) {
+            controller.showErrorMessage(
+                    "Read receiver info",
+                    "Read " + this + " info is failed.\nTry again connect to device!",
+                    e);
         }
 
-        return result;
+        return false;
     }
 
     @Override

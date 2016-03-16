@@ -27,9 +27,11 @@ public interface EventListener {
 
     Device getStand();
 
-    void showErrorMessage(String title, Exception e);
+    void showErrorMessage(String title, String text, Exception e);
 
     void updateLog(String text, SimpleAttributeSet attributeSet);
+
+    void updateLog(String text);
 
     void createConnectionManager(String portName);
 
@@ -42,4 +44,6 @@ public interface EventListener {
     void stopTesting();
 
     List<BaseTestCase> getTestsList();
+
+    void updateTestList();
 }

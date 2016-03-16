@@ -45,9 +45,7 @@ public abstract class BaseTestCase extends org.junit.Assert {
         this.enabled = enabled;
     }
 
-    public abstract boolean setUp() throws Exception;
-
-    public abstract void runTest() throws Exception;
+    public abstract void runTest() throws Error, Exception;
 
     public enum State {
         READY, PASS, FAIL

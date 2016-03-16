@@ -63,6 +63,7 @@ public class TestsPanel extends JPanel implements TableModelListener {
 
         jtTests.setColumnModel(columnModel);
         jtTests.setRowHeight(20);
+        jtTests.setRowSelectionAllowed(false);
 
         return jPanel;
     }
@@ -73,21 +74,25 @@ public class TestsPanel extends JPanel implements TableModelListener {
      */
     @Override
     public void tableChanged(TableModelEvent e) {
+        int column = e.getColumn();
+        int firstRow = e.getFirstRow();
+        int lastRow = e.getLastRow();
     }
 
-    public void updateList() {
+    public void loadTestList() {
+
         List<BaseTestCase> testsList = controller.getTestsList();
         tableModel.setData(testsList);
+    }
+
+    public void updateTestList() {
+        tableModel.fireTableDataChanged();
     }
 
     private class TestTableModel extends AbstractTableModel {
 
         private String[] columnNames = {"№", "Check", "Name", "State"};
-
         private List<BaseTestCase> data = new ArrayList<>();
-
-        public TestTableModel() {
-        }
 
         public void setData(List<BaseTestCase> data) {
             this.data = data;
@@ -133,7 +138,7 @@ public class TestsPanel extends JPanel implements TableModelListener {
             BaseTestCase testCase = data.get(rowIndex);
             switch (columnIndex) {
                 case 0:
-                    return rowIndex;
+                    return rowIndex + 1;
                 case 1:
                     return testCase.isEnabled();
                 case 2:

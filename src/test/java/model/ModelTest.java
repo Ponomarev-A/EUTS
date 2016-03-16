@@ -51,7 +51,7 @@ public class ModelTest {
 
                 return null;
             }
-        }).when(mockController).showErrorMessage(anyString(), (Exception) anyObject());
+        }).when(mockController).showErrorMessage(anyString(), anyString(), (Exception) anyObject());
 
         return mockController;
     }
@@ -151,6 +151,9 @@ public class ModelTest {
     public void testIsCOMPortSelected() throws Exception {
         model.createConnectionManager(TEST_PORTNAME);
         assertTrue(model.isCOMPortSelected(TEST_PORTNAME));
+
+        model.destroyConnectionManager();
+        assertFalse(model.isCOMPortSelected(TEST_PORTNAME));
     }
 
     @Test

@@ -101,10 +101,10 @@ public class View extends JFrame {
         menuBar.updateMenuStates();
     }
 
-    public void showErrorMessage(String title, Exception e) {
+    public void showErrorMessage(String title, String text) {
         JOptionPane.showMessageDialog(
                 View.this,
-                e.getLocalizedMessage(),
+                text,
                 title,
                 JOptionPane.ERROR_MESSAGE
         );
@@ -114,7 +114,11 @@ public class View extends JFrame {
         jpLog.updateLog(text, attributeSet);
     }
 
+    public void loadTestList() {
+        jpTests.loadTestList();
+    }
+
     public void updateTestList() {
-        jpTests.updateList();
+        jpTests.updateTestList();
     }
 }

@@ -53,10 +53,10 @@ public class Controller implements EventListener {
 
         view.updateMenuStates();
         view.updateDeviceInfo();
-        view.updateTestList();
+        view.loadTestList();
 
-        updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
-        updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
+        updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
     }
 
     @Override
@@ -66,10 +66,10 @@ public class Controller implements EventListener {
 
         view.updateMenuStates();
         view.updateDeviceInfo();
-        view.updateTestList();
+        view.loadTestList();
 
-        updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
-        updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"), LogPanel.NORMAL);
+        updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
+        updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
     }
 
 
@@ -99,14 +99,20 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void showErrorMessage(String title, Exception e) {
-        view.showErrorMessage(title, e);
-        updateLog(e.getLocalizedMessage(), LogPanel.NORMAL);
+    public void showErrorMessage(String title, String text, Exception e) {
+        view.showErrorMessage(title, text + "\n\nCause: " + e.getLocalizedMessage());
+        updateLog("\n\n" + title, LogPanel.BOLD);
+        updateLog(text + "\nCause: " + e.getLocalizedMessage());
     }
 
     @Override
     public void updateLog(String text, SimpleAttributeSet attributeSet) {
         view.updateLog(text, attributeSet);
+    }
+
+    @Override
+    public void updateLog(String text) {
+        updateLog(text, LogPanel.NORMAL);
     }
 
     @Override
@@ -134,7 +140,6 @@ public class Controller implements EventListener {
 
     @Override
     public void startTesting() {
-        updateLog("\n   START TESTING", LogPanel.BOLD);
         model.startTesting();
 
         view.updateMenuStates();
@@ -142,7 +147,6 @@ public class Controller implements EventListener {
 
     @Override
     public void stopTesting() {
-        updateLog("\n   STOP TESTING", LogPanel.BOLD);
         model.stopTesting();
 
         view.updateMenuStates();
@@ -151,6 +155,11 @@ public class Controller implements EventListener {
     @Override
     public List<BaseTestCase> getTestsList() {
         return model.getTestsList();
+    }
+
+    @Override
+    public void updateTestList() {
+        view.updateTestList();
     }
 
     public boolean isTestRunning() {

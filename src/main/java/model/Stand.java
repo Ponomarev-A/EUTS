@@ -9,6 +9,7 @@ import packet.Command;
  */
 public class Stand extends Device {
 
+    public static final int MAX_RECEIVER_ADC_VOLTAGE_MCV = 1500000;
     private String firmware;
     private String scheme;
     private String ID;
@@ -20,21 +21,28 @@ public class Stand extends Device {
 
     @Override
     public boolean readInfo() {
-        boolean result = false;
 
         set(Command.GET_INFO_STAND);
-        String info = getString();
 
-        String[] infoDetails = info.trim().split(" ");
-        if (infoDetails.length == 3) {
-            firmware = infoDetails[0];
-            scheme = infoDetails[1];
-            ID = infoDetails[2];
+        try {
+            String info = getString();
+            String[] infoDetails = info.trim().split(" ");
 
-            result = true;
+            if (infoDetails.length == 3) {
+                firmware = infoDetails[0];
+                scheme = infoDetails[1];
+                ID = infoDetails[2];
+
+                return true;
+            }
+        } catch (Exception e) {
+            controller.showErrorMessage(
+                    "Read stand info",
+                    "Read " + this + " info is failed.\nTry again connect to device!",
+                    e);
         }
 
-        return result;
+        return false;
     }
 
     @Override
@@ -63,5 +71,10 @@ public class Stand extends Device {
                 "firmware = " + firmware +
                 ", scheme = " + scheme +
                 ", ID= " + ID + " }";
+    }
+
+    public int calcVoltage(double level, int gain) {
+        double voltage_mcV = level / 100 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain + 22) / 20.0);
+        return (int) voltage_mcV;
     }
 }

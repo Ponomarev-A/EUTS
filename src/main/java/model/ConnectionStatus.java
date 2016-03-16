@@ -9,7 +9,7 @@ public enum ConnectionStatus {
 
     private static ConnectionStatus ConnectionStatus;
 
-    public static ConnectionStatus checkStatus(Device device) {
+    public static ConnectionStatus checkStatus(Device device) throws Exception {
 
         if (device == null)
             return ConnectionStatus;

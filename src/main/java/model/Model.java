@@ -10,6 +10,7 @@ import model.tests.TestManager;
 import view.LogPanel;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,13 +65,13 @@ public class Model {
 
         if (connection != null && connectionManager == null) {
             connectionManager = new ConnectionManager(connection, new ModBus());
-            controller.updateLog("Create " + connectionManager, LogPanel.NORMAL);
+            controller.updateLog("Create " + connectionManager);
 
             receiver = new Receiver(connectionManager, controller);
             stand = new Stand(connectionManager, controller);
-            testManager = new TestManager(receiver, stand);
+            testManager = new TestManager(controller, receiver, stand);
         } else {
-            controller.updateLog(connectionManager + " don't created.", LogPanel.NORMAL);
+            controller.updateLog(connectionManager + " don't created.");
         }
     }
 
@@ -82,17 +83,20 @@ public class Model {
             try {
                 connectionManager.getConnection().close();
             } catch (Exception e) {
-                controller.showErrorMessage("Close connection " + connectionManager.getConnection(), e);
+                controller.showErrorMessage(
+                        "Close connection",
+                        "Can't close connection " + connectionManager.getConnection(),
+                        e);
             }
         }
-        controller.updateLog("Create new connection " + newConnection, LogPanel.NORMAL);
+        controller.updateLog("Create new connection " + newConnection);
 
         return newConnection;
     }
 
     public void destroyConnectionManager() {
         if (connectionManager != null) {
-            controller.updateLog("Destroy " + connectionManager, LogPanel.NORMAL);
+            controller.updateLog("Destroy " + connectionManager);
 
             disconnectFromDevice();
             connectionManager = null;
@@ -104,30 +108,64 @@ public class Model {
     public void disconnectFromDevice() {
         try {
             controller.updateLog("Close connection " + connectionManager.getConnection() + " is " +
-                    (connectionManager.getConnection().close() ? "success" : "failed"), LogPanel.NORMAL);
+                    (connectionManager.getConnection().close() ? "success" : "failed"));
 
             receiver.checkConnectionStatus();
             stand.checkConnectionStatus();
         } catch (Exception e) {
-            controller.showErrorMessage("Close connection", e);
+            controller.showErrorMessage(
+                    "Close connection",
+                    "Can't close connection " + connectionManager.getConnection(),
+                    e);
         }
     }
 
     public void connectToDevice() {
         try {
             controller.updateLog("Open connection " + connectionManager.getConnection() + " is " +
-                    (connectionManager.getConnection().open() ? "success" : "failed"), LogPanel.NORMAL);
+                    (connectionManager.getConnection().open() ? "success" : "failed"));
 
             receiver.checkConnectionStatus();
             stand.checkConnectionStatus();
         } catch (Exception e) {
-            controller.showErrorMessage("Open connection", e);
+            controller.showErrorMessage(
+                    "Open connection",
+                    "Can't open connection " + connectionManager.getConnection(),
+                    e);
         }
     }
 
     public boolean isCOMPortSelected(String portName) {
-        Connection connection = connectionManager.getConnection();
-        return connection instanceof UART && ((UART) connection).getSerialPort().getPortName().equals(portName);
+        return connectionManager != null && ((UART) connectionManager.getConnection()).getSerialPort().getPortName().equals(portName);
+    }
+
+    public boolean isTestRunning() {
+        return testRunning;
+    }
+
+    public void startTesting() {
+        if (testRunning)
+            return;
+
+        controller.updateLog("\n===\tSTART TESTING\t===", LogPanel.BOLD);
+
+        testRunning = true;
+        testManager.startTests();
+    }
+
+    public void stopTesting() {
+        if (!testRunning)
+            return;
+
+        controller.updateLog("\n===\tSTOP TESTING\t===", LogPanel.BOLD);
+
+        testRunning = false;
+    }
+
+    public List<BaseTestCase> getTestsList() {
+        return isReceiverConnected() && isStandConnected() ?
+                testManager.getTestsList() :
+                Collections.<BaseTestCase>emptyList();
     }
 
     public boolean isReceiverConnected() {
@@ -136,28 +174,5 @@ public class Model {
 
     public boolean isStandConnected() {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;
-    }
-
-    public boolean isTestRunning() {
-        return testRunning;
-    }
-
-    public void startTesting() {
-        testRunning = true;
-
-        try {
-            testManager.startTests();
-        } catch (Exception e) {
-            controller.showErrorMessage("Test failed!", e);
-        }
-    }
-
-    public void stopTesting() {
-        testRunning = false;
-
-    }
-
-    public List<BaseTestCase> getTestsList() {
-        return testManager.getTestsList();
     }
 }
