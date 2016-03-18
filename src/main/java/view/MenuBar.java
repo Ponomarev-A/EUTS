@@ -1,6 +1,7 @@
 package view;
 
 import controller.Controller;
+import model.Model;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -8,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class MenuBar implements ActionListener {
+class MenuBar implements ActionListener {
 
     private final JMenu jmPorts = new JMenu("Choose COM-port");
     private final JMenuItem jmiConnect = new JMenuItem("Connect");
@@ -20,7 +21,7 @@ public class MenuBar implements ActionListener {
     private JMenu testingMenu;
 
 
-    public MenuBar(Controller controller) {
+    MenuBar(Controller controller) {
         this.controller = controller;
     }
 
@@ -116,7 +117,7 @@ public class MenuBar implements ActionListener {
         }
 
         for (String port : ports) {
-            boolean isCOM1PortExist = port.equals("COM1");
+            boolean isCOM1PortExist = port.equals(Model.DEFAULT_PORTNAME);
 
             JCheckBoxMenuItem jmiPort = new JCheckBoxMenuItem(isCOM1PortExist ? port + " (default)" : port);
             jmiPort.addActionListener(MenuBar.this);
@@ -126,7 +127,7 @@ public class MenuBar implements ActionListener {
         }
     }
 
-    public void updateMenuStates() {
+    void updateMenuStates() {
 
         if (!controller.isConnectionManagerExist()) {
             jmiConnect.setEnabled(false);

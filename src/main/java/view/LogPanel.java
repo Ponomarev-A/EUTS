@@ -25,15 +25,13 @@ public class LogPanel extends JPanel {
             "<b>### Here will be displayed all information about the testing process ###</b>\n"
     );
 
-    public LogPanel(Controller controller) {
+    LogPanel(Controller controller) {
         this.controller = controller;
     }
 
-    JPanel create(int width, int height) {
+    JPanel create() {
 
         JPanel jPanel = new JPanel(new BorderLayout());
-        jPanel.setMaximumSize(new Dimension(width, height));
-        jPanel.setMinimumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
         jPanel.setBorder(new TitledBorder(
@@ -45,19 +43,18 @@ public class LogPanel extends JPanel {
         ));
 
         jepLog.setEditable(false);
-        jepLog.setAutoscrolls(true);
-
-        jPanel.add(new JScrollPane(jepLog), BorderLayout.CENTER);
+        jPanel.add(new JScrollPane(jepLog));
 
         return jPanel;
     }
 
-    public void updateLog(String text, AttributeSet attributeSet) {
+    void updateLog(String text, AttributeSet attributeSet) {
         Document doc = jepLog.getDocument();
 
         try {
             doc.insertString(doc.getLength(), "\n" + text, attributeSet);
-        } catch (BadLocationException e) {
+            jepLog.setCaretPosition(doc.getLength());
+        } catch (BadLocationException ignored) {
         }
     }
 }

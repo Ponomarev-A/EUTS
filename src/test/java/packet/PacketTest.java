@@ -15,15 +15,15 @@ import static org.junit.Assert.*;
  */
 public class PacketTest {
 
-    public static final byte[] DATA_1234 = new byte[]{0x01, 0x02, 0x03, 0x04};
-    public static final byte[] DATA_6789 = new byte[]{0x06, 0x07, 0x08, 0x09};
+    private static final byte[] DATA_1234 = new byte[]{0x01, 0x02, 0x03, 0x04};
+    private static final byte[] DATA_6789 = new byte[]{0x06, 0x07, 0x08, 0x09};
 
-    Packet packet = new Packet();
+    private Packet packet = new Packet();
 
     @Test
     public void youCreateNewEmptyPacket() throws Exception {
         assertNotNull(packet);
-        assertNull(packet.getCommand());
+        assertEquals(Command.NO_COMMAND, packet.getCommand());
         assertArrayEquals(new byte[0], packet.getData());
         assertEquals(0, packet.getCRC());
     }

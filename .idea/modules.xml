@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EUTS.iml" filepath="$PROJECT_DIR$/EUTS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EUTS.iml" filepath="$PROJECT_DIR$/.idea/modules/EUTS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EUTS_main.iml" filepath="$PROJECT_DIR$/.idea/modules/EUTS_main.iml" group="EUTS" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/EUTS_test.iml" filepath="$PROJECT_DIR$/.idea/modules/EUTS_test.iml" group="EUTS" />
     </modules>
   </component>
 </project>

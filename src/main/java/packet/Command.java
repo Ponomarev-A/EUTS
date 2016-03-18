@@ -4,6 +4,7 @@ package packet;
  *  Available commands enumeration
  */
 public enum Command {
+    NO_COMMAND(0),
     FREQUENCY_DEVICE(1),
     GAIN_DEVICE(2),
     TYPE_OF_SIGNAL_DEVICE(3),

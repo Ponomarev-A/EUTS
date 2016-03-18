@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ConnectionManagerTest {
 
-    ConnectionManager connectionManager;
+    private ConnectionManager connectionManager;
 
     @Before
     public void openConnection() throws Exception {
@@ -76,13 +76,26 @@ public class ConnectionManagerTest {
     }
 
     @Test
+    public void testSendPacketWithConfirmation() throws Exception {
+
+        // Valid packet
+        connectionManager.sendPacket(new Packet(Command.FREQUENCY_DEVICE, 1024));
+        assertEquals(0, connectionManager.receivePacket().getDataAsByte());
+
+        // Invalid packet
+        connectionManager.sendPacket(new Packet(Command.FREQUENCY_DEVICE, 1000));
+        assertEquals(1, connectionManager.receivePacket().getDataAsByte());
+    }
+
+    @Test
     public void testMultipleSendDiffPackets() throws Exception {
 
-        Packet packetTestConnection = new Packet(Command.FREQUENCY_DEVICE, 150);
+        Packet packetTestConnection = new Packet(Command.FREQUENCY_DEVICE, 1000);
 
         for (int i = 0; i < 5; i++) {
-            packetTestConnection.setData(i * 1234);
+            packetTestConnection.setData(i * 5);
             assertTrue("iteration #" + i, connectionManager.sendPacket(packetTestConnection));
+            assertEquals("iteration #" + i, 1, connectionManager.receivePacket().getDataAsByte());
         }
     }
 }

@@ -9,7 +9,7 @@ import packet.Command;
  */
 public class Receiver extends Device {
 
-    public final static int MAX_LEVEL = 1024;
+    public final static int MAX_LEVEL = 1023;
     public final static int MIN_LEVEL = 0;
 
     private String model;
@@ -17,17 +17,15 @@ public class Receiver extends Device {
     private String scheme;
     private String ID;
 
-    public Receiver(ConnectionManager connectionManager, Controller controller) {
+    Receiver(ConnectionManager connectionManager, Controller controller) {
         super(connectionManager, controller);
     }
 
 
     @Override
     public boolean readInfo() {
-
-        set(Command.GET_INFO_DEVICE);
-
         try {
+            set(Command.GET_INFO_DEVICE);
             String info = getString();
             String[] infoDetails = info.trim().split(" ");
 
@@ -89,4 +87,9 @@ public class Receiver extends Device {
         MODE_TESTLEVELS,
         MODE_TESTCOMPASS
     }
+
+    public enum BSType {FILTER, WB, RADIO}
+
+    public enum SintezSound {OFF, ON}
+
 }

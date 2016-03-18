@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Test panel class contains testList list
  */
-public class TestsPanel extends JPanel implements TableModelListener {
+class TestsPanel extends JPanel implements TableModelListener {
 
     private Controller controller;
 
@@ -25,15 +25,13 @@ public class TestsPanel extends JPanel implements TableModelListener {
     private JTable jtTests = new JTable(tableModel);
 
 
-    public TestsPanel(Controller controller) {
+    TestsPanel(Controller controller) {
         this.controller = controller;
     }
 
-    public JPanel create(int width, int height) {
+    JPanel create() {
 
         JPanel jPanel = new JPanel(new BorderLayout());
-        jPanel.setMaximumSize(new Dimension(width, height));
-        jPanel.setMinimumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
         jPanel.setBorder(new TitledBorder(
@@ -79,13 +77,13 @@ public class TestsPanel extends JPanel implements TableModelListener {
         int lastRow = e.getLastRow();
     }
 
-    public void loadTestList() {
+    void loadTestList() {
 
         List<BaseTestCase> testsList = controller.getTestsList();
         tableModel.setData(testsList);
     }
 
-    public void updateTestList() {
+    void updateTestList() {
         tableModel.fireTableDataChanged();
     }
 
@@ -94,7 +92,7 @@ public class TestsPanel extends JPanel implements TableModelListener {
         private String[] columnNames = {"№", "Check", "Name", "State"};
         private List<BaseTestCase> data = new ArrayList<>();
 
-        public void setData(List<BaseTestCase> data) {
+        void setData(List<BaseTestCase> data) {
             this.data = data;
         }
 

@@ -9,22 +9,20 @@ import packet.Command;
  */
 public class Stand extends Device {
 
-    public static final int MAX_RECEIVER_ADC_VOLTAGE_MCV = 1500000;
+    private static final int MAX_RECEIVER_ADC_VOLTAGE_MCV = 1500000;
     private String firmware;
     private String scheme;
     private String ID;
 
-    public Stand(ConnectionManager connectionManager, Controller controller) {
+    Stand(ConnectionManager connectionManager, Controller controller) {
         super(connectionManager, controller);
     }
 
 
     @Override
     public boolean readInfo() {
-
-        set(Command.GET_INFO_STAND);
-
         try {
+            set(Command.GET_INFO_STAND);
             String info = getString();
             String[] infoDetails = info.trim().split(" ");
 
@@ -73,8 +71,8 @@ public class Stand extends Device {
                 ", ID= " + ID + " }";
     }
 
-    public int calcVoltage(double level, int gain) {
-        double voltage_mcV = level / 100 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain + 22) / 20.0);
+    public int calcVoltage(double level_prt, int gain) {
+        double voltage_mcV = level_prt / 100 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain + 22) / 20.0);
         return (int) voltage_mcV;
     }
 }

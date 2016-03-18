@@ -41,7 +41,6 @@ public class ConnectionManager {
     public boolean sendPacket(Packet packet) throws Exception {
 
         boolean result = false;
-
         if (packet != null) {
             byte[] packedData = packet.pack();
             byte[] wrappedData = protocol.wrap(packedData);

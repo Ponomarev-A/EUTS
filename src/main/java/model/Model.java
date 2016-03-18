@@ -109,30 +109,28 @@ public class Model {
         try {
             controller.updateLog("Close connection " + connectionManager.getConnection() + " is " +
                     (connectionManager.getConnection().close() ? "success" : "failed"));
-
-            receiver.checkConnectionStatus();
-            stand.checkConnectionStatus();
         } catch (Exception e) {
             controller.showErrorMessage(
                     "Close connection",
                     "Can't close connection " + connectionManager.getConnection(),
                     e);
         }
+        receiver.checkConnectionStatus();
+        stand.checkConnectionStatus();
     }
 
     public void connectToDevice() {
         try {
             controller.updateLog("Open connection " + connectionManager.getConnection() + " is " +
                     (connectionManager.getConnection().open() ? "success" : "failed"));
-
-            receiver.checkConnectionStatus();
-            stand.checkConnectionStatus();
         } catch (Exception e) {
             controller.showErrorMessage(
                     "Open connection",
                     "Can't open connection " + connectionManager.getConnection(),
                     e);
         }
+        receiver.checkConnectionStatus();
+        stand.checkConnectionStatus();
     }
 
     public boolean isCOMPortSelected(String portName) {

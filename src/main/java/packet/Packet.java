@@ -31,7 +31,7 @@ import java.util.Arrays;
 public class Packet {
 
     // Length of packet attributes (bytes)
-    public static final short DATA_COUNT_LENGTH = 2;
+    private static final short DATA_COUNT_LENGTH = 2;
     private static final short CRC_POLYNOMIAL = (short)0x8005;
 
     // Length of packet parts (bytes)
@@ -39,8 +39,8 @@ public class Packet {
     private static final short DATA_LENGTH = 512;
     private static final short CRC16_LENGTH = 2;
 
-    public static final short MIN_FRAME_LENGTH = COMMAND_LENGTH + CRC16_LENGTH;
-    public static final short MAX_FRAME_LENGTH = COMMAND_LENGTH + DATA_LENGTH + CRC16_LENGTH;
+    private static final short MIN_FRAME_LENGTH = COMMAND_LENGTH + CRC16_LENGTH;
+    private static final short MAX_FRAME_LENGTH = COMMAND_LENGTH + DATA_LENGTH + CRC16_LENGTH;
 
     private Command command;
     private byte[] data;
@@ -53,7 +53,7 @@ public class Packet {
     }
 
     public Packet() {
-        this.command = null;
+        this.command = Command.NO_COMMAND;
         this.data = new byte[0];
         this.CRC     = 0;
     }
@@ -131,12 +131,16 @@ public class Packet {
         return CRC;
     }
 
-    public void setCRC(short CRC) {
+    private void setCRC(short CRC) {
         this.CRC = CRC;
     }
 
     public byte[] getData() {
         return data;
+    }
+
+    void setData(byte[] data) {
+        this.data = data;
     }
 
     public void setData(int data) {
@@ -147,10 +151,14 @@ public class Packet {
         short[] result = new short[data.length / 2];
         try {
             ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN).asShortBuffer().get(result);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         return result;
+    }
+
+    public byte getDataAsByte() {
+        return data[0];
     }
 
     public short getDataAsShort() {
@@ -162,7 +170,7 @@ public class Packet {
 
         try {
             result = ByteBuffer.wrap(array).getShort();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         return result;
@@ -177,7 +185,7 @@ public class Packet {
 
         try {
             result = ByteBuffer.wrap(array).getInt();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         return result;
@@ -214,7 +222,7 @@ public class Packet {
     /**
      * @return CRC sum of Command+Data byte array
      */
-    public short updateCRC() {
+    short updateCRC() {
         CRC = calculateCRC16(data);
         return CRC;
     }
@@ -274,9 +282,5 @@ public class Packet {
         setCRC(CRC);
         setCommand(Command.getCommand(command_id));
         setData(data);
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
     }
 }

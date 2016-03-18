@@ -15,15 +15,13 @@ class StandInfoPanel extends JPanel {
     private JLabel jlStatus = new JLabel();
     private JLabel jlStandID = new JLabel();
 
-    public StandInfoPanel(Controller controller) {
+    StandInfoPanel(Controller controller) {
         this.controller = controller;
     }
 
-    JPanel create(int width, int height) {
+    JPanel create() {
 
         JPanel jPanel = new JPanel(new GridLayout(4, 1));
-        jPanel.setMaximumSize(new Dimension(width, height));
-        jPanel.setMinimumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
         jPanel.setBorder(new TitledBorder(
@@ -43,7 +41,7 @@ class StandInfoPanel extends JPanel {
         return jPanel;
     }
 
-    public void updateInfo() {
+    void updateInfo() {
 
         boolean isConnected = controller.isStandConnected();
 

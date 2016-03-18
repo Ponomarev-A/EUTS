@@ -14,17 +14,16 @@ import java.util.concurrent.*;
  */
 public class UART implements Connection {
 
-    public static final int BAUDRATE = SerialPort.BAUDRATE_115200;
-    public static final int DATABITS = SerialPort.DATABITS_8;
-    public static final int STOPBITS = SerialPort.STOPBITS_1;
-    public static final int PARITY = SerialPort.PARITY_NONE;
+    private static final int BAUDRATE = SerialPort.BAUDRATE_115200;
+    private static final int DATABITS = SerialPort.DATABITS_8;
+    private static final int STOPBITS = SerialPort.STOPBITS_1;
+    private static final int PARITY = SerialPort.PARITY_NONE;
 
     private static final int READ_PERIOD_MS = 50;
     private static final int READ_EXECUTE_TIMEOUT_MS = READ_PERIOD_MS * 10;
-    private static final int READ_WAIT_TIMEOUT_MS = READ_EXECUTE_TIMEOUT_MS + 1500;
+    private static final int READ_WAIT_TIMEOUT_MS = READ_EXECUTE_TIMEOUT_MS + 2200;
 
-    private static final int WRITE_PERIOD_MS = 1000;
-    private static final int WRITE_WAIT_TIMEOUT_MS = WRITE_PERIOD_MS + 500;
+    private static final int WRITE_WAIT_TIMEOUT_MS = 200;
 
     private static final ThreadFactory THREAD_FACTORY_WRITER = new ThreadFactoryBuilder().setNameFormat("Writer-%d").setDaemon(true).build();
     private static final ThreadFactory THREAD_FACTORY_READER = new ThreadFactoryBuilder().setNameFormat("Reader-%d").setDaemon(true).build();
@@ -115,8 +114,6 @@ public class UART implements Connection {
                             outputBufferBytesCount = serialPort.getOutputBufferBytesCount();
                         }
                     }
-
-                    TimeUnit.MILLISECONDS.sleep(WRITE_PERIOD_MS);
                     return outputBufferBytesCount;
                 }
             }).get();
@@ -151,7 +148,7 @@ public class UART implements Connection {
 
         private int attemptsToRead = 0;     // Количество попыток чтения буфера входных данных
 
-        public PortReader(ScheduledExecutorService executor) {
+        PortReader(ScheduledExecutorService executor) {
             this.executor = executor;
         }
 

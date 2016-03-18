@@ -14,12 +14,10 @@ import java.awt.event.WindowEvent;
  */
 public class View extends JFrame {
 
-    public static final Font DEFAULT_FONT = new Font(null, Font.PLAIN, 18);
-    public static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
-
-    public static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);
-
-    private static final int FRAME_WIDTH = 1100;
+    static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
+    static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);
+    private static final Font DEFAULT_FONT = new Font(null, Font.PLAIN, 18);
+    private static final int FRAME_WIDTH = 1200;
     private static final int FRAME_HEIGHT = 800;
 
     private Controller controller;
@@ -33,6 +31,11 @@ public class View extends JFrame {
 
     public View(Controller controller) {
         this.controller = controller;
+
+        jpTests = new TestsPanel(controller);
+        jpLog = new LogPanel(controller);
+        jpStandInfo = new StandInfoPanel(controller);
+        jpReceiverInfo = new ReceiverInfoPanel(controller);
     }
 
     public void init() {
@@ -41,16 +44,18 @@ public class View extends JFrame {
         createMainPanel();
         createMainMenu();
 
+        pack();
+        validate();
         setVisible(true);
     }
 
     private void createMainFrame() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(FRAME_WIDTH, FRAME_HEIGHT);
-        setResizable(false);
+        setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+        setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setLocationRelativeTo(null);
         setDefaultLookAndFeelDecorated(true);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
         setTitle("Electronic Units Test Stand (EUTS) application");
 
         // Set new default font to labels
@@ -59,32 +64,31 @@ public class View extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                controller.destroyConnectionManager();
+                controller.windowClosing();
                 super.windowClosing(e);
             }
         });
     }
 
     private void createMainPanel() {
-        JPanel jpTop = new JPanel();
-        JPanel jpBottom = new JPanel();
-        jpTop.setLayout(new BoxLayout(jpTop, BoxLayout.X_AXIS));
-        jpBottom.setLayout(new BoxLayout(jpBottom, BoxLayout.X_AXIS));
+        JPanel jpLeft = new JPanel();
+        jpLeft.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
+        jpLeft.setMinimumSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
+        jpLeft.setLayout(new BoxLayout(jpLeft, BoxLayout.Y_AXIS));
 
-        jpReceiverInfo = new ReceiverInfoPanel(controller);
-        jpStandInfo = new StandInfoPanel(controller);
-        jpLog = new LogPanel(controller);
-        jpTests = new TestsPanel(controller);
+        jpLeft.add(jpReceiverInfo.create());
+        jpLeft.add(jpStandInfo.create());
+        jpLeft.add(jpTests.create());
 
-        jpTop.add(jpReceiverInfo.create(FRAME_WIDTH / 2, FRAME_HEIGHT / 5));
-        jpTop.add(jpStandInfo.create(FRAME_WIDTH / 2, FRAME_HEIGHT / 5));
+        JPanel jpRight = new JPanel();
+        jpRight.setLayout(new BoxLayout(jpRight, BoxLayout.Y_AXIS));
+        jpRight.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
+        jpRight.setMinimumSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
 
-        jpBottom.add(jpTests.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
-        jpBottom.add(jpLog.create(FRAME_WIDTH / 2, FRAME_HEIGHT * 4 / 5));
+        jpRight.add(jpLog.create());
 
-
-        add(jpTop);
-        add(jpBottom);
+        add(jpLeft);
+        add(jpRight);
     }
 
     private void createMainMenu() {

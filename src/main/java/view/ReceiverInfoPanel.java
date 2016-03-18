@@ -16,15 +16,13 @@ class ReceiverInfoPanel extends JPanel {
     private JLabel jlStatus = new JLabel();
     private JLabel jlReceiverID = new JLabel();
 
-    public ReceiverInfoPanel(Controller controller) {
+    ReceiverInfoPanel(Controller controller) {
         this.controller = controller;
     }
 
-    JPanel create(int width, int height) {
+    JPanel create() {
 
         JPanel jPanel = new JPanel(new GridLayout(5, 2));
-        jPanel.setMaximumSize(new Dimension(width, height));
-        jPanel.setMinimumSize(new Dimension(width, height));
         jPanel.setBackground(Color.LIGHT_GRAY);
 
 
@@ -45,7 +43,7 @@ class ReceiverInfoPanel extends JPanel {
         return jPanel;
     }
 
-    public void updateInfo() {
+    void updateInfo() {
 
         boolean isConnected = controller.isReceiverConnected();
 
