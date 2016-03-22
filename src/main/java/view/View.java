@@ -4,7 +4,7 @@ import controller.Controller;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.AttributeSet;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -14,11 +14,17 @@ import java.awt.event.WindowEvent;
  */
 public class View extends JFrame {
 
+    // Color constants
+    static final Color DARK_GREEN = new Color(0, 130, 0);
+    static final Color BLACK = Color.black;
+    static final Color RED = Color.RED;
+
     static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
     static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);
     private static final Font DEFAULT_FONT = new Font(null, Font.PLAIN, 18);
-    private static final int FRAME_WIDTH = 1200;
+
     private static final int FRAME_HEIGHT = 800;
+    private static final int FRAME_WIDTH = 1200;
 
     private Controller controller;
 
@@ -124,7 +130,7 @@ public class View extends JFrame {
         );
     }
 
-    public void updateLog(String text, SimpleAttributeSet attributeSet) {
+    public void updateLog(String text, AttributeSet... attributeSet) {
         jpLog.updateLog(text, attributeSet);
     }
 

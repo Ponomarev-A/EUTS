@@ -54,6 +54,6 @@ class StandInfoPanel extends JPanel {
         jlStandID.setText(isConnected ? controller.getStand().getID() : "-");
 
         jlStatus.setText(isConnected ? "Connected" : "Disconnected");
-        jlStatus.setForeground(isConnected ? Color.GREEN : Color.RED);
+        jlStatus.setForeground(isConnected ? View.DARK_GREEN : View.RED);
     }
 }

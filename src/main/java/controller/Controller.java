@@ -8,7 +8,7 @@ import view.LogPanel;
 import view.View;
 
 import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.AttributeSet;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -140,11 +140,11 @@ public class Controller implements EventListener {
         }
 
         updateLog("\n\n" + title, LogPanel.BOLD);
-        updateLog(text + "\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
+        updateLog(text + "\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage(), LogPanel.BOLD, LogPanel.RED);
     }
 
     @Override
-    public void updateLog(final String text, final SimpleAttributeSet attributeSet) {
+    public void updateLog(final String text, final AttributeSet... attributeSet) {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -162,8 +162,13 @@ public class Controller implements EventListener {
     }
 
     @Override
+    public void updateLog(String text, AttributeSet attributeSet) {
+        updateLog(text, attributeSet, LogPanel.BLACK);
+    }
+
+    @Override
     public void updateLog(String text) {
-        updateLog(text, LogPanel.NORMAL);
+        updateLog(text, LogPanel.NORMAL, LogPanel.BLACK);
     }
 
     @Override
@@ -214,7 +219,7 @@ public class Controller implements EventListener {
         testWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                updateLog("\n===\tSTART TESTING\t===", LogPanel.BOLD);
+                updateLog("\n===  START TESTING  ===", LogPanel.BOLD);
 
                 publish();
                 model.startTesting();
@@ -254,7 +259,8 @@ public class Controller implements EventListener {
             @Override
             protected void done() {
                 view.updateMenuStates();
-                updateLog("===\tSTOP TESTING\t===", LogPanel.BOLD);
+                updateLog("===  STOP TESTING  ===", LogPanel.BOLD);
+                updateLog(model.getTestManager().toString(), LogPanel.BOLD);
             }
         }.execute();
     }

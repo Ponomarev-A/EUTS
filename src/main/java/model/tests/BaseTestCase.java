@@ -18,7 +18,7 @@ public abstract class BaseTestCase extends org.junit.Assert {
     private State state = READY;
     private boolean enabled = true;
 
-    public BaseTestCase(String name, Receiver receiver, Stand stand) {
+    protected BaseTestCase(String name, Receiver receiver, Stand stand) {
         super();
         this.name = name;
         this.receiver = receiver;

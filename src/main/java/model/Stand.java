@@ -65,10 +65,10 @@ public class Stand extends Device {
 
     @Override
     public String toString() {
-        return "Stand { " +
+        return "Stand {" +
                 "firmware = " + firmware +
                 ", scheme = " + scheme +
-                ", ID= " + ID + " }";
+                ", ID = " + ID + "}";
     }
 
     public int calcVoltage(double level_prt, int gain) {

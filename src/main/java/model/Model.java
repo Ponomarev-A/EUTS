@@ -25,6 +25,7 @@ public class Model {
 
     private Receiver receiver;
     private Stand stand;
+
     private TestManager testManager;
 
     public Model(Controller controller) {
@@ -41,6 +42,10 @@ public class Model {
 
     public Stand getStand() {
         return stand;
+    }
+
+    public TestManager getTestManager() {
+        return testManager;
     }
 
     public void init() {

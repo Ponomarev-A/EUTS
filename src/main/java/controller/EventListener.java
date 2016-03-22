@@ -3,7 +3,7 @@ package controller;
 import model.Device;
 import model.tests.BaseTestCase;
 
-import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.AttributeSet;
 import java.util.List;
 
 /**
@@ -29,7 +29,9 @@ public interface EventListener {
 
     void showErrorMessage(String title, String text, Exception e);
 
-    void updateLog(String text, SimpleAttributeSet attributeSet);
+    void updateLog(String text, AttributeSet... attributeSet);
+
+    void updateLog(String text, AttributeSet attributeSet);
 
     void updateLog(String text);
 

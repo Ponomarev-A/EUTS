@@ -41,7 +41,7 @@ public abstract class Device {
         } catch (Exception e) {
             connectionStatus = ConnectionStatus.DISCONNECTED;
             controller.showErrorMessage(
-                    "Check " + this + " connection status",
+                    "Check " + (this.toString()).split(" ")[0] + " connection status",
                     "Read " + this + " connection status is failed.\nTry again connect to device!",
                     e);
         }

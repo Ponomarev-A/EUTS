@@ -69,11 +69,11 @@ public class Receiver extends Device {
 
     @Override
     public String toString() {
-        return "Receiver { " +
+        return "Receiver {" +
                 "model = " + model +
                 ", firmware = " + firmware +
                 ", scheme = " + scheme +
-                ", ID= " + ID + " }";
+                ", ID = " + ID + "}";
     }
 
     public enum Modes {
