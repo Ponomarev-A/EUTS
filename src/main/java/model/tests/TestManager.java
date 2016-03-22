@@ -8,6 +8,8 @@ import view.LogPanel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static model.tests.BaseTestCase.State;
+
 /**
  * The test manager class is used to control test cases
  */
@@ -15,6 +17,8 @@ public class TestManager {
 
     private final Controller controller;
     private List<BaseTestCase> testsList;
+    private boolean testRunning = false;
+
 
     public TestManager(Controller controller, Receiver receiver, Stand stand) {
         this.controller = controller;
@@ -33,26 +37,40 @@ public class TestManager {
     public void startTests() {
 
         for (int i = 1; i <= testsList.size(); i++) {
+
+            if (!isTestRunning())
+                break;
+
             BaseTestCase testCase = testsList.get(i - 1);
 
             if (testCase.isEnabled()) {
                 controller.updateLog(String.format("Test #%d %s is running...", i, testCase.getName()));
                 try {
                     testCase.runTest();
-                    testCase.setState(BaseTestCase.State.PASS);
+                    testCase.setState(State.PASS);
                 } catch (Error | Exception error) {
-                    testCase.setState(BaseTestCase.State.FAIL);
-                    controller.updateLog("ERROR: " + error.getLocalizedMessage(), LogPanel.BOLD);
+                    if (error instanceof InterruptedException)
+                        setTestRunning(false);
+
+                    testCase.setState(State.FAIL);
+                    controller.updateLog("ERROR: " + error.getLocalizedMessage() + "\nCause: " + error.getCause().getLocalizedMessage(), LogPanel.BOLD);
                 } finally {
                     controller.updateLog(String.format("Test #%d %s is %s.", i, testCase.getName(),
-                            (testCase.getState() == BaseTestCase.State.PASS) ? "passed" : "failed"));
+                            (testCase.getState() == State.PASS) ? "passed" : "failed"));
+                    controller.updateTestList();
                 }
             } else {
                 controller.updateLog(String.format("Test #%d %s is disabled.", i, testCase.getName()));
             }
-
-            controller.updateTestList();
         }
+    }
+
+    public boolean isTestRunning() {
+        return testRunning;
+    }
+
+    public void setTestRunning(boolean testRunning) {
+        this.testRunning = testRunning;
     }
 
     public List<BaseTestCase> getTestsList() {

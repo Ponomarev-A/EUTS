@@ -5,7 +5,6 @@ import connections.UARTTest;
 import controller.Controller;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.*;
 public class ModelTest {
 
     //    public static final String TEST_PORTNAME = Model.DEFAULT_PORTNAME;
-    public static final String TEST_PORTNAME = UARTTest.COM_PORTNAME;
+    private static final String TEST_PORTNAME = UARTTest.COM_PORTNAME;
 
     private Controller controller;
     private Model model;
@@ -36,7 +35,7 @@ public class ModelTest {
         model = new Model(controller);
     }
 
-    public static Controller createMockController() {
+    static Controller createMockController() {
         Controller mockController = mock(Controller.class);
 
         doNothing().when(mockController).updateLog(anyString(), (SimpleAttributeSet) anyObject());
@@ -177,36 +176,11 @@ public class ModelTest {
     }
 
     @Test
-    @Ignore
-    public void testIsTestRunning() throws Exception {
+    public void testTestCaseExecute() throws Exception {
         model.createConnectionManager(TEST_PORTNAME);
         model.connectToDevice();
 
         assertFalse(model.isTestRunning());
-        model.startTesting();
-        assertTrue(model.isTestRunning());
-
-        model.disconnectFromDevice();
-    }
-
-    @Test
-    @Ignore
-    public void testStartTesting() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
-        model.startTesting();
-        assertTrue(model.isTestRunning());
-
-        model.disconnectFromDevice();
-    }
-
-    @Test
-    @Ignore
-    public void testStopTesting() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
         model.startTesting();
         assertTrue(model.isTestRunning());
         model.stopTesting();

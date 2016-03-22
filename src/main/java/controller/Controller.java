@@ -9,6 +9,7 @@ import view.View;
 
 import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +25,8 @@ public class Controller implements EventListener {
     private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY_CONTROLLER);
     private View view;
     private Model model;
+
+    private SwingWorker<Void, Void> testWorker;
 
     public Controller() {
 
@@ -42,7 +45,6 @@ public class Controller implements EventListener {
         });
     }
 
-
     @Override
     public String[] getCOMPortList() {
         return model.getAvailableCOMPorts();
@@ -50,19 +52,13 @@ public class Controller implements EventListener {
 
     @Override
     public void connect() {
-        updateLog("\nConnect...", LogPanel.BOLD);
 
         executor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                publish();
+                updateLog("\nConnect...", LogPanel.BOLD);
                 model.connectToDevice();
                 return null;
-            }
-
-            @Override
-            protected void process(List<Void> chunks) {
-                view.updateMenuStates();
             }
 
             @Override
@@ -70,6 +66,7 @@ public class Controller implements EventListener {
                 view.updateMenuStates();
                 view.updateDeviceInfo();
                 view.loadTestList();
+                view.updateTestList();
 
                 updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
                 updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
@@ -79,11 +76,10 @@ public class Controller implements EventListener {
 
     @Override
     public void disconnect() {
-        updateLog("\nDisconnect...", LogPanel.BOLD);
-
         executor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
+                updateLog("\nDisconnect...", LogPanel.BOLD);
                 model.disconnectFromDevice();
                 return null;
             }
@@ -127,16 +123,42 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void showErrorMessage(String title, String text, Exception e) {
-        view.showErrorMessage(title, text + "\n\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
+    public void showErrorMessage(final String title, final String text, final Exception e) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.showErrorMessage(title, text + "\n\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
+                    }
+                });
+            } catch (InterruptedException | InvocationTargetException error) {
+                error.printStackTrace();
+            }
+        } else {
+            view.showErrorMessage(title, text + "\n\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
+        }
 
         updateLog("\n\n" + title, LogPanel.BOLD);
         updateLog(text + "\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
     }
 
     @Override
-    public void updateLog(String text, SimpleAttributeSet attributeSet) {
-        view.updateLog(text, attributeSet);
+    public void updateLog(final String text, final SimpleAttributeSet attributeSet) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.updateLog(text, attributeSet);
+                    }
+                });
+            } catch (InterruptedException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        } else {
+            view.updateLog(text, attributeSet);
+        }
     }
 
     @Override
@@ -146,11 +168,10 @@ public class Controller implements EventListener {
 
     @Override
     public void createConnectionManager(final String portName) {
-        updateLog("\nCreate connection manager...", LogPanel.BOLD);
-
         executor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
+                updateLog("\nCreate connection manager...", LogPanel.BOLD);
                 model.createConnectionManager(portName);
                 return null;
             }
@@ -164,12 +185,10 @@ public class Controller implements EventListener {
 
     @Override
     public void destroyConnectionManager() {
-        updateLog("\nDestroy connection manager...", LogPanel.BOLD);
-
         executor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                model.stopTesting();
+                updateLog("\nDestroy connection manager...", LogPanel.BOLD);
                 model.destroyConnectionManager();
                 return null;
             }
@@ -189,25 +208,45 @@ public class Controller implements EventListener {
 
     @Override
     public void startTesting() {
-        executor.submit(new SwingWorker<Void, Void>() {
+        if (model.isTestRunning())
+            return;
+
+        testWorker = new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
+                updateLog("\n===\tSTART TESTING\t===", LogPanel.BOLD);
+
+                publish();
                 model.startTesting();
                 return null;
             }
 
             @Override
-            protected void done() {
+            protected void process(List<Void> chunks) {
                 view.updateMenuStates();
             }
-        });
+
+            @Override
+            protected void done() {
+                stopTesting();
+            }
+        };
+        testWorker.execute();
     }
 
     @Override
     public void stopTesting() {
-        executor.submit(new SwingWorker<Void, Void>() {
+
+        if (!model.isTestRunning())
+            return;
+
+        new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
+                if (!testWorker.isDone()) {
+                    testWorker.cancel(true);
+                }
+
                 model.stopTesting();
                 return null;
             }
@@ -215,8 +254,9 @@ public class Controller implements EventListener {
             @Override
             protected void done() {
                 view.updateMenuStates();
+                updateLog("===\tSTOP TESTING\t===", LogPanel.BOLD);
             }
-        });
+        }.execute();
     }
 
     @Override
@@ -226,7 +266,20 @@ public class Controller implements EventListener {
 
     @Override
     public void updateTestList() {
-        view.updateTestList();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.updateTestList();
+                    }
+                });
+            } catch (InterruptedException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        } else {
+            view.updateTestList();
+        }
     }
 
     public boolean isTestRunning() {
@@ -242,7 +295,5 @@ public class Controller implements EventListener {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-
     }
 }

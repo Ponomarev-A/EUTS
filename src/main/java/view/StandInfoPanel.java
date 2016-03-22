@@ -17,14 +17,14 @@ class StandInfoPanel extends JPanel {
 
     StandInfoPanel(Controller controller) {
         this.controller = controller;
+        create();
     }
 
-    JPanel create() {
+    private void create() {
 
-        JPanel jPanel = new JPanel(new GridLayout(4, 1));
-        jPanel.setBackground(Color.LIGHT_GRAY);
+        setLayout(new GridLayout(4, 1));
 
-        jPanel.setBorder(new TitledBorder(
+        setBorder(new TitledBorder(
                 View.TITLE_BORDER,
                 "Stand info",
                 TitledBorder.DEFAULT_JUSTIFICATION,
@@ -32,13 +32,14 @@ class StandInfoPanel extends JPanel {
                 View.TITLE_FONT
         ));
 
-        jPanel.add(new JLabel("Firmware:"));    jPanel.add(jlFirmware);
-        jPanel.add(new JLabel("Scheme:"));      jPanel.add(jlScheme);
-        jPanel.add(new JLabel("Stand ID:"));
-        jPanel.add(jlStandID);
-        jPanel.add(new JLabel("Status:"));      jPanel.add(jlStatus);
-
-        return jPanel;
+        add(new JLabel("Firmware:"));
+        add(jlFirmware);
+        add(new JLabel("Scheme:"));
+        add(jlScheme);
+        add(new JLabel("Stand ID:"));
+        add(jlStandID);
+        add(new JLabel("Status:"));
+        add(jlStatus);
     }
 
     void updateInfo() {

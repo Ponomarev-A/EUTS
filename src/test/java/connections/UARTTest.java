@@ -33,7 +33,7 @@ public class UARTTest {
         return UART.getPortNames().length != 0 ? UART.getInstance(COM_PORTNAME) : mockUART(COM_PORTNAME);
     }
 
-    public static UART mockUART(String portname) {
+    private static UART mockUART(String portname) {
 
         final UART mockUART = mock(UART.class);
 
@@ -59,7 +59,7 @@ public class UARTTest {
                     return mockData;
                 }
             });
-        } catch (SerialPortException | InvalidPacketSize e) {
+        } catch (SerialPortException | InvalidPacketSize | InterruptedException ignored) {
         }
 
         return mockUART;

@@ -5,8 +5,6 @@ import model.tests.BaseTestCase;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -17,7 +15,7 @@ import java.util.List;
 /**
  * Test panel class contains testList list
  */
-class TestsPanel extends JPanel implements TableModelListener {
+class TestsPanel extends JPanel {
 
     private Controller controller;
 
@@ -27,14 +25,14 @@ class TestsPanel extends JPanel implements TableModelListener {
 
     TestsPanel(Controller controller) {
         this.controller = controller;
+        create();
     }
 
-    JPanel create() {
+    private void create() {
 
-        JPanel jPanel = new JPanel(new BorderLayout());
-        jPanel.setBackground(Color.LIGHT_GRAY);
+        setLayout(new BorderLayout());
 
-        jPanel.setBorder(new TitledBorder(
+        setBorder(new TitledBorder(
                 View.TITLE_BORDER,
                 "Tests",
                 TitledBorder.DEFAULT_JUSTIFICATION,
@@ -42,9 +40,8 @@ class TestsPanel extends JPanel implements TableModelListener {
                 View.TITLE_FONT
         ));
 
-        jPanel.add(new JScrollPane(jtTests));
+        add(new JScrollPane(jtTests));
 
-        jtTests.getModel().addTableModelListener(this);
         TableColumnModel columnModel = jtTests.getColumnModel();
         columnModel.setColumnSelectionAllowed(false);
 
@@ -62,19 +59,6 @@ class TestsPanel extends JPanel implements TableModelListener {
         jtTests.setColumnModel(columnModel);
         jtTests.setRowHeight(20);
         jtTests.setRowSelectionAllowed(false);
-
-        return jPanel;
-    }
-
-    /**
-     * This fine grain notification tells listeners the exact range
-     * of cells, rows, or columns that changed.
-     */
-    @Override
-    public void tableChanged(TableModelEvent e) {
-        int column = e.getColumn();
-        int firstRow = e.getFirstRow();
-        int lastRow = e.getLastRow();
     }
 
     void loadTestList() {

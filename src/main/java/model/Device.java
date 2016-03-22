@@ -58,10 +58,15 @@ public abstract class Device {
     private void set(Packet packet) throws Exception {
         try {
             connectionManager.sendPacket(packet);
+
             if (isConfirmationRequired(packet)) {
-                if (connectionManager.receivePacket().getDataAsByte() == 1)
+                Packet confirmationPacket = connectionManager.receivePacket();
+                if (!confirmationPacket.getCommand().equals(packet.getCommand()) ||
+                        confirmationPacket.getDataAsByte() == Confirmation.FAIL.ordinal())
                     throw new FailSendPacket("No confirmation has been received.");
             }
+        } catch (InterruptedException e) {
+            throw new InterruptedException("Execution operation was interrupted.");
         } catch (Exception e) {
             FailSendPacket failSendPacket = new FailSendPacket(String.format("Can't send command %s\n with value %s\n to device %s",
                     packet.getCommand(), packet.getDataAsInt(), this.toString()));
@@ -92,6 +97,8 @@ public abstract class Device {
         try {
             packet = connectionManager.receivePacket();
             checkPacketContainsErrorInfo(packet);
+        } catch (InterruptedException e) {
+            throw new Exception("Execution operation was interrupted.");
         } catch (Exception e) {
             FailReceivePacket failReceivePacket = new FailReceivePacket(String.format("Receive packet %s\n with value %s\n from device %s",
                     packet.getCommand(), packet.getDataAsInt(), this.toString()));
@@ -131,7 +138,10 @@ public abstract class Device {
         return get().getDataAsString();
     }
 
+    private enum Confirmation {SUCCESS, FAIL}
+
     public enum SignalType {SOLID, PULSE}
 
     public enum ExtSensors {INT, KI, DODK, DKI}
+
 }

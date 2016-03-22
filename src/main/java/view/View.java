@@ -27,6 +27,7 @@ public class View extends JFrame {
     private StandInfoPanel jpStandInfo;
     private LogPanel jpLog;
     private TestsPanel jpTests;
+    private JToolBar toolBar;
 
 
     public View(Controller controller) {
@@ -36,16 +37,19 @@ public class View extends JFrame {
         jpLog = new LogPanel(controller);
         jpStandInfo = new StandInfoPanel(controller);
         jpReceiverInfo = new ReceiverInfoPanel(controller);
+        menuBar = new MenuBar(controller);
+        toolBar = new ToolBar(controller);
     }
 
     public void init() {
 
         createMainFrame();
         createMainPanel();
-        createMainMenu();
+        createToolBar();
+        createMenuBar();
 
         pack();
-        validate();
+        revalidate();
         setVisible(true);
     }
 
@@ -55,7 +59,7 @@ public class View extends JFrame {
         setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setLocationRelativeTo(null);
         setDefaultLookAndFeelDecorated(true);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
+        setLayout(new BorderLayout());
         setTitle("Electronic Units Test Stand (EUTS) application");
 
         // Set new default font to labels
@@ -71,29 +75,35 @@ public class View extends JFrame {
     }
 
     private void createMainPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(1, 2));
+
         JPanel jpLeft = new JPanel();
-        jpLeft.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
-        jpLeft.setMinimumSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
+        jpLeft.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT));
         jpLeft.setLayout(new BoxLayout(jpLeft, BoxLayout.Y_AXIS));
 
-        jpLeft.add(jpReceiverInfo.create());
-        jpLeft.add(jpStandInfo.create());
-        jpLeft.add(jpTests.create());
+        jpLeft.add(jpReceiverInfo);
+        jpLeft.add(jpStandInfo);
+        jpLeft.add(jpTests);
 
         JPanel jpRight = new JPanel();
+        jpRight.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT));
         jpRight.setLayout(new BoxLayout(jpRight, BoxLayout.Y_AXIS));
-        jpRight.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
-        jpRight.setMinimumSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT / 4));
 
-        jpRight.add(jpLog.create());
+        jpRight.add(jpLog);
 
-        add(jpLeft);
-        add(jpRight);
+        panel.add(jpLeft);
+        panel.add(jpRight);
+
+        add(panel, BorderLayout.CENTER);
     }
 
-    private void createMainMenu() {
-        menuBar = new MenuBar(controller);
-        setJMenuBar(menuBar.createMainMenu());
+    private void createToolBar() {
+        add(toolBar, BorderLayout.NORTH);
+    }
+
+    private void createMenuBar() {
+        setJMenuBar(menuBar);
     }
 
     public void updateDeviceInfo() {

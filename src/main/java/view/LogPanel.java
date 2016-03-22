@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Log panel class show all application and user actions in the multiline textfield window
@@ -27,14 +29,14 @@ public class LogPanel extends JPanel {
 
     LogPanel(Controller controller) {
         this.controller = controller;
+        create();
     }
 
-    JPanel create() {
+    private void create() {
 
-        JPanel jPanel = new JPanel(new BorderLayout());
-        jPanel.setBackground(Color.LIGHT_GRAY);
+        setLayout(new BorderLayout());
 
-        jPanel.setBorder(new TitledBorder(
+        setBorder(new TitledBorder(
                 View.TITLE_BORDER,
                 "Log",
                 TitledBorder.DEFAULT_JUSTIFICATION,
@@ -43,16 +45,18 @@ public class LogPanel extends JPanel {
         ));
 
         jepLog.setEditable(false);
-        jPanel.add(new JScrollPane(jepLog));
+        jepLog.setAutoscrolls(true);
 
-        return jPanel;
+        add(new JScrollPane(jepLog));
     }
 
     void updateLog(String text, AttributeSet attributeSet) {
         Document doc = jepLog.getDocument();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String time = attributeSet.equals(NORMAL) ? sdf.format(new Date()) + ": " : "";
 
         try {
-            doc.insertString(doc.getLength(), "\n" + text, attributeSet);
+            doc.insertString(doc.getLength(), "\n" + time + text, attributeSet);
             jepLog.setCaretPosition(doc.getLength());
         } catch (BadLocationException ignored) {
         }

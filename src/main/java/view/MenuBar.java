@@ -9,64 +9,28 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-class MenuBar implements ActionListener {
+class MenuBar extends JMenuBar implements ActionListener {
 
     private final JMenu jmPorts = new JMenu("Choose COM-port");
     private final JMenuItem jmiConnect = new JMenuItem("Connect");
     private final JMenuItem jmiDisconnect = new JMenuItem("Disconnect");
     private final JMenuItem jmiStartTesting = new JMenuItem("Start");
     private final JMenuItem jmiStopTesting = new JMenuItem("Stop");
+
     private Controller controller;
-    private JMenu connectionMenu;
-    private JMenu testingMenu;
 
 
     MenuBar(Controller controller) {
         this.controller = controller;
+        create();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    private void create() {
+        JMenu connectionMenu = createConnectionMenu();
+        JMenu testingMenu = createTestingMenu();
 
-        String command = e.getActionCommand();
-        switch (command) {
-            case "Connect":
-                controller.connect();
-                break;
-            case "Disconnect":
-                controller.disconnect();
-                break;
-
-            case "Start":
-                controller.startTesting();
-                break;
-
-            case "Stop":
-                controller.stopTesting();
-                break;
-
-            // Clicking on COM-port
-            default:
-                // Check port name correctness
-                String portName = command.split(" ")[0].trim();
-                if (portName.matches("^COM\\d{1,2}$")) {
-                    controller.destroyConnectionManager();
-                    controller.createConnectionManager(portName);
-                }
-                break;
-        }
-    }
-
-    JMenuBar createMainMenu() {
-        JMenuBar menuBar = new JMenuBar();
-
-        connectionMenu = createConnectionMenu();
-        testingMenu = createTestingMenu();
-
-        menuBar.add(connectionMenu);
-        menuBar.add(testingMenu);
-
-        return menuBar;
+        add(connectionMenu);
+        add(testingMenu);
     }
 
     private JMenu createConnectionMenu() {
@@ -89,7 +53,6 @@ class MenuBar implements ActionListener {
 
         return menu;
     }
-
 
     private JMenu createTestingMenu() {
         JMenu menu = new JMenu("Testing");
@@ -127,6 +90,38 @@ class MenuBar implements ActionListener {
         }
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        String command = e.getActionCommand();
+        switch (command) {
+            case "Connect":
+                controller.connect();
+                break;
+            case "Disconnect":
+                controller.disconnect();
+                break;
+
+            case "Start":
+                controller.startTesting();
+                break;
+
+            case "Stop":
+                controller.stopTesting();
+                break;
+
+            // Clicking on COM-port
+            default:
+                // Check port name correctness
+                String portName = command.split(" ")[0].trim();
+                if (portName.matches("^COM\\d{1,2}$")) {
+                    controller.destroyConnectionManager();
+                    controller.createConnectionManager(portName);
+                }
+                break;
+        }
+    }
+
     void updateMenuStates() {
 
         if (!controller.isConnectionManagerExist()) {
@@ -140,15 +135,12 @@ class MenuBar implements ActionListener {
         }
 
         boolean isConnected = controller.isStandConnected() & controller.isReceiverConnected();
-
-        jmiConnect.setEnabled(!isConnected);
-        jmiDisconnect.setEnabled(isConnected);
-        jmPorts.setEnabled(!isConnected);
-
-
         boolean isTestRunning = controller.isTestRunning();
 
-        jmiStartTesting.setEnabled(isConnected && !isTestRunning);
-        jmiStopTesting.setEnabled(isConnected && isTestRunning);
+        jmPorts.setEnabled(!isTestRunning && !isConnected);
+        jmiConnect.setEnabled(!isTestRunning && !isConnected);
+        jmiDisconnect.setEnabled(!isTestRunning && isConnected);
+        jmiStartTesting.setEnabled(!isTestRunning && isConnected);
+        jmiStopTesting.setEnabled(isTestRunning && isConnected);
     }
 }

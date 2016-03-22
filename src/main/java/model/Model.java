@@ -7,7 +7,6 @@ import connections.UART;
 import controller.Controller;
 import model.tests.BaseTestCase;
 import model.tests.TestManager;
-import view.LogPanel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +26,6 @@ public class Model {
     private Receiver receiver;
     private Stand stand;
     private TestManager testManager;
-    private boolean testRunning = false;
 
     public Model(Controller controller) {
         this.controller = controller;
@@ -138,27 +136,17 @@ public class Model {
     }
 
     public boolean isTestRunning() {
-        return testRunning;
+        return testManager.isTestRunning();
     }
 
     public void startTesting() {
-        if (testRunning)
-            return;
-
-        controller.updateLog("\n===\tSTART TESTING\t===", LogPanel.BOLD);
-
-        testRunning = true;
+        testManager.setTestRunning(true);
         testManager.startTests();
-        stopTesting();
     }
 
+
     public void stopTesting() {
-        if (!testRunning)
-            return;
-
-        controller.updateLog("\n===\tSTOP TESTING\t===", LogPanel.BOLD);
-
-        testRunning = false;
+        testManager.setTestRunning(false);
     }
 
     public List<BaseTestCase> getTestsList() {
@@ -170,6 +158,7 @@ public class Model {
     public boolean isReceiverConnected() {
         return receiver != null && receiver.getConnectionStatus() == ConnectionStatus.CONNECTED;
     }
+
 
     public boolean isStandConnected() {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;

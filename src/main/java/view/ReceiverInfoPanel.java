@@ -18,15 +18,14 @@ class ReceiverInfoPanel extends JPanel {
 
     ReceiverInfoPanel(Controller controller) {
         this.controller = controller;
+        create();
     }
 
-    JPanel create() {
+    private void create() {
 
-        JPanel jPanel = new JPanel(new GridLayout(5, 2));
-        jPanel.setBackground(Color.LIGHT_GRAY);
+        setLayout(new GridLayout(5, 2));
 
-
-        jPanel.setBorder(new TitledBorder(
+        setBorder(new TitledBorder(
                 View.TITLE_BORDER,
                 "Receiver info",
                 TitledBorder.DEFAULT_JUSTIFICATION,
@@ -34,13 +33,16 @@ class ReceiverInfoPanel extends JPanel {
                 View.TITLE_FONT
         ));
 
-        jPanel.add(new JLabel("Model:"));       jPanel.add(jlModel);
-        jPanel.add(new JLabel("Firmware:"));    jPanel.add(jlFirmware);
-        jPanel.add(new JLabel("Scheme:"));      jPanel.add(jlScheme);
-        jPanel.add(new JLabel("Receiver ID:")); jPanel.add(jlReceiverID);
-        jPanel.add(new JLabel("Status:"));      jPanel.add(jlStatus);
-
-        return jPanel;
+        add(new JLabel("Model:"));
+        add(jlModel);
+        add(new JLabel("Firmware:"));
+        add(jlFirmware);
+        add(new JLabel("Scheme:"));
+        add(jlScheme);
+        add(new JLabel("Receiver ID:"));
+        add(jlReceiverID);
+        add(new JLabel("Status:"));
+        add(jlStatus);
     }
 
     void updateInfo() {

@@ -72,7 +72,7 @@ public class UART implements Connection {
     }
 
     @Override
-    public byte[] read() throws InvalidPacketSize, SerialPortException {
+    public byte[] read() throws InvalidPacketSize, SerialPortException, InterruptedException {
 
         ScheduledExecutorService readExecutor = Executors.newScheduledThreadPool(1, THREAD_FACTORY_READER);
         PortReader portReader = new PortReader(readExecutor);
@@ -81,8 +81,6 @@ public class UART implements Connection {
 
         try {
             readExecutor.awaitTermination(READ_WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             // Already shutdown executor and kill all "read" threads
             readExecutor.shutdown();
