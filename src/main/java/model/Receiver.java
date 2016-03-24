@@ -15,7 +15,7 @@ public class Receiver extends Device {
     private String model;
     private String firmware;
     private String scheme;
-    private String ID;
+    private Integer ID;
 
     Receiver(ConnectionManager connectionManager, Controller controller) {
         super(connectionManager, controller);
@@ -33,7 +33,7 @@ public class Receiver extends Device {
                 model = infoDetails[0];
                 firmware = infoDetails[1];
                 scheme = infoDetails[2];
-                ID = infoDetails[3];
+                ID = Integer.valueOf(infoDetails[3]);
 
                 return true;
             }
@@ -48,7 +48,7 @@ public class Receiver extends Device {
     }
 
     @Override
-    public String getID() {
+    public Integer getID() {
         return ID;
     }
 

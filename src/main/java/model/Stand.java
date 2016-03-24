@@ -12,7 +12,7 @@ public class Stand extends Device {
     private static final int MAX_RECEIVER_ADC_VOLTAGE_MCV = 1500000;
     private String firmware;
     private String scheme;
-    private String ID;
+    private Integer ID;
 
     Stand(ConnectionManager connectionManager, Controller controller) {
         super(connectionManager, controller);
@@ -29,7 +29,7 @@ public class Stand extends Device {
             if (infoDetails.length == 3) {
                 firmware = infoDetails[0];
                 scheme = infoDetails[1];
-                ID = infoDetails[2];
+                ID = Integer.valueOf(infoDetails[2]);
 
                 return true;
             }
@@ -44,7 +44,7 @@ public class Stand extends Device {
     }
 
     @Override
-    public String getID() {
+    public Integer getID() {
         return ID;
     }
 

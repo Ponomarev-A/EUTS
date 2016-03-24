@@ -25,7 +25,7 @@ public abstract class Device {
 
     public abstract boolean readInfo();
 
-    public abstract String getID();
+    public abstract Integer getID();
 
     public abstract String getModel();
 

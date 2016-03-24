@@ -55,7 +55,7 @@ class ReceiverInfoPanel extends JPanel {
         jlModel.setText(isConnected ? controller.getReceiver().getModel() : "-");
         jlFirmware.setText(isConnected ? controller.getReceiver().getFirmware() : "-");
         jlScheme.setText(isConnected ? controller.getReceiver().getScheme() : "-");
-        jlReceiverID.setText(isConnected ? controller.getReceiver().getID() : "-");
+        jlReceiverID.setText(isConnected ? controller.getReceiver().getID().toString() : "-");
 
         jlStatus.setText(isConnected ? "Connected" : "Disconnected");
         jlStatus.setForeground(isConnected ? View.DARK_GREEN : View.RED);

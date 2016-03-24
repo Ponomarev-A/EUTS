@@ -22,7 +22,7 @@ class StandInfoPanel extends JPanel {
 
     private void create() {
 
-        setLayout(new GridLayout(4, 1));
+        setLayout(new GridLayout(4, 2));
 
         setBorder(new TitledBorder(
                 View.TITLE_BORDER,
@@ -51,7 +51,7 @@ class StandInfoPanel extends JPanel {
 
         jlFirmware.setText(isConnected ? controller.getStand().getFirmware() : "-");
         jlScheme.setText(isConnected ? controller.getStand().getScheme() : "-");
-        jlStandID.setText(isConnected ? controller.getStand().getID() : "-");
+        jlStandID.setText(isConnected ? controller.getStand().getID().toString() : "-");
 
         jlStatus.setText(isConnected ? "Connected" : "Disconnected");
         jlStatus.setForeground(isConnected ? View.DARK_GREEN : View.RED);

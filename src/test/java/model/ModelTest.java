@@ -5,6 +5,7 @@ import connections.UARTTest;
 import controller.Controller;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -14,7 +15,8 @@ import javax.swing.text.SimpleAttributeSet;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 /**
  * Test class for model
@@ -38,7 +40,16 @@ public class ModelTest {
     static Controller createMockController() {
         Controller mockController = mock(Controller.class);
 
-        doNothing().when(mockController).updateLog(anyString(), (SimpleAttributeSet) anyObject());
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String text = invocationOnMock.getArgumentAt(0, String.class);
+
+                System.out.println("### MOCK CONTROLLER ###\n" + text);
+                System.out.flush();
+                return null;
+            }
+        }).when(mockController).updateLog(anyString(), (SimpleAttributeSet) anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -176,6 +187,7 @@ public class ModelTest {
     }
 
     @Test
+    @Ignore
     public void testTestCaseExecute() throws Exception {
         model.createConnectionManager(TEST_PORTNAME);
         model.connectToDevice();

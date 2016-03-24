@@ -16,6 +16,7 @@ class MenuBar extends JMenuBar implements ActionListener {
     private final JMenuItem jmiDisconnect = new JMenuItem("Disconnect");
     private final JMenuItem jmiStartTesting = new JMenuItem("Start");
     private final JMenuItem jmiStopTesting = new JMenuItem("Stop");
+    private final JMenuItem jmiHistory = new JMenuItem("History");
 
     private Controller controller;
 
@@ -60,8 +61,14 @@ class MenuBar extends JMenuBar implements ActionListener {
         menu.add(jmiStartTesting);
         menu.add(jmiStopTesting);
 
+        // TODO: delete this block!
+//        menu.addSeparator();
+//        menu.add(jmiHistory);
+        //
+
         jmiStartTesting.addActionListener(this);
         jmiStopTesting.addActionListener(this);
+        jmiHistory.addActionListener(this);
 
         return menu;
     }
@@ -108,6 +115,10 @@ class MenuBar extends JMenuBar implements ActionListener {
 
             case "Stop":
                 controller.stopTesting();
+                break;
+
+            case "History":
+                controller.history();
                 break;
 
             // Clicking on COM-port

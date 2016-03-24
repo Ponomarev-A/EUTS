@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * EventListener interface contains user defined actions
  */
-public interface EventListener {
+interface EventListener {
 
     String[] getCOMPortList();
 
@@ -48,4 +48,8 @@ public interface EventListener {
     List<BaseTestCase> getTestsList();
 
     void updateTestList();
+
+    void history();
+
+    boolean isTestRunning();
 }

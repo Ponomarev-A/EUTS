@@ -19,14 +19,13 @@ public class Model {
 
     public static final String DEFAULT_PORTNAME = "COM1";
 
-    private Controller controller;
+    private final Controller controller;
 
     private ConnectionManager connectionManager;
-
     private Receiver receiver;
     private Stand stand;
-
     private TestManager testManager;
+    private ManagerDB managerDB;
 
     public Model(Controller controller) {
         this.controller = controller;

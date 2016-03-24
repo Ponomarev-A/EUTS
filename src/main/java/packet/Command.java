@@ -22,6 +22,7 @@ public enum Command {
     GET_EXT_SENSOR_DEVICE(15),
     GET_GAIN_DEVICE(16),
     GET_LEVELS_DEVICE(17),
+    WRITE_PCB_ID_DEVICE(18),
     ERROR_DEVICE(18),
 
     /********************************

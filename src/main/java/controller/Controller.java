@@ -288,6 +288,12 @@ public class Controller implements EventListener {
         }
     }
 
+    @Override
+    public void history() {
+        view.openHistoryWindow();
+    }
+
+    @Override
     public boolean isTestRunning() {
         return model.isTestRunning();
     }

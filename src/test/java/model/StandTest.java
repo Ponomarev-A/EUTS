@@ -7,7 +7,9 @@ import connections.UARTTest;
 import controller.Controller;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import packet.Command;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,5 +48,15 @@ public class StandTest {
 
         stand.checkConnectionStatus();
         assertTrue(stand.getConnectionStatus() == ConnectionStatus.CONNECTED);
+    }
+
+    @Test
+    @Ignore
+    public void testSetAllFrequencies() throws Exception {
+        Stand stand = new Stand(connectionManager, controller);
+
+        for (int i = 40; i < 33000; i += 10) {
+            stand.set(Command.FREQUENCY_STAND, i);
+        }
     }
 }

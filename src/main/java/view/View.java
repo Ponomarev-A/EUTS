@@ -34,6 +34,7 @@ public class View extends JFrame {
     private LogPanel jpLog;
     private TestsPanel jpTests;
     private JToolBar toolBar;
+    private HistoryFrame historyFrame;
 
 
     public View(Controller controller) {
@@ -64,7 +65,6 @@ public class View extends JFrame {
         setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setLocationRelativeTo(null);
-        setDefaultLookAndFeelDecorated(true);
         setLayout(new BorderLayout());
         setTitle("Electronic Units Test Stand (EUTS) application");
 
@@ -140,5 +140,10 @@ public class View extends JFrame {
 
     public void updateTestList() {
         jpTests.updateTestList();
+    }
+
+    public void openHistoryWindow() {
+        historyFrame = new HistoryFrame();
+
     }
 }

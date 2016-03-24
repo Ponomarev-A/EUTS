@@ -21,7 +21,7 @@ public class UART implements Connection {
 
     private static final int READ_PERIOD_MS = 50;
     private static final int READ_EXECUTE_TIMEOUT_MS = READ_PERIOD_MS * 10;
-    private static final int READ_WAIT_TIMEOUT_MS = READ_EXECUTE_TIMEOUT_MS + 2200;
+    private static final int READ_WAIT_TIMEOUT_MS = READ_EXECUTE_TIMEOUT_MS + 200;
 
     private static final int WRITE_WAIT_TIMEOUT_MS = 200;
 
