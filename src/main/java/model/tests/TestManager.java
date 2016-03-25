@@ -3,6 +3,7 @@ package model.tests;
 import controller.Controller;
 import model.Receiver;
 import model.Stand;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import view.LogPanel;
 
 import java.util.ArrayList;
@@ -20,20 +21,27 @@ public class TestManager {
     private final Controller controller;
     private List<BaseTestCase> testsList;
     private boolean testRunning = false;
-    private long testsTime;
+    private long testsTimeMs;
 
 
     public TestManager(Controller controller, Receiver receiver, Stand stand) {
         this.controller = controller;
         testsList = new ArrayList<>();
-        testsList.add(new AnalogFilterTest(50, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(60, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(100, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(120, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(512, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(1024, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(8192, 20, receiver, stand));
-        testsList.add(new AnalogFilterTest(32768, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(50, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(60, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(100, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(120, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(512, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(1024, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(8192, 20, receiver, stand));
+        testsList.add(new AFEqualSignalLevelsTest(32768, 20, receiver, stand));
+
+        testsList.add(new AFValidFilterBandpassTest(50, 20, receiver, stand));
+        testsList.add(new AFValidFilterBandpassTest(100, 20, receiver, stand));
+        testsList.add(new AFValidFilterBandpassTest(512, 20, receiver, stand));
+        testsList.add(new AFValidFilterBandpassTest(1024, 20, receiver, stand));
+        testsList.add(new AFValidFilterBandpassTest(8192, 20, receiver, stand));
+        testsList.add(new AFValidFilterBandpassTest(32768, 20, receiver, stand));
     }
 
 
@@ -63,7 +71,7 @@ public class TestManager {
         builder.append(String.format("%-10s%d%n", "Passed: ", testPassed))
                 .append(String.format("%-10s%d%n", "Failed: ", testFailed))
                 .append(String.format("%-10s%d%n", "Skipped: ", testSkipped))
-                .append(String.format("\nTotal time: %.2f sec", testsTime / 1000f));
+                .append(String.format("\nTotal time: %s", DurationFormatUtils.formatDuration(testsTimeMs, "HH:mm:ss,SSS")));
 
         return builder.toString();
     }
@@ -89,14 +97,15 @@ public class TestManager {
                 if (error instanceof InterruptedException)
                     setTestRunning(false);
 
+                String causeMessage = error.getCause() != null ? "\nCause:" + error.getCause().getLocalizedMessage() : "";
+                controller.updateLog("ERROR: " + error.getLocalizedMessage() + causeMessage, LogPanel.BOLD, LogPanel.RED);
                 testCase.setState(FAIL);
-                controller.updateLog("ERROR: " + error.getLocalizedMessage() + "\nCause: " + error.getCause().getLocalizedMessage(), LogPanel.BOLD, LogPanel.RED);
             } finally {
                 controller.updateLog(String.format("Test #%d %s is %s.", i, testCase.getName(), (testCase.getState() == PASS) ? "passed" : "failed"),
                         LogPanel.NORMAL, (testCase.getState() == PASS) ? LogPanel.GREEN : LogPanel.RED);
                 controller.updateTestList();
 
-                testsTime = new Date().getTime() - startTestsTime;
+                testsTimeMs = new Date().getTime() - startTestsTime;
             }
         }
     }

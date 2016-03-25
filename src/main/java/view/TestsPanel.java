@@ -9,14 +9,19 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Test panel class contains testList list
  */
-class TestsPanel extends JPanel {
+class TestsPanel extends JPanel implements ActionListener {
 
+    private static final String STRING_CHECK_ALL = "Check all";
+    private static final String STRING_UNCHECK_ALL = "Uncheck all";
     private Controller controller;
 
     private TestTableModel tableModel = new TestTableModel();
@@ -30,7 +35,7 @@ class TestsPanel extends JPanel {
 
     private void create() {
 
-        setLayout(new BorderLayout());
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         setBorder(new TitledBorder(
                 View.TITLE_BORDER,
@@ -40,8 +45,26 @@ class TestsPanel extends JPanel {
                 View.TITLE_FONT
         ));
 
-        add(new JScrollPane(jtTests));
 
+        JPanel jpControls = new JPanel();
+        JButton jbCheckAll = new JButton(STRING_CHECK_ALL);
+        JButton jbUncheckAll = new JButton(STRING_UNCHECK_ALL);
+
+        jbCheckAll.addActionListener(this);
+        jbUncheckAll.addActionListener(this);
+
+        jpControls.setLayout(new FlowLayout(FlowLayout.LEFT));
+        jpControls.add(jbCheckAll);
+        jpControls.add(jbUncheckAll);
+
+
+        setUpTestsTable();
+
+        add(jpControls);
+        add(new JScrollPane(jtTests));
+    }
+
+    private void setUpTestsTable() {
         TableColumnModel columnModel = jtTests.getColumnModel();
         columnModel.setColumnSelectionAllowed(false);
 
@@ -71,9 +94,34 @@ class TestsPanel extends JPanel {
         tableModel.fireTableDataChanged();
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        switch (e.getActionCommand()) {
+            case STRING_CHECK_ALL:
+                setCheckAllTestList(true);
+                break;
+
+            case STRING_UNCHECK_ALL:
+                setCheckAllTestList(false);
+                break;
+        }
+    }
+
+    private void setCheckAllTestList(boolean checkedState) {
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            tableModel.setValueAt(checkedState, i, 1);
+        }
+    }
+
     private class TestTableModel extends AbstractTableModel {
 
-        private String[] columnNames = {"№", "Check", "Name", "State"};
+        private static final String INDEX = "№";
+        private static final String CHECK = "Check";
+        private static final String NAME = "Name";
+        private static final String STATE = "State";
+
+        private List<String> columnNames = Arrays.asList(INDEX, CHECK, NAME, STATE);
         private List<BaseTestCase> data = new ArrayList<>();
 
         void setData(List<BaseTestCase> data) {
@@ -104,7 +152,7 @@ class TestsPanel extends JPanel {
          */
         @Override
         public int getColumnCount() {
-            return columnNames.length;
+            return columnNames.size();
         }
 
         /**
@@ -133,6 +181,7 @@ class TestsPanel extends JPanel {
             }
         }
 
+
         /**
          * Returns a default name for the column using spreadsheet conventions:
          * A, B, C, ... Z, AA, AB, etc.  If <code>column</code> cannot be found,
@@ -143,7 +192,7 @@ class TestsPanel extends JPanel {
          */
         @Override
         public String getColumnName(int column) {
-            return columnNames[column];
+            return columnNames.get(column);
         }
 
         /**

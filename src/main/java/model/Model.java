@@ -17,8 +17,6 @@ import java.util.List;
  */
 public class Model {
 
-    public static final String DEFAULT_PORTNAME = "COM1";
-
     private final Controller controller;
 
     private ConnectionManager connectionManager;
@@ -48,13 +46,13 @@ public class Model {
     }
 
     public void init() {
-        createConnectionManagerIfExistDefaultPortName();
+        createConnectionManagerWithFirstCOMPort();
     }
 
-    private void createConnectionManagerIfExistDefaultPortName() {
+    private void createConnectionManagerWithFirstCOMPort() {
         List<String> portList = Arrays.asList(getAvailableCOMPorts());
-        if (portList.contains(DEFAULT_PORTNAME)) {
-            createConnectionManager(DEFAULT_PORTNAME);
+        if (portList.size() > 0) {
+            createConnectionManager(portList.get(0));
         }
     }
 
@@ -140,7 +138,7 @@ public class Model {
     }
 
     public boolean isTestRunning() {
-        return testManager.isTestRunning();
+        return testManager != null && testManager.isTestRunning();
     }
 
     public void startTesting() {

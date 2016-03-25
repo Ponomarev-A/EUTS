@@ -81,7 +81,7 @@ public class ModelTest {
         assertTrue(model.getConnectionManager().getConnection() instanceof UART);
         assertFalse(model.getConnectionManager().getConnection().isOpened());
 
-        assertEquals(Model.DEFAULT_PORTNAME, ((UART) model.getConnectionManager().getConnection()).getSerialPort().getPortName());
+        assertEquals(TEST_PORTNAME, ((UART) model.getConnectionManager().getConnection()).getSerialPort().getPortName());
     }
 
 

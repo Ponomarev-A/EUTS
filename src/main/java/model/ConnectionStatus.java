@@ -2,7 +2,7 @@ package model;
 
 import packet.Command;
 
-public enum ConnectionStatus {
+enum ConnectionStatus {
 
     CONNECTED,
     DISCONNECTED;
@@ -21,8 +21,7 @@ public enum ConnectionStatus {
             command = Command.CHECK_CONNECTION_STAND;
 
         int request = (int) (System.currentTimeMillis() / 1000);
-        device.set(command, request);
-        int response = device.getInteger();
+        int response = device.getInteger(command, request);
 
         ConnectionStatus = (response == request) ? CONNECTED : DISCONNECTED;
 

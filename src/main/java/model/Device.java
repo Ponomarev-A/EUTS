@@ -51,8 +51,33 @@ public abstract class Device {
         return connectionStatus;
     }
 
-    public void set(Command command) throws Exception {
+    int getByte(Command command) throws Exception {
+        set(command);
+        return get().getDataAsByte();
+    }
+
+    private void set(Command command) throws Exception {
         set(new Packet(command));
+    }
+
+    private Packet get() throws Exception {
+        Packet packet = new Packet();
+        try {
+            packet = connectionManager.receivePacket();
+            checkPacketContainsErrorInfo(packet);
+        } catch (InterruptedException e) {
+            throw new Exception("Execution operation was interrupted.");
+        } catch (Exception e) {
+            FailReceivePacket failReceivePacket = new FailReceivePacket(String.format("Receive packet %s\n with value %s\n from device %s",
+                    packet.getCommand(), packet.getDataAsInt(), this.toString()));
+            failReceivePacket.initCause(e);
+
+            e.printStackTrace();
+
+            throw failReceivePacket;
+        }
+
+        return packet;
     }
 
     private void set(Packet packet) throws Exception {
@@ -78,40 +103,6 @@ public abstract class Device {
         }
     }
 
-    private boolean isConfirmationRequired(Packet packet) {
-        int id = packet.getCommand().getId();
-        return (id >= FREQUENCY_DEVICE.getId() && id <= BACKLIGHT_DEVICE.getId()) ||
-                (id >= FREQUENCY_STAND.getId() && id <= EXT_SENSOR_STAND.getId());
-    }
-
-    public void set(Command command, Integer integerValue) throws Exception {
-        set(new Packet(command, integerValue));
-    }
-
-    int getByte() throws Exception {
-        return get().getDataAsByte();
-    }
-
-    private Packet get() throws Exception {
-        Packet packet = new Packet();
-        try {
-            packet = connectionManager.receivePacket();
-            checkPacketContainsErrorInfo(packet);
-        } catch (InterruptedException e) {
-            throw new Exception("Execution operation was interrupted.");
-        } catch (Exception e) {
-            FailReceivePacket failReceivePacket = new FailReceivePacket(String.format("Receive packet %s\n with value %s\n from device %s",
-                    packet.getCommand(), packet.getDataAsInt(), this.toString()));
-            failReceivePacket.initCause(e);
-
-            e.printStackTrace();
-
-            throw failReceivePacket;
-        }
-
-        return packet;
-    }
-
     private void checkPacketContainsErrorInfo(Packet packet) throws FailReceivePacket {
         switch (packet.getCommand()) {
             case INVALID_CMD_DEVICE:
@@ -126,17 +117,36 @@ public abstract class Device {
         }
     }
 
-    int getInteger() throws Exception {
+    private boolean isConfirmationRequired(Packet packet) {
+        int id = packet.getCommand().getId();
+        return (id >= FREQUENCY_DEVICE.getId() && id <= BACKLIGHT_DEVICE.getId()) ||
+                (id >= FREQUENCY_STAND.getId() && id <= EXT_SENSOR_STAND.getId());
+    }
+
+    int getInteger(Command command) throws Exception {
+        set(command);
         return get().getDataAsInt();
     }
 
-    public short[] getArray() throws Exception {
+    int getInteger(Command command, Integer integerValue) throws Exception {
+        set(command, integerValue);
+        return get().getDataAsInt();
+    }
+
+    public void set(Command command, Integer integerValue) throws Exception {
+        set(new Packet(command, integerValue));
+    }
+
+    public short[] getArray(Command command) throws Exception {
+        set(command);
         return get().getDataAsShortArray();
     }
 
-    String getString() throws Exception {
+    String getString(Command command) throws Exception {
+        set(command);
         return get().getDataAsString();
     }
+
 
     private enum Confirmation {SUCCESS, FAIL}
 

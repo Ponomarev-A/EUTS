@@ -22,8 +22,7 @@ public class Stand extends Device {
     @Override
     public boolean readInfo() {
         try {
-            set(Command.GET_INFO_STAND);
-            String info = getString();
+            String info = getString(Command.GET_INFO_STAND);
             String[] infoDetails = info.trim().split(" ");
 
             if (infoDetails.length == 3) {
@@ -72,7 +71,7 @@ public class Stand extends Device {
     }
 
     public int calcVoltage(double level_prt, int gain) {
-        double voltage_mcV = level_prt / 100 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain + 22) / 20.0);
+        double voltage_mcV = level_prt / 100.0 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain + 22) / 20.0);
         return (int) voltage_mcV;
     }
 }

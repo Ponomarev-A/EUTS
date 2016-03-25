@@ -1,92 +1,68 @@
 package model.tests;
 
+import model.Device;
 import model.Receiver;
 import model.Stand;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import static model.Device.ExtSensors;
-import static model.Device.SignalType;
-import static model.Receiver.*;
+import static model.Receiver.MAX_LEVEL;
 import static packet.Command.*;
 
 /**
- * Sample test case class
+ * Base parent class for AF child classes
  */
-class AnalogFilterTest extends BaseTestCase {
+abstract class AnalogFilterTest extends BaseTestCase {
 
+    static final int WAIT_CHANGE_VOLTAGE_MS = 300;
     private static final double INIT_LEVEL_PRT = 93.0;
-    private static final double DIFF_LEVEL_PRT = 15.0;
     private static final double MIN_LEVEL_PRT = 95.0;
     private static final double MAX_LEVEL_PRT = 99.99;
+    private static final int SET_VOLTAGE_ATTEMPTS_COUNT = 15;
+    final int receiverFrequency_Hz;
+    private final int receiverGain_dB;
 
-    private static final int WAIT_CHANGE_VOLTAGE_MS = 300;
-    private static final int SET_VOLTAGE_ATTEMPTS_COUNT = 10;
-
-    private final int freq;
-    private final int gain;
-
-    AnalogFilterTest(final int freq, final int gain, Receiver receiver, Stand stand) {
-        super(String.format("Analog filter (%d Hz, %d dB)", freq, gain), receiver, stand);
-        this.freq = freq;
-        this.gain = gain;
+    AnalogFilterTest(String name, Receiver receiver, Stand stand, final int receiverGain_dB, final int receiverFrequency_Hz) {
+        super(name, receiver, stand);
+        this.receiverGain_dB = receiverGain_dB;
+        this.receiverFrequency_Hz = receiverFrequency_Hz;
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public abstract void runTest() throws Exception, Error;
 
-        int voltage_mcV = stand.calcVoltage(INIT_LEVEL_PRT, gain);
-        int frequency_Hz = freq;
+    short[] autoSetVoltageStand() throws Exception {
 
-        stand.set(EXT_SENSOR_STAND, ExtSensors.INT.ordinal());
-//        stand.set(TYPE_OF_SIGNAL_STAND,     SignalType.SOLID.ordinal());
-        stand.set(FREQUENCY_STAND, frequency_Hz);
-
-        receiver.set(MODE_DEVICE, Modes.MODE_TESTLEVELS.ordinal());
-        receiver.set(TYPE_OF_SIGNAL_DEVICE, SignalType.SOLID.ordinal());
-        receiver.set(BOTTOM_SENSOR_DEVICE, BSType.FILTER.ordinal());
-        receiver.set(FREQUENCY_DEVICE, frequency_Hz);
-        receiver.set(GAIN_DEVICE, gain);
-
+        int voltage_mcV = stand.calcVoltage(INIT_LEVEL_PRT, receiverGain_dB);
         int attempts = SET_VOLTAGE_ATTEMPTS_COUNT;
-        while (true) {
-            stand.set(VOLTAGE_STAND, voltage_mcV);
 
-            // Delay to normalize receiver levels after stand set new voltage
-            TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_VOLTAGE_MS);
+        double maxLevel_prt = 0;
+        while (attempts-- > 0) {
 
-            receiver.set(GET_LEVELS_DEVICE);
-            short[] levels = receiver.getArray();
-
-            double maxLevel_prt = findMaxLevel(Arrays.copyOfRange(levels, 0, 4)) * 100 / MAX_LEVEL;
+            short[] levels = receiver.getArray(GET_LEVELS_DEVICE);
+            maxLevel_prt = findMaxLevel(Arrays.copyOfRange(levels, 0, 4)) * 100.0 / MAX_LEVEL;
 
             if (maxLevel_prt < MIN_LEVEL_PRT || maxLevel_prt > MAX_LEVEL_PRT) {
-                voltage_mcV += stand.calcVoltage((MAX_LEVEL_PRT + MIN_LEVEL_PRT) / 2 - maxLevel_prt, gain);
-                if (attempts-- < 0)
-                    throw new Exception(String.format(
-                            "Impossible to set level of signal to range (%.2f%%, %.2f%%)",
-                            MIN_LEVEL_PRT, MAX_LEVEL_PRT));
-            } else
-                break;
+
+                int voltage_step_mcV = stand.calcVoltage((MAX_LEVEL_PRT + MIN_LEVEL_PRT) / 2 - maxLevel_prt, receiverGain_dB);
+                voltage_mcV += (voltage_step_mcV < 0) ? voltage_step_mcV * attempts : voltage_step_mcV;
+
+            } else {
+                return levels;
+            }
+
+            // Set up new voltage and wait completion transient process on receiver
+            stand.set(VOLTAGE_STAND, voltage_mcV);
+            TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_VOLTAGE_MS);
         }
 
-        receiver.set(GET_LEVELS_DEVICE);
-        short[] levels = receiver.getArray();
-        int maxLevel = findMaxLevel(Arrays.copyOfRange(levels, 0, 4));
-        int minLevel = findMinLevel(Arrays.copyOfRange(levels, 0, 4));
-
-        double diffLevelsExpected = DIFF_LEVEL_PRT;
-        double diffLevelsActual = (double) (maxLevel - minLevel) * 100 / MAX_LEVEL;
-
-        assertTrue(
-                "The difference between max and min levels of signal is exceeded." +
-                        "\nExpected: " + String.format("%.2f%%", diffLevelsExpected) +
-                        "\nActual: " + String.format("%.2f%%", diffLevelsActual),
-                diffLevelsActual <= diffLevelsExpected);
+        throw new Exception(String.format(
+                "Impossible to set level of signal %.2f%% to range (%.2f%%, %.2f%%)",
+                maxLevel_prt, MIN_LEVEL_PRT, MAX_LEVEL_PRT));
     }
 
-    private int findMaxLevel(short[] levels) {
+    int findMaxLevel(short[] levels) {
         short result = Short.MIN_VALUE;
         for (short level : levels) {
             result = (short) Math.max(level, result);
@@ -95,7 +71,21 @@ class AnalogFilterTest extends BaseTestCase {
         return result;
     }
 
-    private int findMinLevel(short[] levels) {
+    void setUpReceiver() throws Exception {
+        receiver.set(MODE_DEVICE, Receiver.Modes.MODE_TESTLEVELS.ordinal());
+        receiver.set(TYPE_OF_SIGNAL_DEVICE, Device.SignalType.SOLID.ordinal());
+        receiver.set(BOTTOM_SENSOR_DEVICE, Receiver.BSType.FILTER.ordinal());
+        receiver.set(FREQUENCY_DEVICE, receiverFrequency_Hz);
+        receiver.set(GAIN_DEVICE, receiverGain_dB);
+    }
+
+    void setUpStand() throws Exception {
+        stand.set(EXT_SENSOR_STAND, Device.ExtSensors.INT.ordinal());
+//        stand.set(TYPE_OF_SIGNAL_STAND,     SignalType.SOLID.ordinal());
+        stand.set(FREQUENCY_STAND, receiverFrequency_Hz);
+    }
+
+    int findMinLevel(short[] levels) {
         short result = Short.MAX_VALUE;
         for (short level : levels) {
             result = (short) Math.min(level, result);

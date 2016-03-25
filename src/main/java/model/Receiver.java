@@ -4,6 +4,9 @@ import connections.ConnectionManager;
 import controller.Controller;
 import packet.Command;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Receiver class: all information about connected receiver
  */
@@ -11,22 +14,30 @@ public class Receiver extends Device {
 
     public final static int MAX_LEVEL = 1023;
     public final static int MIN_LEVEL = 0;
-
+    public List<Integer> frequencyHz = Arrays.asList(
+            50,
+            60,
+            100,
+            120,
+            512,
+            1024,
+            8192,
+            32768
+    );
     private String model;
     private String firmware;
     private String scheme;
     private Integer ID;
 
+
     Receiver(ConnectionManager connectionManager, Controller controller) {
         super(connectionManager, controller);
     }
 
-
     @Override
     public boolean readInfo() {
         try {
-            set(Command.GET_INFO_DEVICE);
-            String info = getString();
+            String info = getString(Command.GET_INFO_DEVICE);
             String[] infoDetails = info.trim().split(" ");
 
             if (infoDetails.length == 4) {

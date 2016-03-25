@@ -1,7 +1,6 @@
 package view;
 
 import controller.Controller;
-import model.Model;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -87,9 +86,7 @@ class MenuBar extends JMenuBar implements ActionListener {
         }
 
         for (String port : ports) {
-            boolean isCOM1PortExist = port.equals(Model.DEFAULT_PORTNAME);
-
-            JCheckBoxMenuItem jmiPort = new JCheckBoxMenuItem(isCOM1PortExist ? port + " (default)" : port);
+            JCheckBoxMenuItem jmiPort = new JCheckBoxMenuItem(port);
             jmiPort.addActionListener(MenuBar.this);
             jmiPort.setSelected(controller.isCOMPortSelected(port));
 

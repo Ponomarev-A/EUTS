@@ -21,12 +21,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class Controller implements EventListener {
 
-    private static final ThreadFactory THREAD_FACTORY_CONTROLLER = new ThreadFactoryBuilder().setNameFormat("Controller-%d").setDaemon(true).build();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY_CONTROLLER);
+    private static final ThreadFactory CONNECTION_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("Controller-ConnectionExecutor-%d").setDaemon(true).build();
+    private static final ThreadFactory TESTING_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("Controller-TestingExecutor-%d").setDaemon(true).build();
+    private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor(CONNECTION_EXECUTOR);
+    private ExecutorService testingExecutor;
     private View view;
     private Model model;
-
-    private SwingWorker<Void, Void> testWorker;
 
     public Controller() {
 
@@ -53,7 +53,7 @@ public class Controller implements EventListener {
     @Override
     public void connect() {
 
-        executor.submit(new SwingWorker<Void, Void>() {
+        connectionExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 updateLog("\nConnect...", LogPanel.BOLD);
@@ -76,7 +76,7 @@ public class Controller implements EventListener {
 
     @Override
     public void disconnect() {
-        executor.submit(new SwingWorker<Void, Void>() {
+        connectionExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 updateLog("\nDisconnect...", LogPanel.BOLD);
@@ -173,7 +173,7 @@ public class Controller implements EventListener {
 
     @Override
     public void createConnectionManager(final String portName) {
-        executor.submit(new SwingWorker<Void, Void>() {
+        connectionExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 updateLog("\nCreate connection manager...", LogPanel.BOLD);
@@ -190,7 +190,7 @@ public class Controller implements EventListener {
 
     @Override
     public void destroyConnectionManager() {
-        executor.submit(new SwingWorker<Void, Void>() {
+        connectionExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 updateLog("\nDestroy connection manager...", LogPanel.BOLD);
@@ -216,7 +216,8 @@ public class Controller implements EventListener {
         if (model.isTestRunning())
             return;
 
-        testWorker = new SwingWorker<Void, Void>() {
+        testingExecutor = Executors.newCachedThreadPool(TESTING_EXECUTOR);
+        testingExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 updateLog("\n===  START TESTING  ===", LogPanel.BOLD);
@@ -235,8 +236,7 @@ public class Controller implements EventListener {
             protected void done() {
                 stopTesting();
             }
-        };
-        testWorker.execute();
+        });
     }
 
     @Override
@@ -245,14 +245,11 @@ public class Controller implements EventListener {
         if (!model.isTestRunning())
             return;
 
-        new SwingWorker<Void, Void>() {
+        testingExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                if (!testWorker.isDone()) {
-                    testWorker.cancel(true);
-                }
-
                 model.stopTesting();
+                testingExecutor.shutdownNow();
                 return null;
             }
 
@@ -262,7 +259,7 @@ public class Controller implements EventListener {
                 updateLog("===  STOP TESTING  ===", LogPanel.BOLD);
                 updateLog(model.getTestManager().toString(), LogPanel.BOLD);
             }
-        }.execute();
+        });
     }
 
     @Override
@@ -301,9 +298,9 @@ public class Controller implements EventListener {
     public void windowClosing() {
         destroyConnectionManager();
 
-        executor.shutdown();
+        connectionExecutor.shutdown();
         try {
-            executor.awaitTermination(200, TimeUnit.MILLISECONDS);
+            connectionExecutor.awaitTermination(200, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
