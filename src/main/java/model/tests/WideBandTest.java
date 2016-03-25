@@ -17,7 +17,7 @@ class WideBandTest extends AnalogFilterTest {
     private static final double INIT_LEVEL_PRT = 70.0;
     private static final double MIN_LEVEL_PRT = 60.0;
     private static final double MAX_LEVEL_PRT = 80.0;
-    private static final double DIFF_LEVEL_PRT = 10.0;
+    private static final double DELTA_LEVEL_PRT = 10.0;
 
     private static final int START_FREQUENCY = 512;
     private static final int END_FREQUENCY = 8192;
@@ -46,27 +46,29 @@ class WideBandTest extends AnalogFilterTest {
 
         short[] afterLevels = receiver.getArray(GET_LEVELS_DEVICE);
 
-        double before3_prt = beforeLevels[3] * 100.0 / MAX_LEVEL;
-        double before4_prt = beforeLevels[4] * 100.0 / MAX_LEVEL;
-        double after3_prt = afterLevels[3] * 100.0 / MAX_LEVEL;
-        double after4_prt = afterLevels[4] * 100.0 / MAX_LEVEL;
+        double before3_prt = beforeLevels[2] * 100.0 / MAX_LEVEL;
+        double before4_prt = beforeLevels[3] * 100.0 / MAX_LEVEL;
+        double after3_prt = afterLevels[2] * 100.0 / MAX_LEVEL;
+        double after4_prt = afterLevels[3] * 100.0 / MAX_LEVEL;
 
         before3_prt /= REJECTION_ACTIVE_FREQ;
 
-        assertTrue(
-                "The level of signal on channel #3 is exceeded." +
-                        "\nExpected: " + String.format("%.2f%%", before3_prt) +
-                        "\nActual: " + String.format("%.2f%%", after3_prt),
-                after3_prt <= before3_prt);
+        assertTrue(String.format(
+                "The level of signal on channel #3 is exceeded.%-12s: <%5.2f%% %-12s:  %5.2f%%",
+                "\nExpected: ", before3_prt,
+                "\nActual:", after3_prt),
+                after3_prt <= before3_prt
+        );
 
-        double lowBound4_prt = before4_prt * (100.0 - DIFF_LEVEL_PRT) / 100;
-        double highBound4_prt = before4_prt * (100.0 + DIFF_LEVEL_PRT) / 100;
+        double lowBound4_prt = before4_prt * (100.0 - DELTA_LEVEL_PRT) / 100;
+        double highBound4_prt = before4_prt * (100.0 + DELTA_LEVEL_PRT) / 100;
 
-        assertTrue(
-                "The level of signal on channel #4 is out of range." +
-                        "\nExpected range of levels: " + String.format("%.2f%% ... %.2f%%", lowBound4_prt, highBound4_prt) +
-                        "\nActual level: " + String.format("%.2f%%", after4_prt),
-                after4_prt >= lowBound4_prt && after4_prt <= highBound4_prt);
+        assertTrue(String.format(
+                "The level of signal on channel #4 is out of range.%-12s: %5.2f%%...%5.2f%% %-12s: %5.2f%%",
+                "\nExpected: ", lowBound4_prt, highBound4_prt,
+                "\nActual:", after4_prt),
+                after4_prt >= lowBound4_prt && after4_prt <= highBound4_prt
+        );
     }
 
     @Override

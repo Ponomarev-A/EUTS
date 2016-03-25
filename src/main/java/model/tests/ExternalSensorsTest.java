@@ -1,0 +1,66 @@
+package model.tests;
+
+import model.Device;
+import model.Receiver;
+import model.Stand;
+
+import static model.Receiver.MAX_LEVEL;
+import static packet.Command.*;
+
+/**
+ * Base parent class for AF child classes
+ */
+class ExternalSensorsTest extends AnalogFilterTest {
+
+    private static final double DELTA_LEVEL_PRT = 10.0;
+    private static final double REJECTION_EXT_SENSOR = 3.0;
+
+
+    private static final int FREQUENCY = 512;
+    private static final int GAIN = 20;
+
+    ExternalSensorsTest(Receiver receiver, Stand stand) {
+        super(String.format("Check external sensors (%d Hz, %d dB)", FREQUENCY, GAIN),
+                receiver,
+                stand,
+                GAIN,
+                FREQUENCY);
+    }
+
+    @Override
+    public void runTest() throws Exception, Error {
+
+        setUpStand();
+        setUpReceiver();
+        short[] beforeLevels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+
+        Device.ExtSensors receiverSensor = Stand.ExtSensors.values()[receiver.getArray(GET_EXT_SENSOR_DEVICE)[0]];
+        for (Device.ExtSensors standSensor : Device.ExtSensors.values()) {
+
+            stand.set(EXT_SENSOR_STAND, standSensor.ordinal());
+            receiverSensor = Stand.ExtSensors.values()[receiver.getArray(GET_EXT_SENSOR_DEVICE)[0]];
+
+            assertEquals(String.format(
+                    "The external sensors are different on Stand and on Receiver.%-30s: %s %-30s: %s",
+                    "\nSensor set by Stand", standSensor,
+                    "\nSensor get from Receiver", receiverSensor),
+                    standSensor, receiverSensor
+            );
+        }
+
+        short[] afterLevels = receiver.getArray(GET_LEVELS_DEVICE);
+
+        double before4_prt = beforeLevels[3] / REJECTION_EXT_SENSOR * 100.0 / MAX_LEVEL;
+        double after4_prt = afterLevels[3] * 100.0 / MAX_LEVEL;
+        double lowBound4_prt = before4_prt * (100.0 - DELTA_LEVEL_PRT) / 1000;
+        double highBound4_prt = before4_prt * (100.0 + DELTA_LEVEL_PRT) / 100;
+
+        assertTrue(String.format(
+                "The level of signal on channel #4 (with %s connected) is out of range.%-12s: %5.2f%%...%5.2f%% %-12s: %5.2f%%",
+                receiverSensor,
+                "\nExpected: ", lowBound4_prt, highBound4_prt,
+                "\nActual:", after4_prt),
+                after4_prt >= lowBound4_prt && after4_prt <= highBound4_prt
+        );
+    }
+}

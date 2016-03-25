@@ -22,8 +22,9 @@ public enum Command {
     GET_EXT_SENSOR_DEVICE(15),
     GET_GAIN_DEVICE(16),
     GET_LEVELS_DEVICE(17),
-    WRITE_PCB_ID_DEVICE(18),
-    ERROR_DEVICE(18),
+    GET_MAGNITUDES_DEVICE(18),
+    WRITE_PCB_ID_DEVICE(19),
+    ERROR_DEVICE(20),
 
     /********************************
      * Reserve values prior to 50

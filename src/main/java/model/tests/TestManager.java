@@ -47,6 +47,9 @@ public class TestManager {
 
         testsList.add(new WideBandTest(receiver, stand));
 
+        testsList.add(new ExternalSensorsTest(receiver, stand));
+
+        testsList.add(new TwoFrequencyTest(receiver, stand));
     }
 
 

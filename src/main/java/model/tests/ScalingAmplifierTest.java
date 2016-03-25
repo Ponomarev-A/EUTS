@@ -17,7 +17,7 @@ class ScalingAmplifierTest extends AnalogFilterTest {
     private static final double INIT_LEVEL_PRT = 35.0;
     private static final double MIN_LEVEL_PRT = 30.0;
     private static final double MAX_LEVEL_PRT = 45.0;
-    private static final double DIFF_LEVEL_PRT = 5.0;
+    private static final double DELTA_LEVEL_PRT = 5.0;
 
     private static final int FREQUENCY = 512;
     private static final int START_GAIN = 18;
@@ -51,14 +51,16 @@ class ScalingAmplifierTest extends AnalogFilterTest {
 
             before_prt *= Math.pow(10, (END_GAIN - START_GAIN) / 20.0);
 
-            double lowBound_prt = before_prt * (100.0 - DIFF_LEVEL_PRT) / 100;
-            double highBound_prt = before_prt * (100.0 + DIFF_LEVEL_PRT) / 100;
+            double lowBound_prt = before_prt * (100.0 - DELTA_LEVEL_PRT) / 100;
+            double highBound_prt = before_prt * (100.0 + DELTA_LEVEL_PRT) / 100;
 
-            assertTrue(
-                    "The level of signal on channel #" + (i + 1) + " is out of range." +
-                            "\nExpected range of levels: " + String.format("%.2f%% ... %.2f%%", lowBound_prt, highBound_prt) +
-                            "\nActual level: " + String.format("%.2f%%", after_prt),
-                    after_prt >= lowBound_prt && after_prt <= highBound_prt);
+            assertTrue(String.format(
+                    "The level of signal on channel #%d is out of range.%-12s: %5.2f%%...%5.2f%% %-12s: %5.2f%%",
+                    i + 1,
+                    "\nExpected: ", lowBound_prt, highBound_prt,
+                    "\nActual:", after_prt),
+                    after_prt >= lowBound_prt && after_prt <= highBound_prt
+            );
         }
     }
 }

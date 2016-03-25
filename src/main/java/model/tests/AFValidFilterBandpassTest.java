@@ -55,11 +55,14 @@ class AFValidFilterBandpassTest extends AnalogFilterTest {
 
                 before_prt /= rejection;
 
-                assertTrue(
-                        "The difference between levels of signal on channel #" + (i + 1) + " on stand frequency " + standFrequency_Hz + "Hz is exceeded." +
-                                "\nExpected: " + String.format("%.2f%%", before_prt) +
-                                "\nActual: " + String.format("%.2f%%", after_prt),
-                        after_prt <= before_prt);
+                assertTrue(String.format(
+                        "The difference between levels of signal on channel #%d on stand frequency %d Hz is exceeded.%-12s: <%5.2f%% %-12s:  %5.2f%%",
+                        i + 1,
+                        standFrequency_Hz,
+                        "\nExpected: ", before_prt,
+                        "\nActual:", after_prt),
+                        after_prt <= before_prt
+                );
             }
         }
     }
