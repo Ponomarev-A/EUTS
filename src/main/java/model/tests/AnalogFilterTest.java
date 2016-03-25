@@ -16,12 +16,14 @@ import static packet.Command.*;
 abstract class AnalogFilterTest extends BaseTestCase {
 
     static final int WAIT_CHANGE_VOLTAGE_MS = 300;
-    private static final double INIT_LEVEL_PRT = 93.0;
-    private static final double MIN_LEVEL_PRT = 95.0;
-    private static final double MAX_LEVEL_PRT = 99.99;
+    static final double INIT_LEVEL_PRT = 93.0;
+    static final double MIN_LEVEL_PRT = 95.0;
+    static final double MAX_LEVEL_PRT = 99.99;
+
     private static final int SET_VOLTAGE_ATTEMPTS_COUNT = 15;
+
     final int receiverFrequency_Hz;
-    private final int receiverGain_dB;
+    final int receiverGain_dB;
 
     AnalogFilterTest(String name, Receiver receiver, Stand stand, final int receiverGain_dB, final int receiverFrequency_Hz) {
         super(name, receiver, stand);
@@ -32,34 +34,34 @@ abstract class AnalogFilterTest extends BaseTestCase {
     @Override
     public abstract void runTest() throws Exception, Error;
 
-    short[] autoSetVoltageStand() throws Exception {
+    short[] autoSetVoltageStand(int initGain, double minLevelPrt, double maxLevelPrt, double initLevelPrt) throws Exception {
 
-        int voltage_mcV = stand.calcVoltage(INIT_LEVEL_PRT, receiverGain_dB);
+        int voltage_mcV = stand.calcVoltage(initLevelPrt, initGain);
         int attempts = SET_VOLTAGE_ATTEMPTS_COUNT;
 
         double maxLevel_prt = 0;
         while (attempts-- > 0) {
 
+            // Set up new voltage and wait completion transient process on receiver
+            stand.set(VOLTAGE_STAND, voltage_mcV);
+            TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_VOLTAGE_MS);
+
             short[] levels = receiver.getArray(GET_LEVELS_DEVICE);
             maxLevel_prt = findMaxLevel(Arrays.copyOfRange(levels, 0, 4)) * 100.0 / MAX_LEVEL;
 
-            if (maxLevel_prt < MIN_LEVEL_PRT || maxLevel_prt > MAX_LEVEL_PRT) {
+            if (maxLevel_prt < minLevelPrt || maxLevel_prt > maxLevelPrt) {
 
-                int voltage_step_mcV = stand.calcVoltage((MAX_LEVEL_PRT + MIN_LEVEL_PRT) / 2 - maxLevel_prt, receiverGain_dB);
+                int voltage_step_mcV = stand.calcVoltage((maxLevelPrt + minLevelPrt) / 2 - maxLevel_prt, initGain);
                 voltage_mcV += (voltage_step_mcV < 0) ? voltage_step_mcV * attempts : voltage_step_mcV;
 
             } else {
                 return levels;
             }
-
-            // Set up new voltage and wait completion transient process on receiver
-            stand.set(VOLTAGE_STAND, voltage_mcV);
-            TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_VOLTAGE_MS);
         }
 
         throw new Exception(String.format(
                 "Impossible to set level of signal %.2f%% to range (%.2f%%, %.2f%%)",
-                maxLevel_prt, MIN_LEVEL_PRT, MAX_LEVEL_PRT));
+                maxLevel_prt, minLevelPrt, maxLevelPrt));
     }
 
     int findMaxLevel(short[] levels) {

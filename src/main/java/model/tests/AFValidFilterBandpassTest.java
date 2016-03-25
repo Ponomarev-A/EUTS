@@ -30,7 +30,7 @@ class AFValidFilterBandpassTest extends AnalogFilterTest {
 
         setUpStand();
         setUpReceiver();
-        short[] beforeLevels = autoSetVoltageStand();
+        short[] beforeLevels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         for (Integer standFrequency_Hz : receiver.frequencyHz) {
 

@@ -27,7 +27,7 @@ class AFEqualSignalLevelsTest extends AnalogFilterTest {
 
         setUpStand();
         setUpReceiver();
-        short[] levels = autoSetVoltageStand();
+        short[] levels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         int maxLevel = findMaxLevel(Arrays.copyOfRange(levels, 0, 4));
         int minLevel = findMinLevel(Arrays.copyOfRange(levels, 0, 4));
