@@ -43,8 +43,9 @@ public class TestManager {
         testsList.add(new AFValidFilterBandpassTest(8192, 20, receiver, stand));
         testsList.add(new AFValidFilterBandpassTest(32768, 20, receiver, stand));
 
-
         testsList.add(new ScalingAmplifierTest(receiver, stand));
+
+        testsList.add(new WideBandTest(receiver, stand));
 
     }
 
