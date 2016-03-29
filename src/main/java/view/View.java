@@ -4,10 +4,12 @@ import controller.Controller;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.text.AttributeSet;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 
 /**
  * Base view class for GUI
@@ -130,12 +132,46 @@ public class View extends JFrame {
         );
     }
 
+    public void showMessage(String title, String text) {
+        JOptionPane.showMessageDialog(
+                View.this,
+                text,
+                title,
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
     public void updateLog(String text, AttributeSet... attributeSet) {
         jpLog.updateLog(text, attributeSet);
     }
 
     public void loadTestList() {
         jpTests.loadTestList();
+    }
+
+    public String getPathToDatabase() {
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setDialogTitle("Choose database file");
+        jFileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || (f.getName().endsWith(".db"));
+            }
+
+            @Override
+            public String getDescription() {
+                return "Database file (*.db)";
+            }
+        });
+
+        switch (jFileChooser.showOpenDialog(this)) {
+            case JFileChooser.APPROVE_OPTION:
+                return jFileChooser.getSelectedFile().getPath().split("\\.")[0];
+
+            default:
+                return "";
+        }
+
     }
 
     public void updateTestList() {

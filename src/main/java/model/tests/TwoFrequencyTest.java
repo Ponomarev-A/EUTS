@@ -69,7 +69,7 @@ class TwoFrequencyTest extends AnalogFilterTest {
         );
 
         double lowBound_prt = magn1K_at1024Hz_prt * (100.0 - DELTA_LEVEL_PRT) / 100;
-        double highBound_prt = magn8K_at8192Hz_prt * (100.0 + DELTA_LEVEL_PRT) / 100;
+        double highBound_prt = magn8K_at8192Hz_prt < 100.0 ? magn8K_at8192Hz_prt * (100.0 + DELTA_LEVEL_PRT) / 100 : 100.0;
 
         assertTrue(String.format(
                 "The magnitude levels %d Hz and %d Hz are out of range..%-12s: %5.2f%%...%5.2f%% %-12s: %5.2f%%",

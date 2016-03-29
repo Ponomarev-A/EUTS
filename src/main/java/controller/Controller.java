@@ -123,24 +123,49 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void showErrorMessage(final String title, final String text, final Exception e) {
+    public void showMessage(final String title, final String text) {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        view.showErrorMessage(title, text + "\n\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
+                        view.showMessage(title, text);
                     }
                 });
             } catch (InterruptedException | InvocationTargetException error) {
                 error.printStackTrace();
             }
         } else {
-            view.showErrorMessage(title, text + "\n\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage());
+            view.showMessage(title, text);
         }
 
         updateLog("\n\n" + title, LogPanel.BOLD);
-        updateLog(text + "\nError: " + e.getLocalizedMessage() + "\nCause: " + e.getCause().getLocalizedMessage(), LogPanel.BOLD, LogPanel.RED);
+        updateLog(text);
+    }
+
+    @Override
+    public void showErrorMessage(final String title, final String text, final Exception e) {
+
+        final String causeMessage = e.getCause() != null ? "\nCause:" + e.getCause().getLocalizedMessage() : "";
+        final String errorMessage = "\n\nError: " + e.getLocalizedMessage();
+
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.showErrorMessage(title, text + errorMessage + causeMessage);
+                    }
+                });
+            } catch (InterruptedException | InvocationTargetException error) {
+                error.printStackTrace();
+            }
+        } else {
+            view.showErrorMessage(title, text + errorMessage + causeMessage);
+        }
+
+        updateLog("\n\n" + title, LogPanel.BOLD);
+        updateLog(text + errorMessage + causeMessage, LogPanel.BOLD, LogPanel.RED);
     }
 
     @Override
@@ -295,14 +320,19 @@ public class Controller implements EventListener {
         return model.isTestRunning();
     }
 
-    public void windowClosing() {
-        destroyConnectionManager();
+    @Override
+    public String getPathToDatabase() {
+        return view.getPathToDatabase();
+    }
 
+    public void windowClosing() {
         connectionExecutor.shutdown();
         try {
             connectionExecutor.awaitTermination(200, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        model.deinit();
     }
 }

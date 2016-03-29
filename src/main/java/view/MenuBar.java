@@ -59,11 +59,8 @@ class MenuBar extends JMenuBar implements ActionListener {
 
         menu.add(jmiStartTesting);
         menu.add(jmiStopTesting);
-
-        // TODO: delete this block!
-//        menu.addSeparator();
-//        menu.add(jmiHistory);
-        //
+        menu.addSeparator();
+        menu.add(jmiHistory);
 
         jmiStartTesting.addActionListener(this);
         jmiStopTesting.addActionListener(this);

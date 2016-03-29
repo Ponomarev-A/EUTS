@@ -27,6 +27,8 @@ interface EventListener {
 
     Device getStand();
 
+    void showMessage(String title, String text);
+
     void showErrorMessage(String title, String text, Exception e);
 
     void updateLog(String text, AttributeSet... attributeSet);
@@ -52,4 +54,6 @@ interface EventListener {
     void history();
 
     boolean isTestRunning();
+
+    String getPathToDatabase();
 }

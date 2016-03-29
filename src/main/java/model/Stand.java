@@ -70,8 +70,12 @@ public class Stand extends Device {
                 ", ID = " + ID + "}";
     }
 
-    public int calcVoltage(double level_prt, int gain) {
-        double voltage_mcV = level_prt / 100.0 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain + 22) / 20.0);
+    public int calcVoltage(double level_prt, int gain_dB, int frequency_Hz) {
+
+        // Fix calculation for 32768 Hz receiver freq
+        double cascade_gain_dB = (frequency_Hz == 32768) ? 22.5 : 22.0;
+
+        double voltage_mcV = level_prt / 100.0 * MAX_RECEIVER_ADC_VOLTAGE_MCV / Math.pow(10, (gain_dB + cascade_gain_dB) / 20.0);
         return (int) voltage_mcV;
     }
 }

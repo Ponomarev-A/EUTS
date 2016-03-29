@@ -27,6 +27,7 @@ public class Model {
 
     public Model(Controller controller) {
         this.controller = controller;
+        this.managerDB = new ManagerDB(this, controller);
     }
 
     public ConnectionManager getConnectionManager() {
@@ -45,8 +46,13 @@ public class Model {
         return testManager;
     }
 
+    public ManagerDB getManagerDB() {
+        return managerDB;
+    }
+
     public void init() {
         createConnectionManagerWithFirstCOMPort();
+        managerDB.connect();
     }
 
     private void createConnectionManagerWithFirstCOMPort() {
@@ -92,6 +98,11 @@ public class Model {
         controller.updateLog("Create new connection " + newConnection);
 
         return newConnection;
+    }
+
+    public void deinit() {
+        destroyConnectionManager();
+        managerDB.disconnect();
     }
 
     public void destroyConnectionManager() {
@@ -146,7 +157,6 @@ public class Model {
         testManager.startTests();
     }
 
-
     public void stopTesting() {
         testManager.setTestRunning(false);
     }
@@ -157,10 +167,10 @@ public class Model {
                 Collections.<BaseTestCase>emptyList();
     }
 
+
     public boolean isReceiverConnected() {
         return receiver != null && receiver.getConnectionStatus() == ConnectionStatus.CONNECTED;
     }
-
 
     public boolean isStandConnected() {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;

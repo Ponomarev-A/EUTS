@@ -50,18 +50,32 @@ public class ModelTest {
                 return null;
             }
         }).when(mockController).updateLog(anyString(), (SimpleAttributeSet) anyObject());
+
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 String title = invocationOnMock.getArgumentAt(0, String.class);
-                Exception exception = invocationOnMock.getArgumentAt(1, Exception.class);
+                String text = invocationOnMock.getArgumentAt(1, String.class);
+                Exception exception = invocationOnMock.getArgumentAt(2, Exception.class);
 
-                System.out.println("Mock Controller: " + title + "\n" + exception.getLocalizedMessage());
+                System.out.println("Mock Controller: " + title + "\n" + text + "\n" + exception.getLocalizedMessage());
                 System.out.flush();
-
                 return null;
             }
         }).when(mockController).showErrorMessage(anyString(), anyString(), (Exception) anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                String title = invocationOnMock.getArgumentAt(0, String.class);
+                String text = invocationOnMock.getArgumentAt(1, String.class);
+
+                System.out.println("Mock Controller: " + title + "\n" + text);
+                System.out.flush();
+                return null;
+            }
+        }).when(mockController).showMessage(anyString(), anyString());
+
 
         return mockController;
     }

@@ -36,7 +36,7 @@ abstract class AnalogFilterTest extends BaseTestCase {
 
     short[] autoSetVoltageStand(int initGain, double minLevelPrt, double maxLevelPrt, double initLevelPrt) throws Exception {
 
-        int voltage_mcV = stand.calcVoltage(initLevelPrt, initGain);
+        int voltage_mcV = stand.calcVoltage(initLevelPrt, initGain, receiverFrequency_Hz);
         int attempts = SET_VOLTAGE_ATTEMPTS_COUNT;
 
         double maxLevel_prt = 0;
@@ -51,7 +51,7 @@ abstract class AnalogFilterTest extends BaseTestCase {
 
             if (maxLevel_prt < minLevelPrt || maxLevel_prt > maxLevelPrt) {
 
-                int voltage_step_mcV = stand.calcVoltage((maxLevelPrt + minLevelPrt) / 2 - maxLevel_prt, initGain);
+                int voltage_step_mcV = stand.calcVoltage((maxLevelPrt + minLevelPrt) / 2 - maxLevel_prt, initGain, receiverFrequency_Hz);
                 voltage_mcV += (voltage_step_mcV < 0) ? voltage_step_mcV * attempts : voltage_step_mcV;
 
             } else {
