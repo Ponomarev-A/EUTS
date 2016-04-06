@@ -5,6 +5,7 @@ import connections.ModBus;
 import connections.Protocol;
 import connections.UARTTest;
 import controller.Controller;
+import model.tests.TestManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -21,11 +22,12 @@ import static org.junit.Assert.assertTrue;
 public class StandTest {
 
     private final Protocol protocol = new ModBus();
-    private final Controller controller = ModelTest.createMockController();
+    private Controller controller;
     private ConnectionManager connectionManager;
 
     @Before
     public void setUp() throws Exception {
+        controller = ModelTest.createMockController();
         connectionManager = new ConnectionManager(UARTTest.createUARTConnection(), protocol);
         connectionManager.getConnection().open();
     }
@@ -54,6 +56,9 @@ public class StandTest {
     @Ignore
     public void testSetAllFrequencies() throws Exception {
         Stand stand = new Stand(connectionManager, controller);
+        Receiver receiver = new Receiver(connectionManager, controller);
+
+        new TestManager(controller, receiver, stand);
 
         for (int i = 40; i < 33000; i += 10) {
             stand.set(Command.FREQUENCY_STAND, i);

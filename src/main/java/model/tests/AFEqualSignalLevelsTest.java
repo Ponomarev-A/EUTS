@@ -12,22 +12,20 @@ import static model.Receiver.MAX_LEVEL;
  */
 class AFEqualSignalLevelsTest extends AnalogFilterTest {
 
-    private static final double DELTA_LEVEL_PRT = 15.0;
+    private static final double DELTA_LEVEL_PRT = 10.0;
 
-    AFEqualSignalLevelsTest(final int frequency_Hz, final int gain_dB, Receiver receiver, Stand stand) {
+    AFEqualSignalLevelsTest(final int frequency_Hz, final int gain_dB) {
         super(String.format("Analog filter: equal signal levels (%d Hz, %d dB)", frequency_Hz, gain_dB),
-                receiver,
-                stand,
                 gain_dB,
                 frequency_Hz);
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public void runTest(Receiver receiver, Stand stand) throws Exception, Error {
 
-        setUpStand();
-        setUpReceiver();
-        short[] levels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+        setUp(stand);
+        setUp(receiver);
+        short[] levels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         int maxLevel = findMaxLevel(Arrays.copyOfRange(levels, 0, 4));
         int minLevel = findMinLevel(Arrays.copyOfRange(levels, 0, 4));

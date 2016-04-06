@@ -4,6 +4,8 @@ import model.Device;
 import model.Receiver;
 import model.Stand;
 
+import java.util.concurrent.TimeUnit;
+
 import static model.Receiver.MAX_LEVEL;
 import static packet.Command.*;
 
@@ -18,30 +20,30 @@ class ExternalSensorsTest extends AnalogFilterTest {
 
     private static final int FREQUENCY = 512;
     private static final int GAIN = 20;
+    private static final long WAIT_CHANGE_EXT_SENSOR_MS = 50;
 
-    ExternalSensorsTest(Receiver receiver, Stand stand) {
+    ExternalSensorsTest() {
         super(String.format("Check external sensors (%d Hz, %d dB)", FREQUENCY, GAIN),
-                receiver,
-                stand,
                 GAIN,
                 FREQUENCY);
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public void runTest(Receiver receiver, Stand stand) throws Exception, Error {
 
-        setUpStand();
-        setUpReceiver();
-        short[] beforeLevels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+        setUp(stand);
+        setUp(receiver);
+        short[] beforeLevels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         Device.ExtSensors receiverSensor = Stand.ExtSensors.values()[receiver.getArray(GET_EXT_SENSOR_DEVICE)[0]];
         for (Device.ExtSensors standSensor : Device.ExtSensors.values()) {
 
             stand.set(EXT_SENSOR_STAND, standSensor.ordinal());
+            TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_EXT_SENSOR_MS);
             receiverSensor = Stand.ExtSensors.values()[receiver.getArray(GET_EXT_SENSOR_DEVICE)[0]];
 
             assertEquals(String.format(
-                    "The external sensors are different on Stand and on Receiver.%-30s: %s %-30s: %s",
+                    "The external sensors are different on Stand and on Receiver.%-30s: %s %-30s: %s\n",
                     "\nSensor set by Stand", standSensor,
                     "\nSensor get from Receiver", receiverSensor),
                     standSensor, receiverSensor

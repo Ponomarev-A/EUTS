@@ -12,9 +12,9 @@ public class TestCaseTest {
 
     private final String name = "sample test case";
 
-    private BaseTestCase testCase = new BaseTestCase(name, null, null) {
+    private BaseTestCase testCase = new BaseTestCase(name) {
         @Override
-        public void runTest() {
+        public void runTest(Receiver receiver, Stand stand) throws Error, Exception {
         }
     };
 

@@ -25,20 +25,18 @@ class WideBandTest extends AnalogFilterTest {
 
     private static final double REJECTION_ACTIVE_FREQ = 10;
 
-    WideBandTest(Receiver receiver, Stand stand) {
+    WideBandTest() {
         super(String.format("Check wide band (from %d Hz to %d Hz, %d dB)", START_FREQUENCY, END_FREQUENCY, GAIN),
-                receiver,
-                stand,
                 GAIN,
                 START_FREQUENCY);
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public void runTest(Receiver receiver, Stand stand) throws Exception, Error {
 
-        setUpStand();
-        setUpReceiver();
-        short[] beforeLevels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+        setUp(stand);
+        setUp(receiver);
+        short[] beforeLevels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         // Set up new frequency and wait completion transient process on receiver
         stand.set(FREQUENCY_STAND, END_FREQUENCY);
@@ -72,7 +70,7 @@ class WideBandTest extends AnalogFilterTest {
     }
 
     @Override
-    void setUpReceiver() throws Exception {
+    void setUp(Receiver receiver) throws Exception {
         receiver.set(MODE_DEVICE, Receiver.Modes.MODE_TESTLEVELS.ordinal());
         receiver.set(TYPE_OF_SIGNAL_DEVICE, Device.SignalType.SOLID.ordinal());
         receiver.set(BOTTOM_SENSOR_DEVICE, Receiver.BSType.WB.ordinal());

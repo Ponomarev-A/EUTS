@@ -23,20 +23,18 @@ class ScalingAmplifierTest extends AnalogFilterTest {
     private static final int START_GAIN = 18;
     private static final int END_GAIN = 24;
 
-    ScalingAmplifierTest(Receiver receiver, Stand stand) {
+    ScalingAmplifierTest() {
         super(String.format("Check scaling amplifier (%d Hz, from %d dB to %d dB)", FREQUENCY, START_GAIN, END_GAIN),
-                receiver,
-                stand,
                 START_GAIN,
                 FREQUENCY);
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public void runTest(Receiver receiver, Stand stand) throws Exception, Error {
 
-        setUpStand();
-        setUpReceiver();
-        short[] beforeLevels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+        setUp(stand);
+        setUp(receiver);
+        short[] beforeLevels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         // Set up new gain and wait completion transient process on receiver
         receiver.set(GAIN_DEVICE, END_GAIN);
@@ -63,4 +61,5 @@ class ScalingAmplifierTest extends AnalogFilterTest {
             );
         }
     }
+
 }

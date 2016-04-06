@@ -21,22 +21,21 @@ class TwoFrequencyTest extends AnalogFilterTest {
 
     private static final double REJECTION_ACTIVE_FREQ = 10;
 
-    TwoFrequencyTest(Receiver receiver, Stand stand) {
+    TwoFrequencyTest() {
         super(String.format("Check 2-frequency mode (%d Hz and %d Hz, %d dB)", FREQUENCY_1024, FREQUENCY_8192, GAIN),
-                receiver,
-                stand,
                 GAIN,
                 FREQUENCY_1024);
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public void runTest(Receiver receiver, Stand stand) throws Exception, Error {
 
-        setUpStand();
-        setUpReceiver();
-        autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+        setUp(stand);
+        setUp(receiver);
+        autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         receiver.set(MODE_DEVICE, Receiver.Modes.MODE_INT_IFF.ordinal());
+        TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_VOLTAGE_MS);
         short[] magnitudesAt1024Hz = receiver.getArray(GET_MAGNITUDES_DEVICE);
 
         double magn1K_at1024Hz_prt = magnitudesAt1024Hz[0] * 100.0 / MAX_LEVEL;
@@ -53,7 +52,6 @@ class TwoFrequencyTest extends AnalogFilterTest {
         // Set up new frequency and wait completion transient process on receiver
         stand.set(FREQUENCY_STAND, FREQUENCY_8192);
         TimeUnit.MILLISECONDS.sleep(WAIT_CHANGE_VOLTAGE_MS);
-
         short[] magnitudesAt8192Hz = receiver.getArray(GET_MAGNITUDES_DEVICE);
 
         double magn1K_at8192Hz_prt = magnitudesAt8192Hz[0] * 100.0 / MAX_LEVEL;

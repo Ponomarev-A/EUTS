@@ -146,7 +146,7 @@ public class Controller implements EventListener {
     @Override
     public void showErrorMessage(final String title, final String text, final Exception e) {
 
-        final String causeMessage = e.getCause() != null ? "\nCause:" + e.getCause().getLocalizedMessage() : "";
+        final String causeMessage = e.getCause() != null ? "\nCause: " + e.getCause().getLocalizedMessage() : "";
         final String errorMessage = "\n\nError: " + e.getLocalizedMessage();
 
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -255,6 +255,7 @@ public class Controller implements EventListener {
             @Override
             protected void process(List<Void> chunks) {
                 view.updateMenuStates();
+                view.updateTestList();
             }
 
             @Override

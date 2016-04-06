@@ -17,20 +17,18 @@ class AFValidFilterBandpassTest extends AnalogFilterTest {
     private static final double REJECTION_PASSIVE_FREQ = 1.5;
     private static final double REJECTION_ACTIVE_FREQ = 10.0;
 
-    AFValidFilterBandpassTest(final int frequency_Hz, final int gain_dB, Receiver receiver, Stand stand) {
+    AFValidFilterBandpassTest(final int frequency_Hz, final int gain_dB) {
         super(String.format("Analog filter: valid filter bandpass (%d Hz, %d dB)", frequency_Hz, gain_dB),
-                receiver,
-                stand,
                 gain_dB,
                 frequency_Hz);
     }
 
     @Override
-    public void runTest() throws Exception, Error {
+    public void runTest(Receiver receiver, Stand stand) throws Exception, Error {
 
-        setUpStand();
-        setUpReceiver();
-        short[] beforeLevels = autoSetVoltageStand(receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
+        setUp(stand);
+        setUp(receiver);
+        short[] beforeLevels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
         for (Integer standFrequency_Hz : receiver.frequencyHz) {
 

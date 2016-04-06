@@ -3,6 +3,8 @@ package model.tests;
 import model.Receiver;
 import model.Stand;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static model.tests.BaseTestCase.State.READY;
 
 /**
@@ -10,19 +12,18 @@ import static model.tests.BaseTestCase.State.READY;
  */
 public abstract class BaseTestCase extends org.junit.Assert {
 
-    final Receiver receiver;
-    final Stand stand;
+    private static AtomicInteger nextID = new AtomicInteger(0);
 
     private final String name;
 
     private State state = READY;
     private boolean enabled = true;
+    private Integer id;
 
-    protected BaseTestCase(String name, Receiver receiver, Stand stand) {
+    protected BaseTestCase(String name) {
         super();
         this.name = name;
-        this.receiver = receiver;
-        this.stand = stand;
+        id = nextID.incrementAndGet();
     }
 
     public String getName() {
@@ -45,7 +46,11 @@ public abstract class BaseTestCase extends org.junit.Assert {
         this.enabled = enabled;
     }
 
-    public abstract void runTest() throws Error, Exception;
+    public abstract void runTest(Receiver receiver, Stand stand) throws Error, Exception;
+
+    public Integer getId() {
+        return id;
+    }
 
     public enum State {
         READY, PASS, FAIL
