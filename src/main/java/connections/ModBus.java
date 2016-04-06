@@ -13,8 +13,8 @@ public class ModBus implements Protocol {
 
     // TODO: Don't forgive revert CLOSE_CODE_SEQ values!
 //    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x0D, 0x0A}; ]
-    public static final byte[] CLOSE_CODE_SEQ = new byte[]{0x2E, 0x2F};
-    public static final byte[] OPEN_CODE_SEQ = new byte[]{0x3A};
+    static final byte[] CLOSE_CODE_SEQ = new byte[]{0x2E, 0x2F};
+    static final byte[] OPEN_CODE_SEQ = new byte[]{0x3A};
 
     @Override
     public String toString() {
@@ -26,9 +26,9 @@ public class ModBus implements Protocol {
 
         byte[] result = new byte[0];
 
-        result = ArrayUtils.addAll(result, getOpenSequence());
+        result = ArrayUtils.addAll(result, OPEN_CODE_SEQ);
         result = ArrayUtils.addAll(result, byteArrayToASCIICodeArray(data));
-        result = ArrayUtils.addAll(result, getCloseSequence());
+        result = ArrayUtils.addAll(result, CLOSE_CODE_SEQ);
 
         return result;
     }
@@ -39,23 +39,13 @@ public class ModBus implements Protocol {
         byte[] SOF = new byte[]{code[0]};
         byte[] EOF = new byte[]{code[code.length - 2], code[code.length - 1]};
 
-        if (!Arrays.equals(SOF, getOpenSequence()) || !Arrays.equals(EOF, getCloseSequence()))
+        if (!Arrays.equals(SOF, OPEN_CODE_SEQ) || !Arrays.equals(EOF, CLOSE_CODE_SEQ))
             throw new InvalidProtocol("The ModBus protocol is broken: " +
-                    "expected " + Arrays.toString(getOpenSequence()) + ", " + Arrays.toString(getCloseSequence()) + ", " +
+                    "expected " + Arrays.toString(OPEN_CODE_SEQ) + ", " + Arrays.toString(CLOSE_CODE_SEQ) + ", " +
                     "actual " + Arrays.toString(SOF) + ", " + Arrays.toString(EOF));
 
-        byte[] subarray = ArrayUtils.subarray(code, getOpenSequence().length, code.length - getCloseSequence().length);
+        byte[] subarray = ArrayUtils.subarray(code, OPEN_CODE_SEQ.length, code.length - CLOSE_CODE_SEQ.length);
         return ASCIICodeArrayToByteArray(subarray);
-    }
-
-    @Override
-    public byte[] getOpenSequence() {
-        return OPEN_CODE_SEQ;
-    }
-
-    @Override
-    public byte[] getCloseSequence() {
-        return CLOSE_CODE_SEQ;
     }
 
     private static byte[] ASCIICodeArrayToByteArray(byte[] code) {

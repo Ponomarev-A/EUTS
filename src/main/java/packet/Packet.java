@@ -30,17 +30,14 @@ import java.util.Arrays;
  */
 public class Packet {
 
-    // Length of packet attributes (bytes)
-    private static final short DATA_COUNT_LENGTH = 2;
+    public static final short DATA_COUNT_LENGTH = 2;
     private static final short CRC_POLYNOMIAL = (short)0x8005;
-
     // Length of packet parts (bytes)
     private static final short COMMAND_LENGTH = 2;
-    private static final short DATA_LENGTH = 512;
     private static final short CRC16_LENGTH = 2;
-
-    private static final short MIN_FRAME_LENGTH = COMMAND_LENGTH + CRC16_LENGTH;
-    private static final short MAX_FRAME_LENGTH = COMMAND_LENGTH + DATA_LENGTH + CRC16_LENGTH;
+    public static final short MIN_FRAME_LENGTH = COMMAND_LENGTH + CRC16_LENGTH;
+    private static final short DATA_LENGTH = 512;
+    public static final short MAX_FRAME_LENGTH = COMMAND_LENGTH + DATA_LENGTH + CRC16_LENGTH;
 
     private Command command;
     private byte[] data;

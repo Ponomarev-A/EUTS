@@ -1,6 +1,5 @@
 package connections;
 
-import exception.InvalidPacketSize;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import org.junit.After;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.*;
  */
 public class UARTTest {
 
-    public static final String COM_PORTNAME = "COM6";
+    public static final String COM_PORTNAME = "COM3";
 
     private static byte[] mockData;
     private UART uart;
@@ -59,7 +58,7 @@ public class UARTTest {
                     return mockData;
                 }
             });
-        } catch (SerialPortException | InvalidPacketSize | InterruptedException ignored) {
+        } catch (Exception ignored) {
         }
 
         return mockUART;
