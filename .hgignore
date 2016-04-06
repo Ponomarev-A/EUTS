@@ -13,3 +13,7 @@ out/
 *.ipr
 *.iws
 
+.idea/misc.xml
+.idea/modules/EUTS.iml
+.idea/modules/EUTS_main.iml
+.idea/modules/EUTS_test.iml
