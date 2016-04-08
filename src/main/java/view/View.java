@@ -27,9 +27,18 @@ public class View extends JFrame {
 
     private static final int FRAME_HEIGHT = 800;
     private static final int FRAME_WIDTH = 1200;
+    private static final FileFilter DB_FILE_FILTER = new FileFilter() {
+        @Override
+        public boolean accept(File f) {
+            return f.isDirectory() || (f.getName().endsWith(".db"));
+        }
 
+        @Override
+        public String getDescription() {
+            return "Database file (*.db)";
+        }
+    };
     private Controller controller;
-
     private MenuBar menuBar;
     private ReceiverInfoPanel jpReceiverInfo;
     private StandInfoPanel jpStandInfo;
@@ -150,19 +159,47 @@ public class View extends JFrame {
     }
 
     public String getPathToDatabase() {
-        JFileChooser jFileChooser = new JFileChooser();
-        jFileChooser.setDialogTitle("Choose database file");
-        jFileChooser.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || (f.getName().endsWith(".db"));
-            }
+        int result = JOptionPane.showOptionDialog(
+                this,
+                "Database file not found.\nWhat do you want to do with database file?",
+                "Lose database file",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                new Object[]{"Create new database file", "Choose exists database file", "Do not use database"},
+                null);
 
-            @Override
-            public String getDescription() {
-                return "Database file (*.db)";
-            }
-        });
+
+        switch (result) {
+            case JOptionPane.YES_OPTION:
+                return createNewDatabaseFile();
+
+            case JOptionPane.NO_OPTION:
+                return chooseExistDatabaseFile();
+
+            default:
+                return "";
+        }
+    }
+
+    private String createNewDatabaseFile() {
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setDialogTitle("Save database file");
+        jFileChooser.setFileFilter(DB_FILE_FILTER);
+
+        switch (jFileChooser.showSaveDialog(this)) {
+            case JFileChooser.APPROVE_OPTION:
+                return jFileChooser.getSelectedFile().getPath().split("\\.")[0];
+
+            default:
+                return "";
+        }
+    }
+
+    private String chooseExistDatabaseFile() {
+        JFileChooser jFileChooser = new JFileChooser();
+        jFileChooser.setDialogTitle("Open database file");
+        jFileChooser.setFileFilter(DB_FILE_FILTER);
 
         switch (jFileChooser.showOpenDialog(this)) {
             case JFileChooser.APPROVE_OPTION:
@@ -171,7 +208,6 @@ public class View extends JFrame {
             default:
                 return "";
         }
-
     }
 
     public void updateTestList() {

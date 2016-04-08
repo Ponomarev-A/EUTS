@@ -30,6 +30,9 @@ public class Receiver extends Device {
     private Integer ID;
 
 
+    public Receiver() {
+    }
+
     Receiver(ConnectionManager connectionManager, Controller controller) {
         super(connectionManager, controller);
     }
@@ -76,6 +79,45 @@ public class Receiver extends Device {
     @Override
     public String getFirmware() {
         return firmware;
+    }
+
+    void setFirmware(String firmware) {
+        this.firmware = firmware;
+    }
+
+    void setScheme(String scheme) {
+        this.scheme = scheme;
+    }
+
+    void setModel(String model) {
+        this.model = model;
+    }
+
+    void setID(Integer ID) {
+        this.ID = ID;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getModel().hashCode();
+        result = 31 * result + getFirmware().hashCode();
+        result = 31 * result + getScheme().hashCode();
+        result = 31 * result + getID().hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Receiver receiver = (Receiver) o;
+
+        if (!getModel().equals(receiver.getModel())) return false;
+        if (!getFirmware().equals(receiver.getFirmware())) return false;
+        if (!getScheme().equals(receiver.getScheme())) return false;
+        return getID().equals(receiver.getID());
+
     }
 
     @Override

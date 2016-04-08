@@ -22,14 +22,13 @@ public class ConnectionManagerTest {
     public void openConnection() throws Exception {
         connectionManager = new ConnectionManager(UARTTest.createUARTConnection(), new ModBus());
         connectionManager.getConnection().open();
+
+        assertTrue(connectionManager.getConnection().isOpened());
     }
 
     @After
     public void closeConnection() throws Exception {
-        if (connectionManager != null)
-            connectionManager.getConnection().close();
-
-        connectionManager = null;
+        assertTrue(connectionManager.getConnection().close());
     }
 
     @Test

@@ -2,6 +2,7 @@
   <dictionary name="ponomarev">
     <words>
       <w>backlight</w>
+      <w>deinit</w>
       <w>euts</w>
       <w>modbus</w>
       <w>portname</w>

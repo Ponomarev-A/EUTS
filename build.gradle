@@ -1,5 +1,5 @@
 group 'EUTS'
-version '1.0'
+version '0.9'
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -21,7 +21,8 @@ dependencies {
             'junit:junit:4.11+',
             'com.google.guava:guava:11.0.2',
             'com.h2database:h2:1.4.191',
-            'org.jdatepicker:jdatepicker:1.3.4'
+            'org.jdatepicker:jdatepicker:1.3.4',
+            'com.healthmarketscience.sqlbuilder:sqlbuilder:2.1.2'
     )
     testDownload(
             'org.mockito:mockito-core:1.10.+'

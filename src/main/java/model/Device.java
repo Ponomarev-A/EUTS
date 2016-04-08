@@ -15,8 +15,14 @@ import static packet.Command.*;
 public abstract class Device {
 
     final Controller controller;
+
     private final ConnectionManager connectionManager;
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
+
+    public Device() {
+        this.connectionManager = null;
+        this.controller = null;
+    }
 
     Device(ConnectionManager connectionManager, Controller controller) {
         this.connectionManager = connectionManager;
@@ -35,15 +41,17 @@ public abstract class Device {
 
     void checkConnectionStatus() {
         try {
-            connectionStatus = (connectionManager.getConnection().isOpened()) ?
+            connectionStatus = (connectionManager != null && connectionManager.getConnection().isOpened()) ?
                     ConnectionStatus.checkStatus(this) :
                     ConnectionStatus.DISCONNECTED;
         } catch (Exception e) {
             connectionStatus = ConnectionStatus.DISCONNECTED;
-            controller.showErrorMessage(
-                    "Check " + (this.toString()).split(" ")[0] + " connection status",
-                    "Read " + this + " connection status is failed.\nTry again connect to device!",
-                    e);
+            if (controller != null) {
+                controller.showErrorMessage(
+                        "Check " + (this.toString()).split(" ")[0] + " connection status",
+                        "Read " + this + " connection status is failed.\nTry again connect to device!",
+                        e);
+            }
         }
     }
 
@@ -63,7 +71,7 @@ public abstract class Device {
     private Packet get() throws Exception {
         Packet packet = new Packet();
         try {
-            packet = connectionManager.receivePacket();
+            packet = connectionManager != null ? connectionManager.receivePacket() : packet;
             checkPacketContainsErrorInfo(packet);
         } catch (InterruptedException e) {
             throw new Exception("Execution operation was interrupted.");
@@ -82,6 +90,9 @@ public abstract class Device {
 
     private void set(Packet packet) throws Exception {
         try {
+            if (connectionManager == null)
+                return;
+
             connectionManager.sendPacket(packet);
 
             if (isConfirmationRequired(packet)) {

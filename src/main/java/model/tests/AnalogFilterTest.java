@@ -80,6 +80,7 @@ abstract class AnalogFilterTest extends BaseTestCase {
 
     void setUp(Stand stand) throws Exception {
         stand.set(EXT_SENSOR_STAND, Device.ExtSensors.INT.ordinal());
+//        TODO: impl TYPE_OF_SIGNAL_STAND command
 //        stand.set(TYPE_OF_SIGNAL_STAND,     SignalType.SOLID.ordinal());
         stand.set(FREQUENCY_STAND, receiverFrequency_Hz);
     }

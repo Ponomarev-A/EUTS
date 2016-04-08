@@ -27,7 +27,7 @@ public class Model {
 
     public Model(Controller controller) {
         this.controller = controller;
-        this.managerDB = new ManagerDB(this, controller);
+        this.managerDB = new ManagerDB(controller);
     }
 
     public ConnectionManager getConnectionManager() {
