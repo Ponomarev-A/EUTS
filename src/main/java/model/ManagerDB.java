@@ -1,21 +1,19 @@
 package model;
 
-import com.healthmarketscience.sqlbuilder.BinaryCondition;
-import com.healthmarketscience.sqlbuilder.CreateTableQuery;
-import com.healthmarketscience.sqlbuilder.InsertQuery;
-import com.healthmarketscience.sqlbuilder.SelectQuery;
+import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.custom.HookType;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.*;
 import controller.Controller;
 
 import java.io.File;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 /**
  * Database manager class for control History DB
  */
-class ManagerDB {
+public class ManagerDB {
 
     // DB fields constants
     private static final String TABLE_RECEIVER = "RECEIVER";
@@ -62,7 +60,7 @@ class ManagerDB {
      * Connect to database file with specific URL.
      * <p>Note: if there is no database by URL path, then file chooser windows has been opened.</p>
      *
-     * @param url                path to database file
+     * @param url path to database file
      * @return true - if connection opened, or false in other case.
      */
     boolean connect(String url) {
@@ -96,8 +94,10 @@ class ManagerDB {
     }
 
     private String loadURLFromPrefs() {
-        Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
-        return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
+//        Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
+//        return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
+
+        return DEFAULT_URL;
     }
 
     private void saveURLToPrefs(String url) {
@@ -105,9 +105,7 @@ class ManagerDB {
         prefs.put(PREF_URL, url);
     }
 
-    private void createTables() throws SQLException {
-
-        Statement st = connection.createStatement();
+    private void createTables() {
 
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();
@@ -119,16 +117,14 @@ class ManagerDB {
         dbColumnFirmware = new DbColumn(dbTableReceiver, COLUMN_FIRMWARE, "varchar", 32);
 
 
-        String sql = new CreateTableQuery(dbTableReceiver, true).
+        String sqlCreateReceiverTable = new CreateTableQuery(dbTableReceiver, true).
                 addCustomization(CreateTableQuery.Hook.TABLE, HookType.SUFFIX, "IF NOT EXISTS ").
                 addColumns(dbColumnReceiverID, dbColumnModel, dbColumnScheme, dbColumnFirmware).
                 addColumnConstraint(dbColumnReceiverID, "PRIMARY KEY").
-                addColumnConstraint(dbColumnModel, "NOT NULL").
-                addColumnConstraint(dbColumnScheme, "NOT NULL").
-                addColumnConstraint(dbColumnFirmware, "NOT NULL")
-                .validate().toString();
-
-        st.execute(sql);
+                addColumnConstraint(dbColumnModel, "DEFAULT '' NOT NULL").
+                addColumnConstraint(dbColumnScheme, "DEFAULT '' NOT NULL").
+                addColumnConstraint(dbColumnFirmware, "DEFAULT '' NOT NULL").
+                validate().toString();
 
         dbTableSession = schema.addTable(TABLE_SESSION);
         dbColumnSessionID = new DbColumn(dbTableSession, COLUMN_ID, "int");
@@ -143,16 +139,36 @@ class ManagerDB {
                 new DbColumn[]{dbColumnSessionR_id}, new DbColumn[]{dbColumnReceiverID});
 
 
-        sql = new CreateTableQuery(dbTableSession, true).
+        String sqlCreateSessionTable = new CreateTableQuery(dbTableSession, true).
                 addCustomization(CreateTableQuery.Hook.TABLE, HookType.SUFFIX, "IF NOT EXISTS ").
                 addColumns(dbColumnSessionID, dbColumnSessionR_id, dbColumnTimestamp, dbColumnPass, dbColumnFail, dbColumnSkip).
                 addColumnConstraint(dbColumnSessionID, "AUTO_INCREMENT PRIMARY KEY").
                 addColumnConstraint(dbColumnSessionR_id, "NOT NULL").
-                addColumnConstraint(dbColumnTimestamp, "NOT NULL").
-                addConstraints(foreignKeyConstraint)
-                .validate().toString();
+                addColumnConstraint(dbColumnTimestamp, "DEFAULT CURRENT_TIMESTAMP NOT NULL").
+                addColumnConstraint(dbColumnPass, "DEFAULT ()").
+                addColumnConstraint(dbColumnFail, "DEFAULT ()").
+                addColumnConstraint(dbColumnSkip, "DEFAULT ()").
+                addConstraints(foreignKeyConstraint).
+                validate().toString();
 
-        st.execute(sql);
+        try (Statement st = connection.createStatement()) {
+            st.execute(sqlCreateReceiverTable);
+            st.execute(sqlCreateSessionTable);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void destroy() {
+        if (connection == null)
+            return;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("DROP ALL OBJECTS DELETE FILES");
+            disconnect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     boolean disconnect() {
@@ -165,76 +181,54 @@ class ManagerDB {
             isClosed = connection.isClosed();
         } catch (SQLException e) {
             e.printStackTrace();
-
         }
 
         return isClosed;
     }
 
-    void destroy() {
-        try {
-            if (connection != null) {
-                Statement statement = connection.createStatement();
-                statement.execute("DROP ALL OBJECTS DELETE FILES");
-                connection.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    boolean insert(Receiver receiver) throws SQLException {
+        String sql = new InsertQuery(dbTableReceiver).
+                addColumn(dbColumnReceiverID, receiver.getID()).
+                addColumn(dbColumnModel, receiver.getModel()).
+                addColumn(dbColumnScheme, receiver.getScheme()).
+                addColumn(dbColumnFirmware, receiver.getFirmware()).
+                validate().toString();
 
-    boolean insert(Receiver receiver) {
-        try {
-            if (!connection.isValid(0))
-                return false;
-
-            String sql = new InsertQuery(dbTableReceiver).
-                    addColumn(dbColumnReceiverID, receiver.getID()).
-                    addColumn(dbColumnModel, receiver.getModel()).
-                    addColumn(dbColumnScheme, receiver.getScheme()).
-                    addColumn(dbColumnFirmware, receiver.getFirmware()).
-                    validate().toString();
-
-            Statement st = connection.createStatement();
+        try (Statement st = connection.createStatement()) {
             st.execute(sql);
-
+            return true;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new SQLException("Insert new receiver to database failed");
         }
-
-        return true;
     }
 
-    boolean insert(Integer receiverID, Timestamp timestamp, Object[] passed, Object[] failed, Object[] skipped) {
-        try {
-            if (!connection.isValid(0))
-                return false;
+    boolean insert(Integer receiverID, Object[] passed, Object[] failed, Object[] skipped) throws SQLException {
 
-            String sql = new InsertQuery(dbTableSession).
-                    addColumn(dbColumnSessionR_id, receiverID).
-                    addColumn(dbColumnTimestamp, timestamp).
-                    addPreparedColumns(dbColumnPass, dbColumnFail, dbColumnSkip).
-                    validate().toString();
+        String sql = new InsertQuery(dbTableSession).
+                addColumn(dbColumnSessionR_id, receiverID).
+                addPreparedColumns(dbColumnPass, dbColumnFail, dbColumnSkip).
+                validate().toString();
 
-            PreparedStatement prSt = connection.prepareStatement(sql);
+        try (PreparedStatement prSt = connection.prepareStatement(sql)) {
             prSt.setObject(1, passed);
             prSt.setObject(2, failed);
             prSt.setObject(3, skipped);
             prSt.execute();
-
+            return true;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new SQLException("Insert new session to database failed");
         }
-
-        return true;
     }
 
-    ResultSet select(Receiver receiver, Timestamp afterTimestamp, Timestamp beforeTimestamp) {
+    ResultSet select(Receiver receiver, String afterDate, String beforeDate) {
 
         SelectQuery selectQuery = new SelectQuery().
-                addColumns(dbColumnReceiverID, dbColumnModel, dbColumnScheme, dbColumnFirmware, dbColumnTimestamp, dbColumnPass, dbColumnFail, dbColumnSkip).
+                addColumns(dbColumnReceiverID, dbColumnModel, dbColumnScheme, dbColumnFirmware).
+                addCustomColumns(
+                        new CustomSql("ISNULL(" + dbColumnTimestamp.getColumnNameSQL() + ",0)"),
+                        new CustomSql("ISNULL(" + dbColumnPass.getColumnNameSQL() + ",())"),
+                        new CustomSql("ISNULL(" + dbColumnFail.getColumnNameSQL() + ",())"),
+                        new CustomSql("ISNULL(" + dbColumnSkip.getColumnNameSQL() + ",())")).
                 addJoin(SelectQuery.JoinType.LEFT_OUTER, dbTableReceiver, dbTableSession, dbColumnReceiverID, dbColumnSessionR_id);
 
         if (receiver != null) {
@@ -247,26 +241,75 @@ class ManagerDB {
             if (receiver.getFirmware() != null)
                 selectQuery.addCondition(BinaryCondition.equalTo(dbColumnFirmware, receiver.getFirmware()));
         }
-        if (afterTimestamp != null) {
-            selectQuery.addCondition(BinaryCondition.greaterThan(dbColumnTimestamp, afterTimestamp, true));
+
+        if (afterDate != null) {
+            selectQuery.addCondition(BinaryCondition.greaterThan(dbColumnTimestamp, afterDate, true));
         }
-        if (beforeTimestamp != null) {
-            selectQuery.addCondition(BinaryCondition.lessThan(dbColumnTimestamp, beforeTimestamp, true));
+
+        if (beforeDate != null) {
+            selectQuery.addCondition(BinaryCondition.lessThan(dbColumnTimestamp, beforeDate, true));
         }
         String sql = selectQuery.validate().toString();
 
-        ResultSet resultSet = null;
         try {
-            if (!connection.isValid(0)) {
-                return resultSet;
-            }
+            return connection.createStatement().executeQuery(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-            resultSet = connection.createStatement().executeQuery(sql);
+        return null;
+    }
+
+    public boolean exist() {
+        try {
+            return connection != null && connection.isValid(0);
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    String[] getModels() {
+        return selectParameter(dbColumnModel, COLUMN_MODEL);
+    }
+
+    private String[] selectParameter(DbColumn column, String columnName) {
+        String sql = new SelectQuery().
+                setIsDistinct(true).
+                addColumns(column).
+                addFromTable(dbTableReceiver).
+                addOrdering(column, OrderObject.Dir.ASCENDING).
+                validate().toString();
+
+        try {
+            ResultSet rs = connection.createStatement().executeQuery(sql);
+            ArrayList<String> result = new ArrayList<>();
+            while (rs.next()) {
+                result.add(rs.getString(columnName));
+            }
+            return result.toArray(new String[]{});
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return resultSet;
+        return new String[0];
+    }
+
+    String[] getSchemes() {
+        return selectParameter(dbColumnScheme, COLUMN_SCHEME);
+    }
+
+    String[] getFirmwares() {
+        return selectParameter(dbColumnFirmware, COLUMN_FIRMWARE);
+    }
+
+    String[] getIDs() {
+        return selectParameter(dbColumnReceiverID, COLUMN_ID);
+    }
+
+    Integer getNextUniqueID() {
+        String[] receiverIDs = controller.getReceiverIDsFromDB();
+        Integer lastUsedID = Integer.valueOf(receiverIDs[receiverIDs.length - 1]);
+        return ++lastUsedID;
     }
 }

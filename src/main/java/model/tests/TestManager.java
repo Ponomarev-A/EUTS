@@ -25,9 +25,9 @@ public class TestManager {
     private boolean testRunning = false;
     private long testsTimeMs;
 
-    private List<BaseTestCase> passed = new ArrayList<>();
-    private List<BaseTestCase> failed = new ArrayList<>();
-    private List<BaseTestCase> skipped = new ArrayList<>();
+    private List<Integer> passed = new ArrayList<>();
+    private List<Integer> failed = new ArrayList<>();
+    private List<Integer> skipped = new ArrayList<>();
 
     public TestManager(Controller controller, Receiver receiver, Stand stand) {
         this.controller = controller;
@@ -58,32 +58,29 @@ public class TestManager {
         testsList.add(new TwoFrequencyTest());
     }
 
-
-    public List<BaseTestCase> getPassed() {
-        return passed;
-    }
-
-    public List<BaseTestCase> getFailed() {
-        return failed;
-    }
-
-    public List<BaseTestCase> getSkipped() {
-        return skipped;
-    }
-
     public List<BaseTestCase> getTestsList() {
         return testsList;
     }
 
+    public List<Integer> getPassed() {
+        return passed;
+    }
+
+    public List<Integer> getFailed() {
+        return failed;
+    }
+
+    public List<Integer> getSkipped() {
+        return skipped;
+    }
+
     @Override
     public String toString() {
-        String builder = "Tests results:\n" +
+        return "Tests results:\n" +
                 String.format("%-10s%d%n", "Passed: ", passed.size()) +
                 String.format("%-10s%d%n", "Failed: ", failed.size()) +
                 String.format("%-10s%d%n", "Skipped: ", skipped.size()) +
                 String.format("\nTotal time: %s", DurationFormatUtils.formatDuration(testsTimeMs, "HH:mm:ss,SSS"));
-
-        return builder;
     }
 
     public void startTests() {
@@ -98,12 +95,14 @@ public class TestManager {
 
         for (int i = 1; i <= testsList.size(); i++) {
             BaseTestCase testCase = testsList.get(i - 1);
+            Integer testCaseID = testCase.getId();
 
-            if (!isTestRunning())
-                break;
+            if (!isTestRunning()) {
+                return;
+            }
 
             if (!testCase.isEnabled()) {
-                skipped.add(testCase);
+                skipped.add(testCaseID);
                 continue;
             }
 
@@ -111,7 +110,7 @@ public class TestManager {
             try {
                 testCase.runTest(receiver, stand);
                 testCase.setState(PASS);
-                passed.add(testCase);
+                passed.add(testCaseID);
 
             } catch (Error | Exception error) {
                 if (error instanceof InterruptedException)
@@ -120,7 +119,7 @@ public class TestManager {
                 String causeMessage = error.getCause() != null ? "\nCause: " + error.getCause().getLocalizedMessage() : "";
                 controller.updateLog("ERROR: " + error.getLocalizedMessage() + causeMessage, LogPanel.BOLD, LogPanel.RED);
                 testCase.setState(FAIL);
-                failed.add(testCase);
+                failed.add(testCaseID);
 
             } finally {
                 controller.updateLog(String.format("Test #%d %s is %s.", i, testCase.getName(), (testCase.getState() == PASS) ? "passed" : "failed"),

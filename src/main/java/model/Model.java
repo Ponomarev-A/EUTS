@@ -198,20 +198,29 @@ public class Model {
         return managerDB.getIDs();
     }
 
-    public boolean insertResultToDB(List<Integer> passed, List<Integer> failed, List<Integer> skipped) {
+    public boolean insertResultToDB() {
 
         Integer newID = managerDB.getNextUniqueID();
-        Integer oldID = receiver.getID();
-        receiver.setID(newID);
 
-        if (managerDB.insert(receiver) &&
-                managerDB.insert(newID, passed.toArray(), failed.toArray(), skipped.toArray())) {
-            try {
+        try {
+            if (managerDB.insert(new Receiver(newID, receiver.getModel(), receiver.getScheme(), receiver.getFirmware())) &&
+                    managerDB.insert(newID, testManager.getPassed().toArray(), testManager.getFailed().toArray(), testManager.getSkipped().toArray())) {
+
                 receiver.set(Command.WRITE_PCB_ID_DEVICE, newID);
-            } catch (Exception ignored) {
-                receiver.setID(oldID);
+                receiver.setID(newID);
+
+                controller.showMessage(
+                        "Database insert entry",
+                        "New entry " + receiver + "\nsuccessfully inserted to database!"
+                );
+                return true;
             }
-            return true;
+        } catch (Exception e) {
+            controller.showErrorMessage(
+                    "Database insert entry",
+                    "New entry " + receiver + "\ninsert to database FAILED!",
+                    e
+            );
         }
         return false;
     }

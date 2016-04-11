@@ -263,6 +263,7 @@ public class Controller implements EventListener {
             @Override
             protected void done() {
                 stopTesting();
+                insertResultToDB();
             }
         });
     }
@@ -359,13 +360,12 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public boolean insertResultToDB(Receiver receiver, List<Integer> passed, List<Integer> failed, List<Integer> skipped) {
-        if (view.askInsertResultToDB() && model.insertResultToDB(passed, failed, skipped)) {
+    public boolean insertResultToDB() {
+        if (view.askInsertResultToDB() && model.insertResultToDB()) {
             view.updateDeviceInfo();
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public void windowClosing() {

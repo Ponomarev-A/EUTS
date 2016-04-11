@@ -7,7 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ManagerDBTest {
     private static final String RECEIVER_MODEL = "AP019.1";
     private static final String RECEIVER_SCHEME = "AP019.01.020izm11";
     private static final String RECEIVER_FIRMWARE = "3.07";
-
+    private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private Controller mockController = ModelTest.createMockController();
     private ManagerDB managerDB = new ManagerDB(mockController);
 
@@ -85,12 +86,7 @@ public class ManagerDBTest {
     }
 
     private Receiver createReceiver() {
-        Receiver receiver = new Receiver();
-        receiver.setID(RECEIVER_ID);
-        receiver.setModel(RECEIVER_MODEL);
-        receiver.setScheme(RECEIVER_SCHEME);
-        receiver.setFirmware(RECEIVER_FIRMWARE);
-        return receiver;
+        return new Receiver(RECEIVER_ID, RECEIVER_MODEL, RECEIVER_SCHEME, RECEIVER_FIRMWARE);
     }
 
     @Test
@@ -98,13 +94,12 @@ public class ManagerDBTest {
         managerDB.connect(MOCK_URL);
         Receiver receiver = insertReceiverRow();
 
-        insertSessionRow(new Timestamp(System.currentTimeMillis()), receiver, createTestCasesList());
+        insertSessionRow(receiver, createTestCasesList());
     }
 
-    private void insertSessionRow(Timestamp timestamp, Receiver receiver, List<List<Integer>> testCases) throws Exception {
+    private void insertSessionRow(Receiver receiver, List<List<Integer>> testCases) throws Exception {
         assertTrue(managerDB.insert(
                 receiver.getID(),
-                timestamp,
                 testCases.get(0).toArray(),    // passed tests array
                 testCases.get(1).toArray(),    // failed tests array
                 testCases.get(2).toArray())    // skipped tests array
@@ -139,31 +134,31 @@ public class ManagerDBTest {
 
         List<List<Integer>> testCasesList = createTestCasesList();
 
-        Timestamp timestamp = new Timestamp(new GregorianCalendar(2011, 1, 1).getTimeInMillis());
-        Timestamp afterTimestamp = new Timestamp(new GregorianCalendar(2010, 1, 1).getTimeInMillis());
-        Timestamp beforeTimestamp = new Timestamp(new GregorianCalendar(2012, 1, 1).getTimeInMillis());
+        GregorianCalendar calendar = new GregorianCalendar();
+        String currentDate = dateFormat.format(calendar.getTime());
+        String afterDate = dateFormat.format(new GregorianCalendar(2000, 1, 1).getTime());
+        String beforeDate = dateFormat.format(new GregorianCalendar(2030, 1, 1).getTime());
 
         Receiver receiver = insertReceiverRow();
-        insertSessionRow(timestamp, receiver, testCasesList);
+        insertSessionRow(receiver, testCasesList);
 
-        assertTrue(assertSelect(receiver, afterTimestamp, beforeTimestamp, testCasesList));
-        assertTrue(assertSelect(new Receiver(), afterTimestamp, beforeTimestamp, testCasesList));
-        assertTrue(assertSelect(receiver, null, beforeTimestamp, testCasesList));
-        assertTrue(assertSelect(receiver, afterTimestamp, null, testCasesList));
+        assertTrue(assertSelect(receiver, afterDate, beforeDate, testCasesList));
+        assertTrue(assertSelect(new Receiver(), afterDate, beforeDate, testCasesList));
+        assertTrue(assertSelect(receiver, null, beforeDate, testCasesList));
+        assertTrue(assertSelect(receiver, afterDate, null, testCasesList));
         assertTrue(assertSelect(null, null, null, testCasesList));
 
-        Receiver wrongReceiver = new Receiver();
-        wrongReceiver.setID(123);
-        Timestamp wrongAfterTimestamp = new Timestamp(new GregorianCalendar(2020, 1, 1).getTimeInMillis());
-        Timestamp wrongBeforeTimestamp = new Timestamp(new GregorianCalendar(2000, 1, 1).getTimeInMillis());
+        Receiver wrongReceiver = new Receiver(123, null, null, null);
+        String wrongAfterDate = dateFormat.format(new GregorianCalendar(2020, 1, 1).getTime());
+        String wrongBeforeDate = dateFormat.format(new GregorianCalendar(2000, 1, 1).getTime());
 
-        assertFalse(assertSelect(wrongReceiver, afterTimestamp, beforeTimestamp, testCasesList));
-        assertFalse(assertSelect(receiver, wrongAfterTimestamp, beforeTimestamp, testCasesList));
-        assertFalse(assertSelect(receiver, afterTimestamp, wrongBeforeTimestamp, testCasesList));
+        assertFalse(assertSelect(wrongReceiver, afterDate, beforeDate, testCasesList));
+        assertFalse(assertSelect(receiver, wrongAfterDate, beforeDate, testCasesList));
+        assertFalse(assertSelect(receiver, afterDate, wrongBeforeDate, testCasesList));
     }
 
-    private boolean assertSelect(Receiver receiver, Timestamp afterTimestamp, Timestamp beforeTimestamp, List<List<Integer>> testCasesList) {
-        ResultSet select = managerDB.select(receiver, afterTimestamp, beforeTimestamp);
+    private boolean assertSelect(Receiver receiver, String afterDate, String beforeDate, List<List<Integer>> testCasesList) {
+        ResultSet select = managerDB.select(receiver, afterDate, beforeDate);
 
         try {
             assertNotNull(select);
@@ -183,12 +178,12 @@ public class ManagerDBTest {
                     assertEquals(receiver.getFirmware(), select.getString(4));
             }
 
-            if (afterTimestamp != null) {
-                assertTrue(select.getTimestamp(5).after(afterTimestamp));
+            if (afterDate != null) {
+                assertTrue(select.getTimestamp(5).after(dateFormat.parse(afterDate)));
             }
 
-            if (beforeTimestamp != null) {
-                assertTrue(select.getTimestamp(5).before(beforeTimestamp));
+            if (beforeDate != null) {
+                assertTrue(select.getTimestamp(5).before(dateFormat.parse(beforeDate)));
             }
 
             assertArrayEquals(testCasesList.get(0).toArray(), (Object[]) select.getObject(6));

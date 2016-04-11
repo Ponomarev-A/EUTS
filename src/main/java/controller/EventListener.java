@@ -71,5 +71,5 @@ interface EventListener {
 
     String[] getReceiverIDsFromDB();
 
-    boolean insertResultToDB(Receiver receiver, List<Integer> passed, List<Integer> failed, List<Integer> skipped);
+    boolean insertResultToDB();
 }
