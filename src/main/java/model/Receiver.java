@@ -14,6 +14,7 @@ public class Receiver extends Device {
 
     public final static int MAX_LEVEL = 1023;
     public final static int MIN_LEVEL = 0;
+
     public List<Integer> frequencyHz = Arrays.asList(
             50,
             60,
@@ -27,10 +28,24 @@ public class Receiver extends Device {
     private String model;
     private String firmware;
     private String scheme;
+
     private Integer ID;
 
-
     public Receiver() {
+        super();
+        this.ID = null;
+        this.model = null;
+        this.scheme = null;
+        this.firmware = null;
+    }
+
+
+    public Receiver(Integer ID, String model, String scheme, String firmware) {
+        super();
+        this.ID = ID;
+        this.model = model;
+        this.scheme = scheme;
+        this.firmware = firmware;
     }
 
     Receiver(ConnectionManager connectionManager, Controller controller) {
@@ -66,6 +81,10 @@ public class Receiver extends Device {
         return ID;
     }
 
+    void setID(Integer ID) {
+        this.ID = ID;
+    }
+
     @Override
     public String getModel() {
         return model;
@@ -79,22 +98,6 @@ public class Receiver extends Device {
     @Override
     public String getFirmware() {
         return firmware;
-    }
-
-    void setFirmware(String firmware) {
-        this.firmware = firmware;
-    }
-
-    void setScheme(String scheme) {
-        this.scheme = scheme;
-    }
-
-    void setModel(String model) {
-        this.model = model;
-    }
-
-    void setID(Integer ID) {
-        this.ID = ID;
     }
 
     @Override

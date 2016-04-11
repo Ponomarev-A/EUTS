@@ -7,7 +7,9 @@ import connections.UART;
 import controller.Controller;
 import model.tests.BaseTestCase;
 import model.tests.TestManager;
+import packet.Command;
 
+import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -174,5 +176,43 @@ public class Model {
 
     public boolean isStandConnected() {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;
+    }
+
+    public ResultSet selectFromHistoryDB(Receiver receiver, String afterDate, String beforeDate) {
+        return managerDB.select(receiver, afterDate, beforeDate);
+    }
+
+    public String[] getReceiverModelsFromDB() {
+        return managerDB.getModels();
+    }
+
+    public String[] getReceiverSchemesFromDB() {
+        return managerDB.getSchemes();
+    }
+
+    public String[] getReceiverFirmwaresFromDB() {
+        return managerDB.getFirmwares();
+    }
+
+    public String[] getReceiverIDsFromDB() {
+        return managerDB.getIDs();
+    }
+
+    public boolean insertResultToDB(List<Integer> passed, List<Integer> failed, List<Integer> skipped) {
+
+        Integer newID = managerDB.getNextUniqueID();
+        Integer oldID = receiver.getID();
+        receiver.setID(newID);
+
+        if (managerDB.insert(receiver) &&
+                managerDB.insert(newID, passed.toArray(), failed.toArray(), skipped.toArray())) {
+            try {
+                receiver.set(Command.WRITE_PCB_ID_DEVICE, newID);
+            } catch (Exception ignored) {
+                receiver.setID(oldID);
+            }
+            return true;
+        }
+        return false;
     }
 }

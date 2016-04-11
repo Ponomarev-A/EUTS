@@ -94,13 +94,9 @@ public abstract class Device {
                 return;
 
             connectionManager.sendPacket(packet);
+            if (!isConfirmationReceived(packet.getCommand()))
+                throw new FailSendPacket("No confirmation has been received.");
 
-            if (isConfirmationRequired(packet)) {
-                Packet confirmationPacket = connectionManager.receivePacket();
-                if (!confirmationPacket.getCommand().equals(packet.getCommand()) ||
-                        confirmationPacket.getDataAsByte() == Confirmation.FAIL.ordinal())
-                    throw new FailSendPacket("No confirmation has been received.");
-            }
         } catch (InterruptedException e) {
             throw new InterruptedException("Execution operation was interrupted.");
         } catch (Exception e) {
@@ -128,15 +124,20 @@ public abstract class Device {
         }
     }
 
-    private boolean isConfirmationRequired(Packet packet) {
-        int id = packet.getCommand().getId();
-        return (id >= FREQUENCY_DEVICE.getId() && id <= BACKLIGHT_DEVICE.getId()) ||
-                (id >= FREQUENCY_STAND.getId() && id <= EXT_SENSOR_STAND.getId());
+    private boolean isConfirmationReceived(Command command) throws Exception {
+        if (isConfirmationRequired(command) && connectionManager != null) {
+            Packet confirmationPacket = connectionManager.receivePacket();
+            if (!confirmationPacket.getCommand().equals(command) ||
+                    confirmationPacket.getDataAsByte() == Confirmation.FAIL.ordinal())
+                return false;
+        }
+        return true;
     }
 
-    int getInteger(Command command) throws Exception {
-        set(command);
-        return get().getDataAsInt();
+    private boolean isConfirmationRequired(Command command) {
+        int id = command.getId();
+        return (id >= FREQUENCY_DEVICE.getId() && id <= BACKLIGHT_DEVICE.getId()) ||
+                (id >= FREQUENCY_STAND.getId() && id <= EXT_SENSOR_STAND.getId());
     }
 
     int getInteger(Command command, Integer integerValue) throws Exception {

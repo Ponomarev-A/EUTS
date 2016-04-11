@@ -1,9 +1,11 @@
 package controller;
 
 import model.Device;
+import model.Receiver;
 import model.tests.BaseTestCase;
 
 import javax.swing.text.AttributeSet;
+import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -56,4 +58,18 @@ interface EventListener {
     boolean isTestRunning();
 
     String getPathToDatabase();
+
+    ResultSet selectFromHistoryDB(Receiver receiver, String afterDate, String beforeDate);
+
+    boolean isDBExist();
+
+    String[] getReceiverModelsFromDB();
+
+    String[] getReceiverSchemesFromDB();
+
+    String[] getReceiverFirmwaresFromDB();
+
+    String[] getReceiverIDsFromDB();
+
+    boolean insertResultToDB(Receiver receiver, List<Integer> passed, List<Integer> failed, List<Integer> skipped);
 }

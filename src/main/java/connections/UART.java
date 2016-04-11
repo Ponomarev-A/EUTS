@@ -110,7 +110,7 @@ public class UART implements Connection {
                             TimeUnit.MILLISECONDS.sleep(READ_REPEAT_DELAY_MS);
                         }
 
-                        // Read timing: from 560 Ms to
+                        // Read timing: from 560 ms to 1060 ms
                         TimeUnit.MILLISECONDS.sleep(attemptsToRead-- * READ_STEP_DELAY_MS);
                     }
 

@@ -147,5 +147,6 @@ class MenuBar extends JMenuBar implements ActionListener {
         jmiDisconnect.setEnabled(!isTestRunning && isConnected);
         jmiStartTesting.setEnabled(!isTestRunning && isConnected);
         jmiStopTesting.setEnabled(isTestRunning && isConnected);
+        jmiHistory.setEnabled(controller.isDBExist());
     }
 }

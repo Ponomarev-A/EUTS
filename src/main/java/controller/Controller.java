@@ -3,6 +3,7 @@ package controller;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import model.Device;
 import model.Model;
+import model.Receiver;
 import model.tests.BaseTestCase;
 import view.LogPanel;
 import view.View;
@@ -10,6 +11,7 @@ import view.View;
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -324,6 +326,46 @@ public class Controller implements EventListener {
     @Override
     public String getPathToDatabase() {
         return view.getPathToDatabase();
+    }
+
+    @Override
+    public ResultSet selectFromHistoryDB(Receiver receiver, String afterDate, String beforeDate) {
+        return model.selectFromHistoryDB(receiver, afterDate, beforeDate);
+    }
+
+    @Override
+    public boolean isDBExist() {
+        return model.getManagerDB().exist();
+    }
+
+    @Override
+    public String[] getReceiverModelsFromDB() {
+        return model.getReceiverModelsFromDB();
+    }
+
+    @Override
+    public String[] getReceiverSchemesFromDB() {
+        return model.getReceiverSchemesFromDB();
+    }
+
+    @Override
+    public String[] getReceiverFirmwaresFromDB() {
+        return model.getReceiverFirmwaresFromDB();
+    }
+
+    @Override
+    public String[] getReceiverIDsFromDB() {
+        return model.getReceiverIDsFromDB();
+    }
+
+    @Override
+    public boolean insertResultToDB(Receiver receiver, List<Integer> passed, List<Integer> failed, List<Integer> skipped) {
+        if (view.askInsertResultToDB() && model.insertResultToDB(passed, failed, skipped)) {
+            view.updateDeviceInfo();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void windowClosing() {
