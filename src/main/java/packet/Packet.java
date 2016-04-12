@@ -2,7 +2,7 @@ package packet;
 
 import exception.InvalidCRC;
 import exception.InvalidPacketSize;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

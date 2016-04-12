@@ -1,6 +1,6 @@
 package view.AutoCompleteComboBox;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.lang.WordUtils;
 
 import javax.swing.*;
 import java.awt.event.KeyAdapter;

@@ -5,7 +5,7 @@ import exception.InvalidPacketSize;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.ArrayUtils;
 import packet.Packet;
 
 import java.util.concurrent.*;

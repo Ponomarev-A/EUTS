@@ -1,8 +1,7 @@
 package connections;
 
 import exception.InvalidProtocol;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.util.Arrays;
 
@@ -50,21 +49,28 @@ public class ModBus implements Protocol {
 
     private static byte[] ASCIICodeArrayToByteArray(byte[] code) {
 
-        if (code.length % 2 != 0)
-            return null;
-
-        byte[] bytes = new byte[code.length / 2];
+        byte[] data = new byte[code.length / 2];
         for (int i = 0; i < code.length; i += 2) {
             byte b1 = (byte) Character.digit(code[i], 16);
             byte b2 = (byte) Character.digit(code[i + 1], 16);
-            bytes[i / 2] |= b1 << 4;
-            bytes[i / 2] |= b2;
+            data[i / 2] |= b1 << 4;
+            data[i / 2] |= b2;
         }
 
-        return bytes;
+        return data;
     }
 
     private static byte[] byteArrayToASCIICodeArray(byte[] data) {
-        return String.valueOf(Hex.encodeHex(data)).getBytes();
+
+        byte[] code = new byte[data.length * 2];
+        for (int i = (data.length-1)*2; i >= 0; i -= 2) {
+            char ch1 = (char) (data[i/2] >> 4 & 0x0F);
+            char ch2 = (char) (data[i/2]      & 0x0F);
+
+            code[i]   = (byte) ((ch1 <= 9) ? (ch1+'0') : (ch1-10+'a'));
+            code[i+1] = (byte) ((ch2 <= 9) ? (ch2+'0') : (ch2-10+'a'));
+        }
+
+        return code;
     }
 }

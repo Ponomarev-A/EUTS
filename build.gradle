@@ -15,8 +15,6 @@ configurations {
 
 dependencies {
     download(
-            'org.apache.commons:commons-lang3:3.4',
-            'commons-codec:commons-codec:1.9',
             'org.scream3r:jssc:2.8.0',
             'junit:junit:4.11+',
             'com.google.guava:guava:11.0.2',

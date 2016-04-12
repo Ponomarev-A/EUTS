@@ -3,9 +3,9 @@ package model.tests;
 import controller.Controller;
 import model.Receiver;
 import model.Stand;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import view.LogPanel;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,7 +80,7 @@ public class TestManager {
                 String.format("%-10s%d%n", "Passed: ", passed.size()) +
                 String.format("%-10s%d%n", "Failed: ", failed.size()) +
                 String.format("%-10s%d%n", "Skipped: ", skipped.size()) +
-                String.format("\nTotal time: %s", DurationFormatUtils.formatDuration(testsTimeMs, "HH:mm:ss,SSS"));
+                String.format("\nTotal time: %s", new SimpleDateFormat("HH:mm:ss,SSS").format(new Date(testsTimeMs)));
     }
 
     public void startTests() {
