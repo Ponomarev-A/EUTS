@@ -20,7 +20,7 @@ class ExternalSensorsTest extends AnalogFilterTest {
 
     private static final int FREQUENCY = 512;
     private static final int GAIN = 20;
-    private static final long WAIT_CHANGE_EXT_SENSOR_MS = 50;
+    private static final long WAIT_CHANGE_EXT_SENSOR_MS = 300;
 
     ExternalSensorsTest() {
         super(String.format("Check external sensors (%d Hz, %d dB)", FREQUENCY, GAIN),
@@ -35,7 +35,7 @@ class ExternalSensorsTest extends AnalogFilterTest {
         setUp(receiver);
         short[] beforeLevels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
-        Device.ExtSensors receiverSensor = Stand.ExtSensors.values()[receiver.getArray(GET_EXT_SENSOR_DEVICE)[0]];
+        Device.ExtSensors receiverSensor = null;
         for (Device.ExtSensors standSensor : Device.ExtSensors.values()) {
 
             stand.set(EXT_SENSOR_STAND, standSensor.ordinal());

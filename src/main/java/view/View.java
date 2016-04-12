@@ -192,7 +192,8 @@ public class View extends JFrame {
     }
 
     public boolean askInsertResultToDB() {
-        return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
+        return controller.isDBExist() &&
+                JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
                 this,
                 "Insert test results to database?",
                 "Database commit",
