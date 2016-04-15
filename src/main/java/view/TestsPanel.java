@@ -91,7 +91,7 @@ class TestsPanel extends JPanel implements ActionListener {
         TableColumn columnCheck = columnModel.getColumn(1);
         TableColumn columnState = columnModel.getColumn(3);
 
-        columnNumber.setMaxWidth(30);
+        columnNumber.setMaxWidth(50);
         columnNumber.setResizable(false);
         columnCheck.setMaxWidth(60);
         columnCheck.setResizable(false);

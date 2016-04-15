@@ -309,7 +309,7 @@ public class ManagerDB {
 
     Integer getNextUniqueID() {
         String[] receiverIDs = controller.getReceiverIDsFromDB();
-        Integer lastUsedID = Integer.valueOf(receiverIDs[receiverIDs.length - 1]);
+        Integer lastUsedID = (receiverIDs.length > 0) ? Integer.valueOf(receiverIDs[receiverIDs.length - 1]) : 0;
         return ++lastUsedID;
     }
 }

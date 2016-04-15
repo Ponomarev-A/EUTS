@@ -1,7 +1,6 @@
 package model;
 
 import controller.Controller;
-import model.tests.BaseTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Random;
 
 import static model.tests.BaseTestCase.*;
-import static model.tests.BaseTestCase.State.values;
 import static org.mockito.Mockito.when;
 
 /**
@@ -28,7 +26,7 @@ public class ManagerDBTest {
     private static final String RECEIVER_MODEL = "AP019.1";
     private static final String RECEIVER_SCHEME = "AP019.01.020izm11";
     private static final String RECEIVER_FIRMWARE = "3.07";
-    private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private Controller mockController = ModelTest.createMockController();
     private ManagerDB managerDB = new ManagerDB(mockController);
 
@@ -94,7 +92,7 @@ public class ManagerDBTest {
         managerDB.connect(MOCK_URL);
         Receiver receiver = insertReceiverRow();
 
-        insertSessionRow(receiver, createTestCasesList());
+        insertSessionRow(receiver, createTestCasesResults());
     }
 
     private void insertSessionRow(Receiver receiver, List<List<Integer>> testCases) throws Exception {
@@ -106,36 +104,26 @@ public class ManagerDBTest {
         );
     }
 
-    private List<List<Integer>> createTestCasesList() {
-        List<List<Integer>> testStates = new ArrayList<>();
-        testStates.add(new ArrayList<Integer>());   // passed
-        testStates.add(new ArrayList<Integer>());   // failed
-        testStates.add(new ArrayList<Integer>());   // skipped
+    private List<List<Integer>> createTestCasesResults() {
+        List<List<Integer>> testCases = new ArrayList<>();
+        testCases.add(new ArrayList<Integer>());   // passed
+        testCases.add(new ArrayList<Integer>());   // failed
+        testCases.add(new ArrayList<Integer>());   // skipped
 
         Random random = new Random();
         for (int i = 0; i < 10; i++) {
-            BaseTestCase testCase = new BaseTestCase("test #" + i) {
-                @Override
-                public void runTest(Receiver receiver, Stand stand) throws Error, Exception {
-                }
-            };
-
-            int ordinal = random.nextInt(3);
-            State state = values()[ordinal];
-            testCase.setState(state);
-            testStates.get(ordinal).add(testCase.getId());
+            testCases.get(random.nextInt(3)).add(i);
         }
-        return testStates;
+
+        return testCases;
     }
 
     @Test
     public void testSelectFromTable() throws Exception {
         managerDB.connect(MOCK_URL);
 
-        List<List<Integer>> testCasesList = createTestCasesList();
+        List<List<Integer>> testCasesList = createTestCasesResults();
 
-        GregorianCalendar calendar = new GregorianCalendar();
-        String currentDate = dateFormat.format(calendar.getTime());
         String afterDate = dateFormat.format(new GregorianCalendar(2000, 1, 1).getTime());
         String beforeDate = dateFormat.format(new GregorianCalendar(2030, 1, 1).getTime());
 

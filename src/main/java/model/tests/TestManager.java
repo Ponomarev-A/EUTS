@@ -118,6 +118,7 @@ public class TestManager {
             @Override
             protected void done() {
                 controller.stopTesting();
+                controller.insertResultToDB();
             }
         }.execute();
     }
