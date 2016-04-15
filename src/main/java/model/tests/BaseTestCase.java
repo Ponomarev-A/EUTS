@@ -5,8 +5,6 @@ import model.Stand;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static model.tests.BaseTestCase.State.READY;
-
 /**
  * Base class for Test cases
  */
@@ -15,8 +13,6 @@ public abstract class BaseTestCase extends org.junit.Assert {
     private static AtomicInteger nextID = new AtomicInteger(0);
 
     private final String name;
-
-    private State state = READY;
     private boolean enabled = true;
     private Integer id;
 
@@ -28,14 +24,6 @@ public abstract class BaseTestCase extends org.junit.Assert {
 
     public String getName() {
         return name;
-    }
-
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
     }
 
     public boolean isEnabled() {
@@ -50,9 +38,5 @@ public abstract class BaseTestCase extends org.junit.Assert {
 
     public Integer getId() {
         return id;
-    }
-
-    public enum State {
-        READY, PASS, FAIL
     }
 }

@@ -45,7 +45,6 @@ public class View extends JFrame {
     private LogPanel jpLog;
     private TestsPanel jpTests;
     private JToolBar toolBar;
-    private HistoryFrame historyFrame;
 
 
     public View(Controller controller) {
@@ -154,8 +153,20 @@ public class View extends JFrame {
         jpLog.updateLog(text, attributeSet);
     }
 
-    public void loadTestList() {
-        jpTests.loadTestList();
+    public void fillTestList() {
+        jpTests.fillTestList();
+    }
+
+    public void clearTestList() {
+        jpTests.clearTestList();
+    }
+
+    public void updateTestList() {
+        jpTests.updateTestList();
+    }
+
+    public void updateTestControls() {
+        jpTests.updateTestControls();
     }
 
     public String getPathToDatabase() {
@@ -183,12 +194,8 @@ public class View extends JFrame {
         return "";
     }
 
-    public void updateTestList() {
-        jpTests.updateTestList();
-    }
-
     public void openHistoryWindow() {
-        historyFrame = new HistoryFrame(controller);
+        new HistoryFrame(controller);
     }
 
     public boolean askInsertResultToDB() {

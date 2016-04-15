@@ -134,7 +134,6 @@ public class ModelTest {
         assertNotNull(model.getConnectionManager());
         assertNotNull(model.getStand());
         assertNotNull(model.getReceiver());
-        assertNotNull(model.getTestsList());
     }
 
     @Test
@@ -211,16 +210,6 @@ public class ModelTest {
         assertTrue(model.isTestRunning());
         model.stopTesting();
         assertFalse(model.isTestRunning());
-
-        model.disconnectFromDevice();
-    }
-
-    @Test
-    public void testGetTestsList() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
-        assertNotNull(model.getTestsList());
 
         model.disconnectFromDevice();
     }

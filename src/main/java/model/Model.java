@@ -5,14 +5,14 @@ import connections.ConnectionManager;
 import connections.ModBus;
 import connections.UART;
 import controller.Controller;
-import model.tests.BaseTestCase;
 import model.tests.TestManager;
+import model.tests.TestManager.State;
 import packet.Command;
 
 import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
 
 /**
  * Base model class for data processing
@@ -155,20 +155,12 @@ public class Model {
     }
 
     public void startTesting() {
-        testManager.setTestRunning(true);
         testManager.startTests();
     }
 
     public void stopTesting() {
-        testManager.setTestRunning(false);
+        testManager.stopTesting();
     }
-
-    public List<BaseTestCase> getTestsList() {
-        return isReceiverConnected() && isStandConnected() ?
-                testManager.getTestsList() :
-                Collections.<BaseTestCase>emptyList();
-    }
-
 
     public boolean isReceiverConnected() {
         return receiver != null && receiver.getConnectionStatus() == ConnectionStatus.CONNECTED;
@@ -204,7 +196,8 @@ public class Model {
 
         try {
             if (managerDB.insert(new Receiver(newID, receiver.getModel(), receiver.getScheme(), receiver.getFirmware())) &&
-                    managerDB.insert(newID, testManager.getPassed().toArray(), testManager.getFailed().toArray(), testManager.getSkipped().toArray())) {
+                    managerDB.insert(newID, testManager.getTestIDs(State.PASS), testManager.getTestIDs(State.FAIL), testManager.getTestIDs(State.SKIP))) {
+
 
                 receiver.set(Command.WRITE_PCB_ID_DEVICE, newID);
                 receiver.setID(newID);

@@ -55,7 +55,6 @@ public class LogPanel extends JPanel {
 
         jepLog.setContentType("text/html");
         jepLog.setEditable(false);
-        jepLog.setAutoscrolls(true);
 
         StyleConstants.setFontSize(set, 15);
         StyleConstants.setFontFamily(set, "Courier New");
@@ -66,7 +65,6 @@ public class LogPanel extends JPanel {
     }
 
     void updateLog(String text, AttributeSet... attributeSet) {
-        Document doc = jepLog.getDocument();
 
         for (AttributeSet attr : attributeSet) {
             set.addAttributes(attr);
@@ -75,9 +73,30 @@ public class LogPanel extends JPanel {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String time = Arrays.asList(attributeSet).contains(NORMAL) ? sdf.format(new Date()) + ": " : "";
 
+        appendText(time + text, set);
+    }
+
+    private void appendText(String text, SimpleAttributeSet set) {
         try {
-            doc.insertString(doc.getLength(), "\n" + time + text, set);
-        } catch (BadLocationException ignored) {
+            Document doc = jepLog.getDocument();
+            int length = doc.getLength();
+
+            // Move the insertion point to the end
+            jepLog.setCaretPosition(length);
+
+            // Insert the text
+            doc.insertString(length, "\n" + text, set);
+
+            // Convert the new end location
+            // to view co-ordinates
+            Rectangle r = jepLog.modelToView(length);
+
+            // Finally, scroll so that the new text is visible
+            if (r != null) {
+                jepLog.scrollRectToVisible(r);
+            }
+        } catch (BadLocationException e) {
+            System.out.println("Failed to append text: " + e);
         }
     }
 }

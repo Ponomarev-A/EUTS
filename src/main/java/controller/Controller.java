@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import model.Device;
 import model.Model;
 import model.Receiver;
-import model.tests.BaseTestCase;
+import model.tests.TestManager;
 import view.LogPanel;
 import view.View;
 
@@ -12,7 +12,6 @@ import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -24,9 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class Controller implements EventListener {
 
     private static final ThreadFactory CONNECTION_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("Controller-ConnectionExecutor-%d").setDaemon(true).build();
-    private static final ThreadFactory TESTING_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("Controller-TestingExecutor-%d").setDaemon(true).build();
     private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor(CONNECTION_EXECUTOR);
-    private ExecutorService testingExecutor;
     private View view;
     private Model model;
 
@@ -43,6 +40,7 @@ public class Controller implements EventListener {
 
                 view.updateMenuStates();
                 view.updateDeviceInfo();
+                view.updateTestControls();
             }
         });
     }
@@ -67,8 +65,8 @@ public class Controller implements EventListener {
             protected void done() {
                 view.updateMenuStates();
                 view.updateDeviceInfo();
-                view.loadTestList();
-                view.updateTestList();
+                view.updateTestControls();
+                view.fillTestList();
 
                 updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
                 updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
@@ -90,7 +88,8 @@ public class Controller implements EventListener {
             protected void done() {
                 view.updateMenuStates();
                 view.updateDeviceInfo();
-                view.loadTestList();
+                view.updateTestControls();
+                view.clearTestList();
 
                 updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
                 updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
@@ -243,29 +242,10 @@ public class Controller implements EventListener {
         if (model.isTestRunning())
             return;
 
-        testingExecutor = Executors.newCachedThreadPool(TESTING_EXECUTOR);
-        testingExecutor.submit(new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                updateLog("\n===  START TESTING  ===", LogPanel.BOLD);
+        model.startTesting();
 
-                publish();
-                model.startTesting();
-                return null;
-            }
-
-            @Override
-            protected void process(List<Void> chunks) {
-                view.updateMenuStates();
-                view.updateTestList();
-            }
-
-            @Override
-            protected void done() {
-                stopTesting();
-                insertResultToDB();
-            }
-        });
+        view.updateMenuStates();
+        view.updateTestControls();
     }
 
     @Override
@@ -274,27 +254,12 @@ public class Controller implements EventListener {
         if (!model.isTestRunning())
             return;
 
-        testingExecutor.submit(new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                model.stopTesting();
-                testingExecutor.shutdownNow();
-                return null;
-            }
+        model.stopTesting();
 
-            @Override
-            protected void done() {
-                view.updateMenuStates();
-                updateLog("===  STOP TESTING  ===", LogPanel.BOLD);
-                updateLog(model.getTestManager().toString(), LogPanel.BOLD);
-            }
-        });
+        view.updateMenuStates();
+        view.updateTestControls();
     }
 
-    @Override
-    public List<BaseTestCase> getTestsList() {
-        return model.getTestsList();
-    }
 
     @Override
     public void updateTestList() {
@@ -366,6 +331,11 @@ public class Controller implements EventListener {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public TestManager getTestManager() {
+        return model.getTestManager();
     }
 
     public void windowClosing() {

@@ -25,12 +25,6 @@ public class TestCaseTest {
     }
 
     @Test
-    public void testStates() throws Exception {
-        testCase.setState(BaseTestCase.State.READY);
-        assertEquals(BaseTestCase.State.READY, testCase.getState());
-    }
-
-    @Test
     public void testEnable() throws Exception {
         testCase.setEnabled(true);
         assertTrue(testCase.isEnabled());

@@ -2,11 +2,10 @@ package controller;
 
 import model.Device;
 import model.Receiver;
-import model.tests.BaseTestCase;
+import model.tests.TestManager;
 
 import javax.swing.text.AttributeSet;
 import java.sql.ResultSet;
-import java.util.List;
 
 /**
  * EventListener interface contains user defined actions
@@ -49,8 +48,6 @@ interface EventListener {
 
     void stopTesting();
 
-    List<BaseTestCase> getTestsList();
-
     void updateTestList();
 
     void history();
@@ -72,4 +69,6 @@ interface EventListener {
     String[] getReceiverIDsFromDB();
 
     boolean insertResultToDB();
+
+    TestManager getTestManager();
 }
