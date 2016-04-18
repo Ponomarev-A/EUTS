@@ -34,11 +34,6 @@ class TestsPanel extends JPanel implements ActionListener {
     TestsPanel(Controller controller) {
         this.controller = controller;
 
-        create();
-    }
-
-    private void create() {
-
         setBorder(new TitledBorder(
                 View.TITLE_BORDER,
                 "Tests",

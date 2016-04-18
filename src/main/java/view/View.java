@@ -40,8 +40,7 @@ public class View extends JFrame {
     };
     private Controller controller;
     private MenuBar menuBar;
-    private ReceiverInfoPanel jpReceiverInfo;
-    private StandInfoPanel jpStandInfo;
+    private InfoPanel jpInfo;
     private LogPanel jpLog;
     private TestsPanel jpTests;
     private JToolBar toolBar;
@@ -50,10 +49,6 @@ public class View extends JFrame {
     public View(Controller controller) {
         this.controller = controller;
 
-        jpTests = new TestsPanel(controller);
-        jpLog = new LogPanel(controller);
-        jpStandInfo = new StandInfoPanel(controller);
-        jpReceiverInfo = new ReceiverInfoPanel(controller);
         menuBar = new MenuBar(controller);
         toolBar = new ToolBar(controller);
     }
@@ -91,27 +86,25 @@ public class View extends JFrame {
     }
 
     private void createMainPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(1, 2));
+        JSplitPane panel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
 
         JPanel jpLeft = new JPanel();
         jpLeft.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT));
         jpLeft.setLayout(new BoxLayout(jpLeft, BoxLayout.Y_AXIS));
 
-        jpLeft.add(jpReceiverInfo);
-        jpLeft.add(jpStandInfo);
+        jpTests = new TestsPanel(controller);
+        jpInfo = new InfoPanel(controller);
+
+        jpLeft.add(jpInfo);
         jpLeft.add(jpTests);
 
-        JPanel jpRight = new JPanel();
-        jpRight.setPreferredSize(new Dimension(FRAME_WIDTH / 2, FRAME_HEIGHT));
-        jpRight.setLayout(new BoxLayout(jpRight, BoxLayout.Y_AXIS));
+        jpLog = new LogPanel(controller);
 
-        jpRight.add(jpLog);
+        panel.setLeftComponent(jpLeft);
+        panel.setRightComponent(jpLog);
+        panel.setDividerLocation((int) (FRAME_WIDTH * 0.45f));
 
-        panel.add(jpLeft);
-        panel.add(jpRight);
-
-        add(panel, BorderLayout.CENTER);
+        add(panel);
     }
 
     private void createToolBar() {
@@ -123,8 +116,7 @@ public class View extends JFrame {
     }
 
     public void updateDeviceInfo() {
-        jpReceiverInfo.updateInfo();
-        jpStandInfo.updateInfo();
+        jpInfo.updateInfo();
     }
 
     public void updateMenuStates() {

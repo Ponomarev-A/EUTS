@@ -140,7 +140,7 @@ public class Controller implements EventListener {
             view.showMessage(title, text);
         }
 
-        updateLog("\n\n" + title, LogPanel.BOLD);
+        updateLog("\n" + title, LogPanel.BOLD);
         updateLog(text);
     }
 
@@ -148,7 +148,7 @@ public class Controller implements EventListener {
     public void showErrorMessage(final String title, final String text, final Exception e) {
 
         final String causeMessage = e.getCause() != null ? "\nCause: " + e.getCause().getLocalizedMessage() : "";
-        final String errorMessage = "\n\nError: " + e.getLocalizedMessage();
+        final String errorMessage = "\nError: " + e.getLocalizedMessage();
 
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
@@ -227,7 +227,6 @@ public class Controller implements EventListener {
             @Override
             protected void done() {
                 view.updateMenuStates();
-                view.updateDeviceInfo();
             }
         });
     }

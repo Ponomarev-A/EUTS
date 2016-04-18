@@ -77,7 +77,6 @@ public class Model {
 
             receiver = new Receiver(connectionManager, controller);
             stand = new Stand(connectionManager, controller);
-            testManager = new TestManager(controller, receiver, stand);
         } else {
             controller.updateLog(connectionManager + " don't created.");
         }
@@ -128,6 +127,8 @@ public class Model {
                     "Can't close connection " + connectionManager.getConnection(),
                     e);
         }
+        testManager = null;
+
         receiver.checkConnectionStatus();
         stand.checkConnectionStatus();
     }
@@ -142,6 +143,8 @@ public class Model {
                     "Can't open connection " + connectionManager.getConnection(),
                     e);
         }
+        testManager = new TestManager(controller, receiver, stand);
+
         receiver.checkConnectionStatus();
         stand.checkConnectionStatus();
     }

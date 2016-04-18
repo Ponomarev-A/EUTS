@@ -6,6 +6,9 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,10 +41,6 @@ public class LogPanel extends JPanel {
 
     LogPanel(Controller controller) {
         this.controller = controller;
-        create();
-    }
-
-    private void create() {
 
         setLayout(new BorderLayout());
 
@@ -56,12 +55,41 @@ public class LogPanel extends JPanel {
         jepLog.setContentType("text/html");
         jepLog.setEditable(false);
 
+
+        jepLog.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    JPopupMenu jPopupMenu = new JPopupMenu();
+                    jPopupMenu.add(new TextAction("Clear log") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            clearText();
+                        }
+                    });
+                    jPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+
         StyleConstants.setFontSize(set, 15);
         StyleConstants.setFontFamily(set, "Courier New");
 
         updateLog("### Here will be displayed all information about the testing process ###", BOLD);
 
         add(new JScrollPane(jepLog));
+    }
+
+    private void clearText() {
+        try {
+            Document doc = jepLog.getDocument();
+
+            doc.remove(0, doc.getLength());
+            jepLog.setCaretPosition(0);
+
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
     }
 
     void updateLog(String text, AttributeSet... attributeSet) {
@@ -85,7 +113,7 @@ public class LogPanel extends JPanel {
             jepLog.setCaretPosition(length);
 
             // Insert the text
-            doc.insertString(length, "\n" + text, set);
+            doc.insertString(length, "\r\n" + text, set);
 
             // Convert the new end location
             // to view co-ordinates

@@ -3,10 +3,10 @@ package view;
 import controller.Controller;
 
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 class MenuBar extends JMenuBar implements ActionListener {
 
@@ -42,10 +42,18 @@ class MenuBar extends JMenuBar implements ActionListener {
         menu.add(jmiConnect);
         menu.add(jmiDisconnect);
 
-        menu.addMouseListener(new MouseAdapter() {
+        jmPorts.addMenuListener(new MenuListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void menuSelected(MenuEvent e) {
                 updateCOMPortList(jmPorts);
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
             }
         });
         jmiConnect.addActionListener(this);

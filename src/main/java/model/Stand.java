@@ -49,7 +49,7 @@ public class Stand extends Device {
 
     @Override
     public String getModel() {
-        return "";
+        return "None data";
     }
 
     @Override
