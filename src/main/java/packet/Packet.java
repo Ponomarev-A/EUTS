@@ -11,27 +11,27 @@ import java.util.Arrays;
 
 /**
  * Packet class.
- *
+ * <p>
  * <p> Packet structure:
  * <p>  | SOF | LENGTH | COMMAND |     DATA     | CRC16 | EOF |
  * <p>
  * <p>  1) SOF (const value with const size 1 byte) - start of frame (0x3a)
- *
+ * <p>
  * <p>  2) Length (var value with const size 2 bytes) - length of command (2 bytes), data array (N bytes) and CRC16 (2 bytes)
- *     LENGTH = COMMAND + DATA + CRC16
- *
+ * LENGTH = COMMAND + DATA + CRC16
+ * <p>
  * <p>  3) Command (var value with const size 2 bytes) - one of enum
- *
+ * <p>
  * <p>  4) Data (var value with var size N bytes) - data array (may be missing, i.e. have 0 size)
- *
+ * <p>
  * <p>  5) CRC16 (var value with const size 2 bytes) - CRC of data array
- *
+ * <p>
  * <p>  6) EOF (const value with const size 2 bytes) - end of frame (0x0d, 0x0a)
  */
 public class Packet {
 
     public static final short DATA_COUNT_LENGTH = 2;
-    private static final short CRC_POLYNOMIAL = (short)0x8005;
+    private static final short CRC_POLYNOMIAL = (short) 0x8005;
     // Length of packet parts (bytes)
     private static final short COMMAND_LENGTH = 2;
     private static final short CRC16_LENGTH = 2;
@@ -45,14 +45,14 @@ public class Packet {
 
     public Packet(Packet packet) {
         this.command = packet.command;
-        this.data    = packet.data;
-        this.CRC     = packet.CRC;
+        this.data = packet.data;
+        this.CRC = packet.CRC;
     }
 
     public Packet() {
         this.command = Command.NO_COMMAND;
         this.data = new byte[0];
-        this.CRC     = 0;
+        this.CRC = 0;
     }
 
     public Packet(Command command) {
@@ -63,28 +63,39 @@ public class Packet {
 
     public Packet(Command command, byte[] data) {
         this.command = command;
-        this.data    = data;
-        this.CRC     = 0;
+        this.data = data;
+        this.CRC = 0;
     }
 
     public Packet(Command command, short data) {
         this.command = command;
-        this.data = getByteArrayFromShort(data);
+        this.data = toByteArray(data);
         this.CRC = 0;
     }
 
-    private byte[] getByteArrayFromShort(short value) {
+    private byte[] toByteArray(short value) {
         return ByteBuffer.allocate(Short.SIZE / Byte.SIZE).putShort(value).array();
     }
 
-
-    public Packet(Command command, int data) {
+    public Packet(Command command, float[] data) {
         this.command = command;
-        this.data = getByteArrayFromInt(data);
+        this.data = toByteArray(data);
         this.CRC = 0;
     }
 
-    private byte[] getByteArrayFromInt(int value) {
+    private byte[] toByteArray(float[] data) {
+        byte byteArray[] = new byte[data.length * Float.SIZE / Byte.SIZE];
+        ByteBuffer.wrap(byteArray).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().put(data);
+        return byteArray;
+    }
+
+    public Packet(Command command, int data) {
+        this.command = command;
+        this.data = toByteArray(data);
+        this.CRC = 0;
+    }
+
+    private byte[] toByteArray(int value) {
         return ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt(value).array();
     }
 
@@ -141,7 +152,7 @@ public class Packet {
     }
 
     public void setData(int data) {
-        this.data = getByteArrayFromInt(data);
+        this.data = toByteArray(data);
     }
 
     public short[] getDataAsShortArray() {
@@ -154,23 +165,18 @@ public class Packet {
         return result;
     }
 
-    public byte getDataAsByte() {
-        return data[0];
-    }
-
-    public short getDataAsShort() {
-        return getShortFromByteArray(data);
-    }
-
-    private short getShortFromByteArray(byte[] array) {
-        short result = 0;
-
+    public float[] getDataAsFloatArray() {
+        float[] result = new float[data.length / 4];
         try {
-            result = ByteBuffer.wrap(array).getShort();
+            ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(result);
         } catch (Exception ignored) {
         }
 
         return result;
+    }
+
+    public byte getDataAsByte() {
+        return data[0];
     }
 
     public int getDataAsInt() {
@@ -208,10 +214,10 @@ public class Packet {
 
         byte[] packedData = new byte[0];
 
-        packedData = ArrayUtils.addAll(packedData, getByteArrayFromShort((short) frameLength));         // length
-        packedData = ArrayUtils.addAll(packedData, getByteArrayFromShort((short) command.getId()));     // command
+        packedData = ArrayUtils.addAll(packedData, toByteArray((short) frameLength));         // length
+        packedData = ArrayUtils.addAll(packedData, toByteArray((short) command.getId()));     // command
         packedData = ArrayUtils.addAll(packedData, getData());                                          // data
-        packedData = ArrayUtils.addAll(packedData, getByteArrayFromShort(updateCRC()));                 // CRC16
+        packedData = ArrayUtils.addAll(packedData, toByteArray(updateCRC()));                 // CRC16
 
         return packedData;
     }
@@ -227,7 +233,7 @@ public class Packet {
     /**
      * Calculate CRC16 code.
      * <p> Check CRC calculating: http://depa.usst.edu.cn/chenjq/www2/software/crc/CRC_Javascript/CRCcalculation.htm
-     *
+     * <p>
      * <p> CRC16 params:
      * <p>  - Polynom           (hex)   0x8005
      * <p>  - Initial value     (hex)   0
@@ -279,5 +285,15 @@ public class Packet {
         setCRC(CRC);
         setCommand(Command.getCommand(command_id));
         setData(data);
+    }
+
+    private short getShortFromByteArray(byte[] array) {
+        short result = 0;
+        try {
+            result = ByteBuffer.wrap(array).getShort();
+        } catch (Exception ignored) {
+        }
+
+        return result;
     }
 }

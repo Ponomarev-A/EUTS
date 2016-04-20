@@ -21,7 +21,7 @@ import static model.tests.TestManager.State.*;
  */
 public class TestManager {
 
-    private final static List<? extends BaseTestCase> ALL_TEST_CASES = Arrays.asList(
+    private final static List<? extends BaseTestCase> ALL_TEST_CASES = Collections.unmodifiableList(Arrays.asList(
             new AFEqualSignalLevelsTest(50, 20),
             new AFEqualSignalLevelsTest(60, 20),
             new AFEqualSignalLevelsTest(100, 20),
@@ -42,7 +42,7 @@ public class TestManager {
             new WideBandTest(),
             new ExternalSensorsTest(),
             new TwoFrequencyTest()
-    );
+    ));
     private static final ThreadFactory TESTING_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("TestingExecutor-%d").setDaemon(true).build();
     private final Controller controller;
     private final Receiver receiver;
@@ -59,15 +59,11 @@ public class TestManager {
         this.controller = controller;
         this.receiver = receiver;
         this.stand = stand;
-
-        testList.addAll(ALL_TEST_CASES);
-
-        clearTestResultStates();
     }
 
-    private void clearTestResultStates() {
-        for (BaseTestCase testCase : testList)
-            testResults.put(testCase.getId(), null);
+    public void fillTestList() {
+        testList.clear();
+        testList.addAll(ALL_TEST_CASES);
     }
 
     public List<BaseTestCase> getTestList() {
@@ -123,6 +119,11 @@ public class TestManager {
         }.execute();
     }
 
+    private void clearTestResultStates() {
+        for (BaseTestCase testCase : testList)
+            testResults.put(testCase.getId(), null);
+    }
+
     public void stopTesting() {
         try {
             testingExecutor.shutdownNow();
@@ -155,7 +156,7 @@ public class TestManager {
     public Integer[] getTestIDs(State state) {
         ArrayList<Integer> list = new ArrayList<>();
         for (Map.Entry<Integer, State> pair : testResults.entrySet()) {
-            if (pair.getValue().equals(state))
+            if (pair.getValue() != null && pair.getValue().equals(state))
                 list.add(pair.getKey());
         }
 

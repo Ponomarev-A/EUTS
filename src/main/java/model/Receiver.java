@@ -15,7 +15,7 @@ public class Receiver extends Device {
     public final static int MAX_LEVEL = 1023;
     public final static int MIN_LEVEL = 0;
 
-    public List<Integer> frequencyHz = Arrays.asList(
+    public static final List<Integer> FREQUENCY_HZ = Arrays.asList(
             50,
             60,
             100,

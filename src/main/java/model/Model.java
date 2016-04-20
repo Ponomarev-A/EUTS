@@ -10,6 +10,7 @@ import model.tests.TestManager.State;
 import packet.Command;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -77,6 +78,7 @@ public class Model {
 
             receiver = new Receiver(connectionManager, controller);
             stand = new Stand(connectionManager, controller);
+            testManager = new TestManager(controller, receiver, stand);
         } else {
             controller.updateLog(connectionManager + " don't created.");
         }
@@ -127,8 +129,6 @@ public class Model {
                     "Can't close connection " + connectionManager.getConnection(),
                     e);
         }
-        testManager = null;
-
         receiver.checkConnectionStatus();
         stand.checkConnectionStatus();
     }
@@ -143,8 +143,6 @@ public class Model {
                     "Can't open connection " + connectionManager.getConnection(),
                     e);
         }
-        testManager = new TestManager(controller, receiver, stand);
-
         receiver.checkConnectionStatus();
         stand.checkConnectionStatus();
     }
@@ -173,33 +171,36 @@ public class Model {
         return stand != null && stand.getConnectionStatus() == ConnectionStatus.CONNECTED;
     }
 
-    public ResultSet selectFromHistoryDB(Receiver receiver, String afterDate, String beforeDate) {
+    public ResultSet selectTestSessions(Receiver receiver, String afterDate, String beforeDate) throws SQLException {
         return managerDB.select(receiver, afterDate, beforeDate);
     }
 
-    public String[] getReceiverModelsFromDB() {
+    public ResultSet selectCalibrationCoeffs(Receiver receiver) throws SQLException {
+        return managerDB.select(receiver);
+    }
+
+    public String[] getReceiverModelsFromDB() throws SQLException {
         return managerDB.getModels();
     }
 
-    public String[] getReceiverSchemesFromDB() {
+    public String[] getReceiverSchemesFromDB() throws SQLException {
         return managerDB.getSchemes();
     }
 
-    public String[] getReceiverFirmwaresFromDB() {
+    public String[] getReceiverFirmwaresFromDB() throws SQLException {
         return managerDB.getFirmwares();
     }
 
-    public String[] getReceiverIDsFromDB() {
+    public String[] getReceiverIDsFromDB() throws SQLException {
         return managerDB.getIDs();
     }
 
     public boolean insertResultToDB() {
-
-        Integer newID = managerDB.getNextUniqueID();
-
         try {
-            if (managerDB.insert(new Receiver(newID, receiver.getModel(), receiver.getScheme(), receiver.getFirmware())) &&
-                    managerDB.insert(newID, testManager.getTestIDs(State.PASS), testManager.getTestIDs(State.FAIL), testManager.getTestIDs(State.SKIP))) {
+            Integer newID = managerDB.getNextUniqueID();
+
+            if (managerDB.insert(new Receiver(newID, receiver.getModel(), receiver.getScheme(), receiver.getFirmware()), null, null) > 0 &&
+                    managerDB.insert(newID, testManager.getTestIDs(State.PASS), testManager.getTestIDs(State.FAIL), testManager.getTestIDs(State.SKIP)) > 0) {
 
 
                 receiver.set(Command.WRITE_PCB_ID_DEVICE, newID);
@@ -219,5 +220,20 @@ public class Model {
             );
         }
         return false;
+    }
+
+    public int updateCalibrationCoeffsInDB(Float[] depthCoeffs, Float[] currentCoeffs) {
+        try {
+            return managerDB.update(receiver, depthCoeffs, currentCoeffs);
+        } catch (SQLException e) {
+            controller.showErrorMessage(
+                    "Database update entry",
+                    String.format("New entry:\nDepth coefficients %s\nCurrent coefficients %s\nfor %s update database FAILED!",
+                            Arrays.toString(depthCoeffs), Arrays.toString(currentCoeffs), receiver
+                    ),
+                    e
+            );
+        }
+        return 0;
     }
 }

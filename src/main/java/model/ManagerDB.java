@@ -22,6 +22,8 @@ public class ManagerDB {
     private static final String COLUMN_MODEL = "MODEL";
     private static final String COLUMN_SCHEME = "SCHEME";
     private static final String COLUMN_FIRMWARE = "FIRMWARE";
+    private static final String COLUMN_DEPTH_COEFFS = "DEPTH_COEFFS";
+    private static final String COLUMN_CURRENT_COEFFS = "CURRENT_COEFFS";
     private static final String COLUMN_R_ID = "RECEIVER_ID";
     private static final String COLUMN_TIMESTAMP = "TIMESTAMP";
     private static final String COLUMN_PASS = "PASS";
@@ -32,7 +34,9 @@ public class ManagerDB {
     private static final String NAME = "sa";
     private static final String PASSWORD = "";
     private static final String DB_EXTENSION = ".mv.db";
+
     private final Controller controller;
+
     // DB fields
     private DbTable dbTableReceiver;
     private DbTable dbTableSession;
@@ -40,6 +44,8 @@ public class ManagerDB {
     private DbColumn dbColumnModel;
     private DbColumn dbColumnScheme;
     private DbColumn dbColumnFirmware;
+    private DbColumn dbColumnDepthCoeffs;
+    private DbColumn dbColumnCurrentCoeffs;
     private DbColumn dbColumnSessionID;
     private DbColumn dbColumnSessionR_id;
     private DbColumn dbColumnTimestamp;
@@ -94,10 +100,10 @@ public class ManagerDB {
     }
 
     private String loadURLFromPrefs() {
-//        Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
-//        return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
+        Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
+        return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
 
-        return DEFAULT_URL;
+//        return DEFAULT_URL;
     }
 
     private void saveURLToPrefs(String url) {
@@ -115,15 +121,19 @@ public class ManagerDB {
         dbColumnModel = new DbColumn(dbTableReceiver, COLUMN_MODEL, "varchar", 32);
         dbColumnScheme = new DbColumn(dbTableReceiver, COLUMN_SCHEME, "varchar", 64);
         dbColumnFirmware = new DbColumn(dbTableReceiver, COLUMN_FIRMWARE, "varchar", 32);
+        dbColumnDepthCoeffs = new DbColumn(dbTableReceiver, COLUMN_DEPTH_COEFFS, "array");
+        dbColumnCurrentCoeffs = new DbColumn(dbTableReceiver, COLUMN_CURRENT_COEFFS, "array");
 
 
         String sqlCreateReceiverTable = new CreateTableQuery(dbTableReceiver, true).
                 addCustomization(CreateTableQuery.Hook.TABLE, HookType.SUFFIX, "IF NOT EXISTS ").
-                addColumns(dbColumnReceiverID, dbColumnModel, dbColumnScheme, dbColumnFirmware).
+                addColumns(dbColumnReceiverID, dbColumnModel, dbColumnScheme, dbColumnFirmware, dbColumnDepthCoeffs, dbColumnCurrentCoeffs).
                 addColumnConstraint(dbColumnReceiverID, "PRIMARY KEY").
                 addColumnConstraint(dbColumnModel, "DEFAULT '' NOT NULL").
                 addColumnConstraint(dbColumnScheme, "DEFAULT '' NOT NULL").
                 addColumnConstraint(dbColumnFirmware, "DEFAULT '' NOT NULL").
+                addColumnConstraint(dbColumnDepthCoeffs, "DEFAULT ()").
+                addColumnConstraint(dbColumnCurrentCoeffs, "DEFAULT ()").
                 validate().toString();
 
         dbTableSession = schema.addTable(TABLE_SESSION);
@@ -186,23 +196,25 @@ public class ManagerDB {
         return isClosed;
     }
 
-    boolean insert(Receiver receiver) throws SQLException {
+    int insert(Receiver receiver, Object[] depthCoeffs, Object[] currentCoeffs) throws SQLException {
         String sql = new InsertQuery(dbTableReceiver).
                 addColumn(dbColumnReceiverID, receiver.getID()).
                 addColumn(dbColumnModel, receiver.getModel()).
                 addColumn(dbColumnScheme, receiver.getScheme()).
                 addColumn(dbColumnFirmware, receiver.getFirmware()).
+                addPreparedColumns(dbColumnDepthCoeffs, dbColumnCurrentCoeffs).
                 validate().toString();
 
-        try (Statement st = connection.createStatement()) {
-            st.execute(sql);
-            return true;
+        try (PreparedStatement prSt = connection.prepareStatement(sql)) {
+            prSt.setObject(1, depthCoeffs);
+            prSt.setObject(2, currentCoeffs);
+            return prSt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLException("Insert new receiver to database failed");
         }
     }
 
-    boolean insert(Integer receiverID, Object[] passed, Object[] failed, Object[] skipped) throws SQLException {
+    int insert(Integer receiverID, Object[] passed, Object[] failed, Object[] skipped) throws SQLException {
 
         String sql = new InsertQuery(dbTableSession).
                 addColumn(dbColumnSessionR_id, receiverID).
@@ -213,14 +225,43 @@ public class ManagerDB {
             prSt.setObject(1, passed);
             prSt.setObject(2, failed);
             prSt.setObject(3, skipped);
-            prSt.execute();
-            return true;
+            return prSt.executeUpdate();
         } catch (SQLException e) {
             throw new SQLException("Insert new session to database failed");
         }
     }
 
-    ResultSet select(Receiver receiver, String afterDate, String beforeDate) {
+    int update(Receiver receiver, Object[] depthCoeffs, Object[] currentCoeffs) throws SQLException {
+        UpdateQuery updateQuery = new UpdateQuery(dbTableReceiver).
+                addSetClause(dbColumnDepthCoeffs, '?').
+                addSetClause(dbColumnCurrentCoeffs, '?');
+
+        if (receiver != null) {
+            if (receiver.getID() != null)
+                updateQuery.addCondition(BinaryCondition.equalTo(dbColumnReceiverID, receiver.getID()));
+            if (receiver.getModel() != null)
+                updateQuery.addCondition(BinaryCondition.equalTo(dbColumnModel, receiver.getModel()));
+            if (receiver.getScheme() != null)
+                updateQuery.addCondition(BinaryCondition.equalTo(dbColumnScheme, receiver.getScheme()));
+            if (receiver.getFirmware() != null)
+                updateQuery.addCondition(BinaryCondition.equalTo(dbColumnFirmware, receiver.getFirmware()));
+        }
+
+        String sql = updateQuery.validate().toString();
+
+        // Change SQL query for prepare statement validation: replace '?' to ?
+        sql = sql.replaceAll("(\\'\\?\\')", "?");
+
+        try (PreparedStatement prSt = connection.prepareStatement(sql)) {
+            prSt.setObject(1, depthCoeffs);
+            prSt.setObject(2, currentCoeffs);
+            return prSt.executeUpdate();
+        } catch (SQLException e) {
+            throw new SQLException("Update receiver to database failed");
+        }
+    }
+
+    ResultSet select(Receiver receiver, String afterDate, String beforeDate) throws SQLException {
 
         SelectQuery selectQuery = new SelectQuery().
                 addColumns(dbColumnReceiverID, dbColumnModel, dbColumnScheme, dbColumnFirmware).
@@ -254,10 +295,36 @@ public class ManagerDB {
         try {
             return connection.createStatement().executeQuery(sql);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new SQLException("Select test sessions data from database failed");
+        }
+    }
+
+    ResultSet select(Receiver receiver) throws SQLException {
+        SelectQuery selectQuery = new SelectQuery().
+                addFromTable(dbTableReceiver).
+                addCustomColumns(
+                        new CustomSql("ISNULL(" + dbColumnDepthCoeffs.getColumnNameSQL() + ",())"),
+                        new CustomSql("ISNULL(" + dbColumnCurrentCoeffs.getColumnNameSQL() + ",())")
+                );
+
+        if (receiver != null) {
+            if (receiver.getID() != null)
+                selectQuery.addCondition(BinaryCondition.equalTo(dbColumnReceiverID, receiver.getID()));
+            if (receiver.getModel() != null)
+                selectQuery.addCondition(BinaryCondition.equalTo(dbColumnModel, receiver.getModel()));
+            if (receiver.getScheme() != null)
+                selectQuery.addCondition(BinaryCondition.equalTo(dbColumnScheme, receiver.getScheme()));
+            if (receiver.getFirmware() != null)
+                selectQuery.addCondition(BinaryCondition.equalTo(dbColumnFirmware, receiver.getFirmware()));
         }
 
-        return null;
+        String sql = selectQuery.validate().toString();
+
+        try {
+            return connection.createStatement().executeQuery(sql);
+        } catch (SQLException e) {
+            throw new SQLException("Select receiver data from database failed");
+        }
     }
 
     public boolean exist() {
@@ -268,11 +335,11 @@ public class ManagerDB {
         }
     }
 
-    String[] getModels() {
+    String[] getModels() throws SQLException {
         return selectParameter(dbColumnModel, COLUMN_MODEL);
     }
 
-    private String[] selectParameter(DbColumn column, String columnName) {
+    private String[] selectParameter(DbColumn column, String columnName) throws SQLException {
         String sql = new SelectQuery().
                 setIsDistinct(true).
                 addColumns(column).
@@ -280,8 +347,8 @@ public class ManagerDB {
                 addOrdering(column, OrderObject.Dir.ASCENDING).
                 validate().toString();
 
-        try {
-            ResultSet rs = connection.createStatement().executeQuery(sql);
+        try (ResultSet rs = connection.createStatement().executeQuery(sql)) {
+
             ArrayList<String> result = new ArrayList<>();
             while (rs.next()) {
                 result.add(rs.getString(columnName));
@@ -289,27 +356,25 @@ public class ManagerDB {
             return result.toArray(new String[]{});
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new SQLException("Select parameters or receiver from database failed");
         }
-
-        return new String[0];
     }
 
-    String[] getSchemes() {
+    String[] getSchemes() throws SQLException {
         return selectParameter(dbColumnScheme, COLUMN_SCHEME);
     }
 
-    String[] getFirmwares() {
+    String[] getFirmwares() throws SQLException {
         return selectParameter(dbColumnFirmware, COLUMN_FIRMWARE);
     }
 
-    String[] getIDs() {
-        return selectParameter(dbColumnReceiverID, COLUMN_ID);
-    }
-
-    Integer getNextUniqueID() {
-        String[] receiverIDs = controller.getReceiverIDsFromDB();
+    Integer getNextUniqueID() throws SQLException {
+        String[] receiverIDs = getIDs();
         Integer lastUsedID = (receiverIDs.length > 0) ? Integer.valueOf(receiverIDs[receiverIDs.length - 1]) : 0;
         return ++lastUsedID;
+    }
+
+    String[] getIDs() throws SQLException {
+        return selectParameter(dbColumnReceiverID, COLUMN_ID);
     }
 }

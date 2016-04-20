@@ -103,8 +103,11 @@ class TestsPanel extends JPanel implements ActionListener {
     }
 
     void fillTestList() {
-        testTableModel.setDataSources(controller.getTestManager());
-        updateTestList();
+        if (controller.isConnected()) {
+            controller.getTestManager().fillTestList();
+            testTableModel.setDataSources(controller.getTestManager());
+            updateTestList();
+        }
     }
 
     void updateTestList() {
@@ -118,7 +121,7 @@ class TestsPanel extends JPanel implements ActionListener {
 
     void updateTestControls() {
 
-        boolean isConnected = controller.isStandConnected() & controller.isReceiverConnected();
+        boolean isConnected = controller.isConnected();
         boolean isTestRunning = controller.isTestRunning();
 
         jbCheckAll.setEnabled(isConnected && !isTestRunning);
@@ -143,6 +146,8 @@ class TestsPanel extends JPanel implements ActionListener {
                 setCheckFailedTests();
                 break;
         }
+
+        updateTestList();
     }
 
     private void setCheckAllTests(boolean setChecked) {
@@ -251,8 +256,6 @@ class TestsPanel extends JPanel implements ActionListener {
             if (columnIndex == 1) {
                 testList.get(rowIndex).setEnabled((Boolean) aValue);
             }
-
-            fireTableCellUpdated(rowIndex, columnIndex);
         }
     }
 }

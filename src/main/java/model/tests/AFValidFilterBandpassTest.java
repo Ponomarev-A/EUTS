@@ -30,7 +30,7 @@ class AFValidFilterBandpassTest extends AnalogFilterTest {
         setUp(receiver);
         short[] beforeLevels = autoSetVoltage(stand, receiver, receiverGain_dB, MIN_LEVEL_PRT, MAX_LEVEL_PRT, INIT_LEVEL_PRT);
 
-        for (Integer standFrequency_Hz : receiver.frequencyHz) {
+        for (Integer standFrequency_Hz : Receiver.FREQUENCY_HZ) {
 
             // This frequencies have same analog filter, skip it's frequencies
             if (!isFrequencyTested(standFrequency_Hz, receiverFrequency_Hz))

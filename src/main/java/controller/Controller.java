@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -114,6 +115,11 @@ public class Controller implements EventListener {
     }
 
     @Override
+    public boolean isConnected() {
+        return isStandConnected() && isReceiverConnected();
+    }
+
+    @Override
     public Device getReceiver() {
         return model.getReceiver();
     }
@@ -140,7 +146,7 @@ public class Controller implements EventListener {
             view.showMessage(title, text);
         }
 
-        updateLog("\n" + title, LogPanel.BOLD);
+        updateLog("\n\n" + title, LogPanel.BOLD);
         updateLog(text);
     }
 
@@ -148,7 +154,7 @@ public class Controller implements EventListener {
     public void showErrorMessage(final String title, final String text, final Exception e) {
 
         final String causeMessage = e.getCause() != null ? "\nCause: " + e.getCause().getLocalizedMessage() : "";
-        final String errorMessage = "\nError: " + e.getLocalizedMessage();
+        final String errorMessage = "\n\nError: " + e.getLocalizedMessage();
 
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
@@ -294,8 +300,13 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public ResultSet selectFromHistoryDB(Receiver receiver, String afterDate, String beforeDate) {
-        return model.selectFromHistoryDB(receiver, afterDate, beforeDate);
+    public ResultSet selectTestSessions(Receiver receiver, String afterDate, String beforeDate) throws SQLException {
+        return model.selectTestSessions(receiver, afterDate, beforeDate);
+    }
+
+    @Override
+    public ResultSet selectCalibrationCoeffs(Receiver receiver) throws SQLException {
+        return model.selectCalibrationCoeffs(receiver);
     }
 
     @Override
@@ -304,22 +315,22 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public String[] getReceiverModelsFromDB() {
+    public String[] getReceiverModelsFromDB() throws SQLException {
         return model.getReceiverModelsFromDB();
     }
 
     @Override
-    public String[] getReceiverSchemesFromDB() {
+    public String[] getReceiverSchemesFromDB() throws SQLException {
         return model.getReceiverSchemesFromDB();
     }
 
     @Override
-    public String[] getReceiverFirmwaresFromDB() {
+    public String[] getReceiverFirmwaresFromDB() throws SQLException {
         return model.getReceiverFirmwaresFromDB();
     }
 
     @Override
-    public String[] getReceiverIDsFromDB() {
+    public String[] getReceiverIDsFromDB() throws SQLException {
         return model.getReceiverIDsFromDB();
     }
 
@@ -330,6 +341,11 @@ public class Controller implements EventListener {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public int updateCalibrationCoeffsInDB(Float[] depthCoeffs, Float[] currentCoeffs) {
+        return model.updateCalibrationCoeffsInDB(depthCoeffs, currentCoeffs);
     }
 
     @Override

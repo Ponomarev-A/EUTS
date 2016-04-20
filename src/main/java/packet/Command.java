@@ -23,13 +23,14 @@ public enum Command {
     GET_GAIN_DEVICE(16),
     GET_LEVELS_DEVICE(17),
     GET_MAGNITUDES_DEVICE(18),
-    WRITE_PCB_ID_DEVICE(19),
-    ERROR_DEVICE(20),
+    GET_CALIBR_COEFFS_DEVICE(19),
+    WRITE_CALIBR_COEFFS_DEVICE(20),
+    WRITE_PCB_ID_DEVICE(21),
+    ERROR_DEVICE(22),
 
     /********************************
      * Reserve values prior to 50
      *******************************/
-
     FREQUENCY_STAND(50),
     VOLTAGE_STAND(51),
     TYPE_OF_SIGNAL_STAND(52),

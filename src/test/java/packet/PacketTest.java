@@ -83,6 +83,23 @@ public class PacketTest {
     }
 
     @Test
+    public void youGetDataAsFloatArray() throws Exception {
+        float[] fArr = new float[]{1.0f, 0.1f};
+        byte[] bArr = new byte[]{0x00, 0x00, (byte) 0x80, 0x3F, (byte) 0xCD, (byte) 0xCC, (byte) 0xCC, (byte) 0x3D};
+
+        packet.setData(bArr);
+        assertArrayEquals(fArr, packet.getDataAsFloatArray(), 0.0001f);
+    }
+
+    @Test
+    public void youGetByteArrayFromFloatArray() throws Exception {
+        float[] fArr = new float[]{1.0f, 0.1f};
+        byte[] bArr = new byte[]{0x00, 0x00, (byte) 0x80, 0x3F, (byte) 0xCD, (byte) 0xCC, (byte) 0xCC, (byte) 0x3D};
+
+        assertArrayEquals(bArr, new Packet(Command.NO_COMMAND, fArr).getData());
+    }
+
+    @Test
     public void youWantToUpdateCRC() throws Exception {
         packet.setData(DATA_6789);
 
@@ -133,9 +150,9 @@ public class PacketTest {
         packet.updateCRC();
 
         //  Create byte arrays
-        byte[] aCnt = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{(short) frameLength});
-        byte[] aCmd = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{(short) command.getId()});
-        byte[] aCRC = (byte[]) invokePrivateMethod(packet, "getByteArrayFromShort", new Class[]{short.class}, new Object[]{CRC});
+        byte[] aCnt = (byte[]) invokePrivateMethod(packet, "toByteArray", new Class[]{short.class}, new Object[]{(short) frameLength});
+        byte[] aCmd = (byte[]) invokePrivateMethod(packet, "toByteArray", new Class[]{short.class}, new Object[]{(short) command.getId()});
+        byte[] aCRC = (byte[]) invokePrivateMethod(packet, "toByteArray", new Class[]{short.class}, new Object[]{CRC});
         assert aCnt != null;
         assert aCmd != null;
         assert aCRC != null;

@@ -6,6 +6,7 @@ import model.tests.TestManager;
 
 import javax.swing.text.AttributeSet;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * EventListener interface contains user defined actions
@@ -23,6 +24,8 @@ interface EventListener {
     boolean isReceiverConnected();
 
     boolean isStandConnected();
+
+    boolean isConnected();
 
     Device getReceiver();
 
@@ -56,19 +59,23 @@ interface EventListener {
 
     String getPathToDatabase();
 
-    ResultSet selectFromHistoryDB(Receiver receiver, String afterDate, String beforeDate);
+    ResultSet selectTestSessions(Receiver receiver, String afterDate, String beforeDate) throws SQLException;
+
+    ResultSet selectCalibrationCoeffs(Receiver receiver) throws SQLException;
 
     boolean isDBExist();
 
-    String[] getReceiverModelsFromDB();
+    String[] getReceiverModelsFromDB() throws SQLException;
 
-    String[] getReceiverSchemesFromDB();
+    String[] getReceiverSchemesFromDB() throws SQLException;
 
-    String[] getReceiverFirmwaresFromDB();
+    String[] getReceiverFirmwaresFromDB() throws SQLException;
 
-    String[] getReceiverIDsFromDB();
+    String[] getReceiverIDsFromDB() throws SQLException;
 
     boolean insertResultToDB();
+
+    int updateCalibrationCoeffsInDB(Float[] depthCoeffs, Float[] currentCoeffs);
 
     TestManager getTestManager();
 }

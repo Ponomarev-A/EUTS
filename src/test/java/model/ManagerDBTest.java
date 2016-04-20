@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class ManagerDBTest {
     private Receiver insertReceiverRow() throws Exception {
         Receiver receiver = createReceiver();
 
-        assertTrue(managerDB.insert(receiver));
+        assertEquals(1, managerDB.insert(receiver, null, null));
 
         return receiver;
     }
@@ -88,23 +89,37 @@ public class ManagerDBTest {
     }
 
     @Test
-    public void testInsertSessionToTable() throws Exception {
+    public void testInsertReceiverCoeffsToTable() throws Exception {
         managerDB.connect(MOCK_URL);
-        Receiver receiver = insertReceiverRow();
 
+        // Start conditions
+        Receiver receiver = createReceiver();
+        Float[] depthCoeffs = new Float[]{0.01f, 0.02f, 1.123f};
+        Float[] currentCoeffs = new Float[]{1.221f, -10.02f, 51.788998f};
+
+        // Insert row to tables
+        assertEquals(1, managerDB.insert(receiver, depthCoeffs, currentCoeffs));
         insertSessionRow(receiver, createTestCasesResults());
+
+        // Select calibration coeffs from Receiver table
+        ResultSet resultSet = managerDB.select(receiver);
+        resultSet.next();
+
+        assertNotNull(resultSet);
+        assertArrayEquals(depthCoeffs, (Object[]) resultSet.getObject(1));
+        assertArrayEquals(currentCoeffs, (Object[]) resultSet.getObject(2));
     }
 
-    private void insertSessionRow(Receiver receiver, List<List<Integer>> testCases) throws Exception {
-        assertTrue(managerDB.insert(
+    private void insertSessionRow(Receiver receiver, List<Integer[]> testCases) throws Exception {
+        assertEquals(1, managerDB.insert(
                 receiver.getID(),
-                testCases.get(0).toArray(),    // passed tests array
-                testCases.get(1).toArray(),    // failed tests array
-                testCases.get(2).toArray())    // skipped tests array
+                testCases.get(0),    // passed tests array
+                testCases.get(1),    // failed tests array
+                testCases.get(2))    // skipped tests array
         );
     }
 
-    private List<List<Integer>> createTestCasesResults() {
+    private List<Integer[]> createTestCasesResults() {
         List<List<Integer>> testCases = new ArrayList<>();
         testCases.add(new ArrayList<Integer>());   // passed
         testCases.add(new ArrayList<Integer>());   // failed
@@ -114,18 +129,58 @@ public class ManagerDBTest {
         for (int i = 0; i < 10; i++) {
             testCases.get(random.nextInt(3)).add(i);
         }
+        ArrayList<Integer[]> result = new ArrayList<>();
+        result.add(testCases.get(0).toArray(new Integer[]{}));
+        result.add(testCases.get(1).toArray(new Integer[]{}));
+        result.add(testCases.get(2).toArray(new Integer[]{}));
+        return result;
+    }
 
-        return testCases;
+    @Test
+    public void testInsertSessionToTable() throws Exception {
+        managerDB.connect(MOCK_URL);
+        Receiver receiver = insertReceiverRow();
+
+
+        List<Integer[]> testCasesResults = createTestCasesResults();
+        insertSessionRow(receiver, testCasesResults);
+
+        testCasesResults.set(0, new Integer[0]);
+        insertSessionRow(receiver, testCasesResults);
+
+        testCasesResults.set(0, null);
+        insertSessionRow(receiver, testCasesResults);
+    }
+
+    @Test
+    public void testUpdateReceiverToTable() throws Exception {
+        managerDB.connect(MOCK_URL);
+
+        Receiver receiver = createReceiver();
+        Float[] depthCoeffs = new Float[]{0.01f, 0.02f, 1.123f};
+        Float[] currentCoeffs = new Float[]{1.221f, -10.02f, 51.788998f};
+
+        assertEquals(1, managerDB.insert(receiver, depthCoeffs, currentCoeffs));
+
+        // Change coeffs
+        depthCoeffs[0] *= 10;
+
+        assertEquals(1, managerDB.update(receiver, depthCoeffs, currentCoeffs));
+        ResultSet rs = managerDB.select(receiver);
+        rs.next();
+
+        assertArrayEquals(depthCoeffs, (Object[]) rs.getObject(1));
+        assertArrayEquals(currentCoeffs, (Object[]) rs.getObject(2));
     }
 
     @Test
     public void testSelectFromTable() throws Exception {
         managerDB.connect(MOCK_URL);
 
-        List<List<Integer>> testCasesList = createTestCasesResults();
+        List<Integer[]> testCasesList = createTestCasesResults();
 
         String afterDate = dateFormat.format(new GregorianCalendar(2000, 1, 1).getTime());
-        String beforeDate = dateFormat.format(new GregorianCalendar(2030, 1, 1).getTime());
+        String beforeDate = dateFormat.format(new GregorianCalendar(2020, 1, 1).getTime());
 
         Receiver receiver = insertReceiverRow();
         insertSessionRow(receiver, testCasesList);
@@ -145,38 +200,38 @@ public class ManagerDBTest {
         assertFalse(assertSelect(receiver, afterDate, wrongBeforeDate, testCasesList));
     }
 
-    private boolean assertSelect(Receiver receiver, String afterDate, String beforeDate, List<List<Integer>> testCasesList) {
-        ResultSet select = managerDB.select(receiver, afterDate, beforeDate);
+    private boolean assertSelect(Receiver receiver, String afterDate, String beforeDate, List<Integer[]> testCasesList) throws SQLException {
+        ResultSet rs = managerDB.select(receiver, afterDate, beforeDate);
 
         try {
-            assertNotNull(select);
-            select.next();
+            assertNotNull(rs);
+            rs.next();
 
             if (receiver != null) {
                 if (receiver.getID() != null)
-                    assertEquals(receiver.getID().intValue(), select.getInt(1));
+                    assertEquals(receiver.getID().intValue(), rs.getInt(1));
 
                 if (receiver.getModel() != null)
-                    assertEquals(receiver.getModel(), select.getString(2));
+                    assertEquals(receiver.getModel(), rs.getString(2));
 
                 if (receiver.getScheme() != null)
-                    assertEquals(receiver.getScheme(), select.getString(3));
+                    assertEquals(receiver.getScheme(), rs.getString(3));
 
                 if (receiver.getFirmware() != null)
-                    assertEquals(receiver.getFirmware(), select.getString(4));
+                    assertEquals(receiver.getFirmware(), rs.getString(4));
             }
 
             if (afterDate != null) {
-                assertTrue(select.getTimestamp(5).after(dateFormat.parse(afterDate)));
+                assertTrue(rs.getTimestamp(5).after(dateFormat.parse(afterDate)));
             }
 
             if (beforeDate != null) {
-                assertTrue(select.getTimestamp(5).before(dateFormat.parse(beforeDate)));
+                assertTrue(rs.getTimestamp(5).before(dateFormat.parse(beforeDate)));
             }
 
-            assertArrayEquals(testCasesList.get(0).toArray(), (Object[]) select.getObject(6));
-            assertArrayEquals(testCasesList.get(1).toArray(), (Object[]) select.getObject(7));
-            assertArrayEquals(testCasesList.get(2).toArray(), (Object[]) select.getObject(8));
+            assertArrayEquals(testCasesList.get(0), (Object[]) rs.getObject(6));
+            assertArrayEquals(testCasesList.get(1), (Object[]) rs.getObject(7));
+            assertArrayEquals(testCasesList.get(2), (Object[]) rs.getObject(8));
         } catch (Exception e) {
             return false;
         }

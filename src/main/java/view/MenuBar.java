@@ -147,7 +147,7 @@ class MenuBar extends JMenuBar implements ActionListener {
             return;
         }
 
-        boolean isConnected = controller.isStandConnected() & controller.isReceiverConnected();
+        boolean isConnected = controller.isConnected();
         boolean isTestRunning = controller.isTestRunning();
 
         jmPorts.setEnabled(!isTestRunning && !isConnected);

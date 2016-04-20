@@ -149,9 +149,18 @@ public abstract class Device {
         set(new Packet(command, integerValue));
     }
 
+    public void set(Command command, float[] floatArray) throws Exception {
+        set(new Packet(command, floatArray));
+    }
+
     public short[] getArray(Command command) throws Exception {
         set(command);
         return get().getDataAsShortArray();
+    }
+
+    public float[] getFloatArray(Command command) throws Exception {
+        set(command);
+        return get().getDataAsFloatArray();
     }
 
     String getString(Command command) throws Exception {

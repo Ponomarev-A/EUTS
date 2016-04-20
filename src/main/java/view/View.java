@@ -125,7 +125,7 @@ public class View extends JFrame {
 
     public void showErrorMessage(String title, String text) {
         JOptionPane.showMessageDialog(
-                View.this,
+                getFocusOwner(),
                 text,
                 title,
                 JOptionPane.ERROR_MESSAGE
@@ -134,7 +134,7 @@ public class View extends JFrame {
 
     public void showMessage(String title, String text) {
         JOptionPane.showMessageDialog(
-                View.this,
+                getFocusOwner(),
                 text,
                 title,
                 JOptionPane.INFORMATION_MESSAGE
