@@ -22,7 +22,7 @@ public class Model {
 
     private final Controller controller;
 
-    private ConnectionManager connectionManager;
+    private ConnectionManager CM;
     private Receiver receiver;
     private Stand stand;
     private TestManager testManager;
@@ -33,8 +33,8 @@ public class Model {
         this.managerDB = new ManagerDB(controller);
     }
 
-    public ConnectionManager getConnectionManager() {
-        return connectionManager;
+    ConnectionManager getConnectionManager() {
+        return CM;
     }
 
     public Receiver getReceiver() {
@@ -54,101 +54,71 @@ public class Model {
     }
 
     public void init() {
-        createConnectionManagerWithFirstCOMPort();
         managerDB.connect();
     }
 
-    private void createConnectionManagerWithFirstCOMPort() {
-        List<String> portList = Arrays.asList(getAvailableCOMPorts());
-        if (portList.size() > 0) {
-            createConnectionManager(portList.get(0));
-        }
-    }
-
-    public String[] getAvailableCOMPorts() {
-        return UART.getPortNames();
-    }
-
-    public void createConnectionManager(String portName) {
-        Connection connection = createConnection(portName);
-
-        if (connection != null && connectionManager == null) {
-            connectionManager = new ConnectionManager(connection, new ModBus());
-            controller.updateLog("Create " + connectionManager);
-
-            receiver = new Receiver(connectionManager, controller);
-            stand = new Stand(connectionManager, controller);
-            testManager = new TestManager(controller, receiver, stand);
-        } else {
-            controller.updateLog(connectionManager + " don't created.");
-        }
-    }
-
-    private Connection createConnection(String portName) {
-        Connection newConnection = UART.getInstance(portName);
-
-        // Before create new connection we need close old connection
-        if (connectionManager != null && !connectionManager.getConnection().equals(newConnection)) {
-            try {
-                connectionManager.getConnection().close();
-            } catch (Exception e) {
-                controller.showErrorMessage(
-                        "Close connection",
-                        "Can't close connection " + connectionManager.getConnection(),
-                        e);
-            }
-        }
-        controller.updateLog("Create new connection " + newConnection);
-
-        return newConnection;
+    public List<String> getAvailableCOMPorts() {
+        return Arrays.asList(UART.getPortNames());
     }
 
     public void deinit() {
-        destroyConnectionManager();
+        disconnectFromDevice();
         managerDB.disconnect();
     }
 
-    public void destroyConnectionManager() {
-        if (connectionManager != null) {
-            controller.updateLog("Destroy " + connectionManager);
-
-            disconnectFromDevice();
-            connectionManager = null;
-            receiver = null;
-            stand = null;
-        }
-    }
-
     public void disconnectFromDevice() {
+        if (CM == null)
+            return;
+
+        Connection connection = CM.getConnection();
         try {
-            controller.updateLog("Close connection " + connectionManager.getConnection() + " is " +
-                    (connectionManager.getConnection().close() ? "success" : "failed"));
+            // Trying close connection
+            connection.close();
+            controller.updateLog("Connection " + connection + " successfully CLOSED");
+
+            receiver.checkConnectionStatus();
+            stand.checkConnectionStatus();
         } catch (Exception e) {
             controller.showErrorMessage(
                     "Close connection",
-                    "Can't close connection " + connectionManager.getConnection(),
+                    "Can't close connection " + connection,
                     e);
+        } finally {
+            CM = null;
+            receiver = null;
+            stand = null;
+            testManager = null;
         }
-        receiver.checkConnectionStatus();
-        stand.checkConnectionStatus();
     }
 
-    public void connectToDevice() {
+    public void connectToDevice(String port) {
+        Connection connection = UART.getInstance(port);
+
         try {
-            controller.updateLog("Open connection " + connectionManager.getConnection() + " is " +
-                    (connectionManager.getConnection().open() ? "success" : "failed"));
+            if (CM != null && CM.getConnection().isOpened()) {
+                disconnectFromDevice();
+            }
+
+            // Trying open connection
+            connection.open();
+            controller.updateLog("Connection " + connection + " successfully OPENED");
+
+            CM = new ConnectionManager(connection, new ModBus());
+            receiver = new Receiver(controller, CM);
+            stand = new Stand(controller, CM);
+            testManager = new TestManager(controller, receiver, stand);
+
+            receiver.checkConnectionStatus();
+            stand.checkConnectionStatus();
+
         } catch (Exception e) {
             controller.showErrorMessage(
                     "Open connection",
-                    "Can't open connection " + connectionManager.getConnection(),
+                    "Can't open connection " + connection,
                     e);
-        }
-        receiver.checkConnectionStatus();
-        stand.checkConnectionStatus();
-    }
 
-    public boolean isCOMPortSelected(String portName) {
-        return connectionManager != null && ((UART) connectionManager.getConnection()).getSerialPort().getPortName().equals(portName);
+            disconnectFromDevice();
+        }
     }
 
     public boolean isTestRunning() {

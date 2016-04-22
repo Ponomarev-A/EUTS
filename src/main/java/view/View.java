@@ -23,7 +23,7 @@ public class View extends JFrame {
 
     static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
     static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);
-    private static final Font DEFAULT_FONT = new Font(null, Font.PLAIN, 18);
+    static final Font BIG_FONT = new Font(null, Font.PLAIN, 18);
 
     private static final int FRAME_HEIGHT = 800;
     private static final int FRAME_WIDTH = 1200;
@@ -39,26 +39,22 @@ public class View extends JFrame {
         }
     };
     private Controller controller;
-    private MenuBar menuBar;
+
     private InfoPanel jpInfo;
     private LogPanel jpLog;
     private TestsPanel jpTests;
-    private JToolBar toolBar;
-
+    private ToolBar toolBar;
 
     public View(Controller controller) {
         this.controller = controller;
-
-        menuBar = new MenuBar(controller);
-        toolBar = new ToolBar(controller);
     }
+
 
     public void init() {
 
         createMainFrame();
         createMainPanel();
         createToolBar();
-        createMenuBar();
 
         pack();
         revalidate();
@@ -74,7 +70,7 @@ public class View extends JFrame {
         setTitle("Electronic Units Test Stand (EUTS) application");
 
         // Set new default font to labels
-        UIManager.put("Label.font", DEFAULT_FONT);
+        UIManager.put("Label.font", BIG_FONT);
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -104,23 +100,20 @@ public class View extends JFrame {
         panel.setRightComponent(jpLog);
         panel.setDividerLocation((int) (FRAME_WIDTH * 0.45f));
 
-        add(panel);
+        add(panel, BorderLayout.CENTER);
     }
 
     private void createToolBar() {
+        toolBar = new ToolBar(controller);
         add(toolBar, BorderLayout.NORTH);
-    }
-
-    private void createMenuBar() {
-        setJMenuBar(menuBar);
     }
 
     public void updateDeviceInfo() {
         jpInfo.updateInfo();
     }
 
-    public void updateMenuStates() {
-        menuBar.updateMenuStates();
+    public void updateToolBarStates() {
+        toolBar.updateToolBarStates();
     }
 
     public void showErrorMessage(String title, String text) {
@@ -193,10 +186,21 @@ public class View extends JFrame {
     public boolean askInsertResultToDB() {
         return controller.isDBExist() &&
                 JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
-                this,
-                "Insert test results to database?",
-                "Database commit",
-                JOptionPane.YES_NO_OPTION
-        );
+                        this,
+                        "Insert test results to database?",
+                        "Database commit",
+                        JOptionPane.YES_NO_OPTION
+                );
     }
+
+    private void changeFont(Component component, Font font) {
+        component.setFont(font);
+        if (component instanceof Container) {
+            for (Component child : ((Container) component).getComponents()) {
+                changeFont(child, font);
+            }
+        }
+    }
+
+
 }

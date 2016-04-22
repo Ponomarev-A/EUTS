@@ -1,13 +1,15 @@
 package view;
 
 import controller.Controller;
+import model.Receiver;
+import model.Stand;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
- * Created by Ponomarev on 18.04.2016.
+ * Class for viewing information about connected devices
  */
 class InfoPanel extends JPanel {
     private final Controller controller;
@@ -77,13 +79,20 @@ class InfoPanel extends JPanel {
     private void updateReceiverInfo() {
         boolean isConnected = controller.isReceiverConnected();
 
-        if (isConnected)
-            controller.getReceiver().readInfo();
+        String model = null;
+        String firmware = null;
+        String scheme = null;
+        String ID = null;
 
-        String model = controller.getReceiver().getModel();
-        String firmware = controller.getReceiver().getFirmware();
-        String scheme = controller.getReceiver().getScheme();
-        String ID = controller.getReceiver().getID() != null ? controller.getReceiver().getID().toString() : "";
+        if (isConnected) {
+            Receiver receiver = (Receiver) controller.getReceiver();
+
+            receiver.readInfo();
+            model = receiver.getModel();
+            firmware = receiver.getFirmware();
+            scheme = receiver.getScheme();
+            ID = receiver.getID() != null ? receiver.getID().toString() : "";
+        }
 
         jlR_Model.setText(isConnected ? model : "-");
         jlR_Firmware.setText(isConnected ? firmware : "-");
@@ -97,13 +106,19 @@ class InfoPanel extends JPanel {
     private void updateStandInfo() {
         boolean isConnected = controller.isStandConnected();
 
-        if (isConnected)
-            controller.getStand().readInfo();
+        String model = null;
+        String firmware = null;
+        String scheme = null;
+        String ID = null;
 
-        String model = controller.getStand().getModel();
-        String firmware = controller.getStand().getFirmware();
-        String scheme = controller.getStand().getScheme();
-        String ID = controller.getStand().getID() != null ? controller.getStand().getID().toString() : "";
+        if (isConnected) {
+            Stand stand = (Stand) controller.getStand();
+            stand.readInfo();
+            model = stand.getModel();
+            firmware = stand.getFirmware();
+            scheme = stand.getScheme();
+            ID = stand.getID() != null ? stand.getID().toString() : "";
+        }
 
         jlS_Model.setText(isConnected ? model : "-");
         jlS_Firmware.setText(isConnected ? firmware : "-");

@@ -1,6 +1,5 @@
 package model;
 
-import connections.UART;
 import connections.UARTTest;
 import controller.Controller;
 import org.junit.After;
@@ -24,8 +23,6 @@ import static org.mockito.Mockito.mock;
  * !!! TESTING ONLY ON REAL DEVICE !!!
  */
 public class ModelTest {
-
-    //    public static final String TEST_PORTNAME = Model.DEFAULT_PORTNAME;
     private static final String TEST_PORTNAME = UARTTest.COM_PORTNAME;
 
     private Controller controller;
@@ -35,6 +32,8 @@ public class ModelTest {
     public void setUp() throws Exception {
         controller = createMockController();
         model = new Model(controller);
+
+        model.connectToDevice(TEST_PORTNAME);
     }
 
     static Controller createMockController() {
@@ -82,86 +81,40 @@ public class ModelTest {
 
     @After
     public void tearDown() throws Exception {
-        model.destroyConnectionManager();
-    }
-
-    @Test
-    public void testInitByDefaultPortName() throws Exception {
-        assertNull(model.getConnectionManager());
-        model.init();
-        assertNotNull(model.getConnectionManager());
-
-        assertNotNull(model.getConnectionManager().getConnection());
-        assertTrue(model.getConnectionManager().getConnection() instanceof UART);
-        assertFalse(model.getConnectionManager().getConnection().isOpened());
-
-        assertEquals(TEST_PORTNAME, ((UART) model.getConnectionManager().getConnection()).getSerialPort().getPortName());
-    }
-
-
-    @Test
-    public void testGetConnectionManager() throws Exception {
-        assertNull(model.getConnectionManager());
-        model.createConnectionManager(TEST_PORTNAME);
-        assertNotNull(model.getConnectionManager());
-    }
-
-    @Test
-    public void testGetReceiver() throws Exception {
-        assertNull(model.getReceiver());
-        model.createConnectionManager(TEST_PORTNAME);
-        assertNotNull(model.getReceiver());
-    }
-
-    @Test
-    public void testGetStand() throws Exception {
-        assertNull(model.getStand());
-        model.createConnectionManager(TEST_PORTNAME);
-        assertNotNull(model.getStand());
-    }
-
-    @Test
-    public void testGetAvailableCOMPorts() throws Exception {
-        assertTrue(model.getAvailableCOMPorts().length > 0);
-    }
-
-    @Test
-    public void testCreateConnectionManager() throws Exception {
-        assertNull(model.getConnectionManager());
-
-        model.createConnectionManager(TEST_PORTNAME);
-
-        assertNotNull(model.getConnectionManager());
-        assertNotNull(model.getStand());
-        assertNotNull(model.getReceiver());
-    }
-
-    @Test
-    public void testDestroyConnectionManager() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.destroyConnectionManager();
-
-        assertNull(model.getConnectionManager());
-        assertNull(model.getReceiver());
-        assertNull(model.getStand());
-    }
-
-    @Test
-    public void testConnectToDevice() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
-        assertTrue(model.isReceiverConnected());
-        assertTrue(model.isStandConnected());
-
         model.disconnectFromDevice();
     }
 
     @Test
-    public void testDisconnectFromDevice() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
+    public void testGetReceiver() throws Exception {
+        assertNotNull(model.getReceiver());
 
+        model.disconnectFromDevice();
+
+        assertNull(model.getReceiver());
+    }
+
+    @Test
+    public void testGetStand() throws Exception {
+        assertNotNull(model.getStand());
+
+        model.disconnectFromDevice();
+
+        assertNull(model.getStand());
+    }
+
+    @Test
+    public void testGetAvailableCOMPorts() throws Exception {
+        assertTrue(model.getAvailableCOMPorts().size() > 0);
+    }
+
+    @Test
+    public void testConnectToDevice() throws Exception {
+        assertTrue(model.isReceiverConnected());
+        assertTrue(model.isStandConnected());
+    }
+
+    @Test
+    public void testDisconnectFromDevice() throws Exception {
         assertTrue(model.isReceiverConnected());
         assertTrue(model.isStandConnected());
 
@@ -171,46 +124,22 @@ public class ModelTest {
     }
 
     @Test
-    public void testIsCOMPortSelected() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        assertTrue(model.isCOMPortSelected(TEST_PORTNAME));
-
-        model.destroyConnectionManager();
-        assertFalse(model.isCOMPortSelected(TEST_PORTNAME));
-    }
-
-    @Test
     public void testIsReceiverConnected() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
         assertEquals(model.getReceiver().getConnectionStatus() == ConnectionStatus.CONNECTED, model.isReceiverConnected());
-
-        model.disconnectFromDevice();
     }
 
     @Test
     public void testIsStandConnected() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
         assertEquals(model.getStand().getConnectionStatus() == ConnectionStatus.CONNECTED, model.isStandConnected());
-
-        model.disconnectFromDevice();
     }
 
     @Test
     @Ignore
     public void testTestCaseExecute() throws Exception {
-        model.createConnectionManager(TEST_PORTNAME);
-        model.connectToDevice();
-
         assertFalse(model.isTestRunning());
         model.startTesting();
         assertTrue(model.isTestRunning());
         model.stopTesting();
         assertFalse(model.isTestRunning());
-
-        model.disconnectFromDevice();
     }
 }

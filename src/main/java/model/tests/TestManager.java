@@ -143,7 +143,7 @@ public class TestManager {
 
     private void printTestResults(long executionTimeMs) {
         Collection<State> testStates = testResults.values();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss,SSS");
+        SimpleDateFormat sdf = new SimpleDateFormat("mm:ss,SS");
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         controller.updateLog("Tests results:", LogPanel.BOLD);

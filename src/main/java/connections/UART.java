@@ -20,23 +20,26 @@ public class UART implements Connection {
     private static final int STOPBITS = SerialPort.STOPBITS_1;
     private static final int PARITY = SerialPort.PARITY_NONE;
 
+    private static final int READ_ATTEMPTS = 10;
     private static final int READ_REPEAT_DELAY_MS = 50;
     private static final int READ_STEP_DELAY_MS = 10;
-    private static final int READ_ATTEMPTS = 10;
     private static final int READ_WAIT_TIMEOUT_MS;
+
     private static final int WRITE_WAIT_TIMEOUT_MS = 200;
+
     private static final ThreadFactory THREAD_FACTORY_WRITER = new ThreadFactoryBuilder().setNameFormat("Writer-%d").setDaemon(true).build();
     private static final ThreadFactory THREAD_FACTORY_READER = new ThreadFactoryBuilder().setNameFormat("Reader-%d").setDaemon(true).build();
     private static final int MIN_READ_LENGTH = ModBus.OPEN_CODE_SEQ.length + 2 * (Packet.MIN_FRAME_LENGTH + Packet.DATA_COUNT_LENGTH) + ModBus.CLOSE_CODE_SEQ.length;
     private static final int MAX_READ_LENGTH = ModBus.OPEN_CODE_SEQ.length + 2 * (Packet.MAX_FRAME_LENGTH + Packet.DATA_COUNT_LENGTH) + ModBus.CLOSE_CODE_SEQ.length;
+
     private static UART instance = null;
 
     static {
         int sum = 0;
         for (int i = READ_ATTEMPTS; i > 0; i--) {
-            sum += i * READ_STEP_DELAY_MS;
+            sum += i * READ_STEP_DELAY_MS + READ_REPEAT_DELAY_MS;
         }
-        READ_WAIT_TIMEOUT_MS = READ_STEP_DELAY_MS + sum + READ_ATTEMPTS * READ_REPEAT_DELAY_MS + 100;
+        READ_WAIT_TIMEOUT_MS = READ_STEP_DELAY_MS + sum + 100;
     }
 
     private final SerialPort serialPort;
@@ -56,7 +59,7 @@ public class UART implements Connection {
                 new UART(portName);
     }
 
-    public SerialPort getSerialPort() {
+    SerialPort getSerialPort() {
         return serialPort;
     }
 

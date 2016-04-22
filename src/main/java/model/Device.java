@@ -16,17 +16,17 @@ public abstract class Device {
 
     final Controller controller;
 
-    private final ConnectionManager connectionManager;
+    private ConnectionManager CM;
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-    public Device() {
-        this.connectionManager = null;
-        this.controller = null;
+    public Device(Controller controller, ConnectionManager CM) {
+        this.CM = CM;
+        this.controller = controller;
     }
 
-    Device(ConnectionManager connectionManager, Controller controller) {
-        this.connectionManager = connectionManager;
-        this.controller = controller;
+    public Device() {
+        this.CM = null;
+        this.controller = null;
     }
 
     public abstract boolean readInfo();
@@ -41,7 +41,7 @@ public abstract class Device {
 
     void checkConnectionStatus() {
         try {
-            connectionStatus = (connectionManager != null && connectionManager.getConnection().isOpened()) ?
+            connectionStatus = (CM != null && CM.getConnection().isOpened()) ?
                     ConnectionStatus.checkStatus(this) :
                     ConnectionStatus.DISCONNECTED;
         } catch (Exception e) {
@@ -51,6 +51,10 @@ public abstract class Device {
                         "Check " + (this.toString()).split(" ")[0] + " connection status",
                         "Read " + this + " connection status is failed.\nTry again connect to device!",
                         e);
+            }
+        } finally {
+            if (controller != null) {
+                controller.updateLog(this + " is " + connectionStatus);
             }
         }
     }
@@ -71,7 +75,7 @@ public abstract class Device {
     private Packet get() throws Exception {
         Packet packet = new Packet();
         try {
-            packet = connectionManager != null ? connectionManager.receivePacket() : packet;
+            packet = CM != null ? CM.receivePacket() : packet;
             checkPacketContainsErrorInfo(packet);
         } catch (InterruptedException e) {
             throw new Exception("Execution operation was interrupted.");
@@ -90,10 +94,10 @@ public abstract class Device {
 
     private void set(Packet packet) throws Exception {
         try {
-            if (connectionManager == null)
+            if (CM == null)
                 return;
 
-            connectionManager.sendPacket(packet);
+            CM.sendPacket(packet);
             if (!isConfirmationReceived(packet.getCommand()))
                 throw new FailSendPacket("No confirmation has been received.");
 
@@ -125,8 +129,8 @@ public abstract class Device {
     }
 
     private boolean isConfirmationReceived(Command command) throws Exception {
-        if (isConfirmationRequired(command) && connectionManager != null) {
-            Packet confirmationPacket = connectionManager.receivePacket();
+        if (isConfirmationRequired(command) && CM != null) {
+            Packet confirmationPacket = CM.receivePacket();
             if (!confirmationPacket.getCommand().equals(command) ||
                     confirmationPacket.getDataAsByte() == Confirmation.FAIL.ordinal())
                 return false;

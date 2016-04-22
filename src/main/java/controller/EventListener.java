@@ -7,19 +7,18 @@ import model.tests.TestManager;
 import javax.swing.text.AttributeSet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * EventListener interface contains user defined actions
  */
 interface EventListener {
 
-    String[] getCOMPortList();
+    List<String> getCOMPortList();
 
-    void connect();
+    void connect(String port);
 
     void disconnect();
-
-    boolean isCOMPortSelected(String portName);
 
     boolean isReceiverConnected();
 
@@ -41,19 +40,13 @@ interface EventListener {
 
     void updateLog(String text);
 
-    void createConnectionManager(String portName);
-
-    void destroyConnectionManager();
-
-    boolean isConnectionManagerExist();
-
     void startTesting();
 
     void stopTesting();
 
     void updateTestList();
 
-    void history();
+    void openHistory();
 
     boolean isTestRunning();
 

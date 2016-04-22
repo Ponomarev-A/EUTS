@@ -13,10 +13,10 @@ import javax.swing.text.AttributeSet;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Base controller class for user events handling, model managing and viewing.
@@ -25,6 +25,7 @@ public class Controller implements EventListener {
 
     private static final ThreadFactory CONNECTION_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("Controller-ConnectionExecutor-%d").setDaemon(true).build();
     private final ExecutorService connectionExecutor = Executors.newSingleThreadExecutor(CONNECTION_EXECUTOR);
+
     private View view;
     private Model model;
 
@@ -39,7 +40,7 @@ public class Controller implements EventListener {
                 model = new Model(Controller.this);
                 model.init();
 
-                view.updateMenuStates();
+                view.updateToolBarStates();
                 view.updateDeviceInfo();
                 view.updateTestControls();
             }
@@ -47,30 +48,27 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public String[] getCOMPortList() {
+    public List<String> getCOMPortList() {
         return model.getAvailableCOMPorts();
     }
 
     @Override
-    public void connect() {
+    public void connect(final String port) {
 
         connectionExecutor.submit(new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
                 updateLog("\nConnect...", LogPanel.BOLD);
-                model.connectToDevice();
+                model.connectToDevice(port);
                 return null;
             }
 
             @Override
             protected void done() {
-                view.updateMenuStates();
+                view.updateToolBarStates();
                 view.updateDeviceInfo();
                 view.updateTestControls();
                 view.fillTestList();
-
-                updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
-                updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
             }
         });
     }
@@ -87,22 +85,14 @@ public class Controller implements EventListener {
 
             @Override
             protected void done() {
-                view.updateMenuStates();
+                view.updateToolBarStates();
                 view.updateDeviceInfo();
                 view.updateTestControls();
                 view.clearTestList();
-
-                updateLog(model.getStand() + " is " + (isStandConnected() ? "connected" : "disconnected"));
-                updateLog(model.getReceiver() + " is " + (isReceiverConnected() ? "connected" : "disconnected"));
             }
         });
     }
 
-
-    @Override
-    public boolean isCOMPortSelected(String portName) {
-        return model.isCOMPortSelected(portName);
-    }
 
     @Override
     public boolean isReceiverConnected() {
@@ -204,67 +194,26 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void createConnectionManager(final String portName) {
-        connectionExecutor.submit(new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                updateLog("\nCreate connection manager...", LogPanel.BOLD);
-                model.createConnectionManager(portName);
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                view.updateMenuStates();
-            }
-        });
-    }
-
-    @Override
-    public void destroyConnectionManager() {
-        connectionExecutor.submit(new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                updateLog("\nDestroy connection manager...", LogPanel.BOLD);
-                model.destroyConnectionManager();
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                view.updateMenuStates();
-            }
-        });
-    }
-
-    @Override
-    public boolean isConnectionManagerExist() {
-        return model.getConnectionManager() != null;
-    }
-
-    @Override
     public void startTesting() {
         if (model.isTestRunning())
             return;
 
         model.startTesting();
 
-        view.updateMenuStates();
+        view.updateToolBarStates();
         view.updateTestControls();
     }
 
     @Override
     public void stopTesting() {
-
         if (!model.isTestRunning())
             return;
 
         model.stopTesting();
 
-        view.updateMenuStates();
+        view.updateToolBarStates();
         view.updateTestControls();
     }
-
 
     @Override
     public void updateTestList() {
@@ -285,7 +234,7 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void history() {
+    public void openHistory() {
         view.openHistoryWindow();
     }
 
@@ -355,12 +304,6 @@ public class Controller implements EventListener {
 
     public void windowClosing() {
         connectionExecutor.shutdown();
-        try {
-            connectionExecutor.awaitTermination(200, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         model.deinit();
     }
 }

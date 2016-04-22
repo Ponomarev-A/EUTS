@@ -21,29 +21,29 @@ public class ReceiverTest {
     private final Protocol protocol = new ModBus();
     private final Controller controller = ModelTest.createMockController();
 
-    private ConnectionManager connectionManager;
+    private ConnectionManager CM;
 
     @Before
     public void setUp() throws Exception {
-        connectionManager = new ConnectionManager(UARTTest.createUARTConnection(), protocol);
-        connectionManager.getConnection().open();
+        CM = new ConnectionManager(UARTTest.createUARTConnection(), protocol);
+        CM.getConnection().open();
     }
 
     @After
     public void tearDown() throws Exception {
-        if (connectionManager != null)
-            connectionManager.getConnection().close();
+        if (CM != null)
+            CM.getConnection().close();
     }
 
     @Test
     public void youReadInfo() throws Exception {
-        Receiver receiver = new Receiver(connectionManager, controller);
+        Receiver receiver = new Receiver(controller, CM);
         assertTrue(receiver.readInfo());
     }
 
     @Test
     public void youGetStatusCONNECTED() throws Exception {
-        Receiver receiver = new Receiver(connectionManager, controller);
+        Receiver receiver = new Receiver(controller, CM);
 
         receiver.checkConnectionStatus();
         assertTrue(receiver.getConnectionStatus() == ConnectionStatus.CONNECTED);

@@ -23,30 +23,30 @@ public class StandTest {
 
     private final Protocol protocol = new ModBus();
     private Controller controller;
-    private ConnectionManager connectionManager;
+    private ConnectionManager CM;
 
     @Before
     public void setUp() throws Exception {
         controller = ModelTest.createMockController();
-        connectionManager = new ConnectionManager(UARTTest.createUARTConnection(), protocol);
-        connectionManager.getConnection().open();
+        CM = new ConnectionManager(UARTTest.createUARTConnection(), protocol);
+        CM.getConnection().open();
     }
 
     @After
     public void tearDown() throws Exception {
-        if (connectionManager != null)
-            connectionManager.getConnection().close();
+        if (CM != null)
+            CM.getConnection().close();
     }
 
     @Test
     public void youReadInfo() throws Exception {
-        Stand stand = new Stand(connectionManager, controller);
+        Stand stand = new Stand(controller, CM);
         assertTrue(stand.readInfo());
     }
 
     @Test
     public void youGetStatusCONNECTED() throws Exception {
-        Stand stand = new Stand(connectionManager, controller);
+        Stand stand = new Stand(controller, CM);
 
         stand.checkConnectionStatus();
         assertTrue(stand.getConnectionStatus() == ConnectionStatus.CONNECTED);
@@ -55,8 +55,8 @@ public class StandTest {
     @Test
     @Ignore
     public void testSetAllFrequencies() throws Exception {
-        Stand stand = new Stand(connectionManager, controller);
-        Receiver receiver = new Receiver(connectionManager, controller);
+        Stand stand = new Stand(controller, CM);
+        Receiver receiver = new Receiver(controller, CM);
 
         new TestManager(controller, receiver, stand);
 

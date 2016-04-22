@@ -102,8 +102,6 @@ public class ManagerDB {
     private String loadURLFromPrefs() {
         Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
         return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
-
-//        return DEFAULT_URL;
     }
 
     private void saveURLToPrefs(String url) {

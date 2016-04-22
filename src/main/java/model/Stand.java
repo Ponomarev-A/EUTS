@@ -14,8 +14,8 @@ public class Stand extends Device {
     private String scheme;
     private Integer ID;
 
-    Stand(ConnectionManager connectionManager, Controller controller) {
-        super(connectionManager, controller);
+    Stand(Controller controller, ConnectionManager CM) {
+        super(controller, CM);
     }
 
 

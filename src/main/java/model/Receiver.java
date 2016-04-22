@@ -31,6 +31,10 @@ public class Receiver extends Device {
 
     private Integer ID;
 
+    public Receiver(Controller controller, ConnectionManager CM) {
+        super(controller, CM);
+    }
+
     public Receiver() {
         super();
         this.ID = null;
@@ -48,9 +52,6 @@ public class Receiver extends Device {
         this.firmware = firmware;
     }
 
-    Receiver(ConnectionManager connectionManager, Controller controller) {
-        super(connectionManager, controller);
-    }
 
     @Override
     public boolean readInfo() {
