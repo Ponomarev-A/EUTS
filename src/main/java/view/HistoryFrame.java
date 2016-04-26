@@ -230,18 +230,18 @@ class HistoryFrame extends JFrame {
     }
 
     private JPanel createSelectPeriodFields() {
-        JPanel jpSamplePeriod = new JPanel();
-        jpSamplePeriod.setLayout(new BoxLayout(jpSamplePeriod, BoxLayout.Y_AXIS));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         jdpFromDate = new DatePicker();
         jdpToDate = new DatePicker();
 
-        jpSamplePeriod.add(new JLabel("From date"));
-        jpSamplePeriod.add(jdpFromDate);
-        jpSamplePeriod.add(new JLabel("Before date"));
-        jpSamplePeriod.add(jdpToDate);
+        panel.add(new JLabel("From date"));
+        panel.add(jdpFromDate);
+        panel.add(new JLabel("Before date"));
+        panel.add(jdpToDate);
 
-        return jpSamplePeriod;
+        return panel;
     }
 
     private static class ResultTableModel extends AbstractTableModel {

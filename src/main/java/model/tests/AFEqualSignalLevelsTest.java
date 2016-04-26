@@ -12,12 +12,13 @@ import static model.Receiver.MAX_LEVEL;
  */
 class AFEqualSignalLevelsTest extends AnalogFilterTest {
 
-    private static final double DELTA_LEVEL_PRT = 10.0;
+    private final double delta;
 
-    AFEqualSignalLevelsTest(final int frequency_Hz, final int gain_dB) {
-        super(String.format("Analog filter: equal signal levels (%d Hz, %d dB)", frequency_Hz, gain_dB),
+    AFEqualSignalLevelsTest(final int frequency_Hz, final int gain_dB, double delta) {
+        super(String.format("Analog filter: equal signal levels (%d Hz, %d dB) up to %.1f%%", frequency_Hz, gain_dB, delta),
                 gain_dB,
                 frequency_Hz);
+        this.delta = delta;
     }
 
     @Override
@@ -30,7 +31,7 @@ class AFEqualSignalLevelsTest extends AnalogFilterTest {
         int maxLevel = findMaxLevel(Arrays.copyOfRange(levels, 0, 4));
         int minLevel = findMinLevel(Arrays.copyOfRange(levels, 0, 4));
 
-        double diffLevelsExpected = DELTA_LEVEL_PRT;
+        double diffLevelsExpected = delta;
         double diffLevelsActual = (double) (maxLevel - minLevel) * 100.0 / MAX_LEVEL;
 
         assertTrue(String.format(

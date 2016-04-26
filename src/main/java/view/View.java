@@ -157,12 +157,12 @@ public class View extends JFrame {
     public String askPathToDatabase() {
         int result = JOptionPane.showOptionDialog(
                 this,
-                "Database file (*.mv.db) not found.\nWhat do you want to do with database file?",
+                "Choose database file (*.mv.db) location, please.",
                 "Load database",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                new Object[]{"Open/create database file", "Do not use database"},
+                new Object[]{"Open database", "Do not use database"},
                 null);
 
 

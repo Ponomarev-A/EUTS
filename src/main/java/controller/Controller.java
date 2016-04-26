@@ -34,15 +34,16 @@ public class Controller implements EventListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                view = new View(Controller.this);
-                view.init();
-
                 model = new Model(Controller.this);
+                view = new View(Controller.this);
+
+                view.init();
+                view.updateDeviceInfo();
+                view.updateTestControls();
+
                 model.init();
 
                 view.updateToolBarStates();
-                view.updateDeviceInfo();
-                view.updateTestControls();
             }
         });
     }
@@ -246,6 +247,14 @@ public class Controller implements EventListener {
     @Override
     public String askPathToDatabase() {
         return view.askPathToDatabase();
+    }
+
+    @Override
+    public void changeDatabasePath() {
+        model.getManagerDB().disconnect();
+        model.getManagerDB().connect(null);
+
+        view.updateToolBarStates();
     }
 
     @Override

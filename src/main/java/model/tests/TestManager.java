@@ -20,14 +20,14 @@ import static model.tests.TestManager.State.*;
 public class TestManager {
 
     private final static List<? extends BaseTestCase> ALL_TEST_CASES = Collections.unmodifiableList(Arrays.asList(
-            new AFEqualSignalLevelsTest(50, 20),
-            new AFEqualSignalLevelsTest(60, 20),
-            new AFEqualSignalLevelsTest(100, 20),
-            new AFEqualSignalLevelsTest(120, 20),
-            new AFEqualSignalLevelsTest(512, 20),
-            new AFEqualSignalLevelsTest(1024, 20),
-            new AFEqualSignalLevelsTest(8192, 20),
-            new AFEqualSignalLevelsTest(32768, 20),
+            new AFEqualSignalLevelsTest(50, 20, 10.0),
+            new AFEqualSignalLevelsTest(60, 20, 15.0),
+            new AFEqualSignalLevelsTest(100, 20, 10.0),
+            new AFEqualSignalLevelsTest(120, 20, 15.0),
+            new AFEqualSignalLevelsTest(512, 20, 10.0),
+            new AFEqualSignalLevelsTest(1024, 20, 10.0),
+            new AFEqualSignalLevelsTest(8192, 20, 10.0),
+            new AFEqualSignalLevelsTest(32768, 20, 10.0),
 
             new AFValidFilterBandpassTest(50, 20),
             new AFValidFilterBandpassTest(100, 20),

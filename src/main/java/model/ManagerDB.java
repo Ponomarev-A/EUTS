@@ -58,7 +58,7 @@ public class ManagerDB {
         this.controller = controller;
     }
 
-    boolean connect() {
+    public boolean connect() {
         return connect(loadURLFromPrefs());
     }
 
@@ -69,7 +69,7 @@ public class ManagerDB {
      * @param url path to database file
      * @return true - if connection opened, or false in other case.
      */
-    boolean connect(String url) {
+    public boolean connect(String url) {
         try {
             if (!new File(url + DB_EXTENSION).isFile()) {
                 url = controller.askPathToDatabase();
@@ -179,7 +179,7 @@ public class ManagerDB {
         }
     }
 
-    boolean disconnect() {
+    public boolean disconnect() {
         if (connection == null)
             return true;
 

@@ -29,6 +29,8 @@ class ToolBar extends JPanel implements ActionListener {
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
     private static final ImageIcon ICON_REFRESH = new ImageIcon(new ImageIcon("resources/icons/refresh.png")
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+    private static final ImageIcon ICON_LOCATION = new ImageIcon(new ImageIcon("resources/icons/open.png")
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
 
     private final Controller controller;
 
@@ -37,8 +39,9 @@ class ToolBar extends JPanel implements ActionListener {
     private JButton jbReconnect;
     private JButton jbStart;
     private JButton jbStop;
-
     private JButton jbHistory;
+    private JButton jbLocation;
+
     private String currentCOMPort;
 
     ToolBar(Controller controller) {
@@ -67,18 +70,21 @@ class ToolBar extends JPanel implements ActionListener {
         jbStart = new JButton(ICON_START);
         jbStop = new JButton(ICON_STOP);
         jbHistory = new JButton(ICON_HISTORY);
+        jbLocation = new JButton(ICON_LOCATION);
 
         jbRefresh.setMargin(NO_MARGIN);
         jbReconnect.setMargin(NO_MARGIN);
         jbStart.setMargin(NO_MARGIN);
         jbStop.setMargin(NO_MARGIN);
         jbHistory.setMargin(NO_MARGIN);
+        jbLocation.setMargin(NO_MARGIN);
 
         jbRefresh.addActionListener(this);
         jbReconnect.addActionListener(this);
         jbStart.addActionListener(this);
         jbStop.addActionListener(this);
         jbHistory.addActionListener(this);
+        jbLocation.addActionListener(this);
 
         bar.add(new JLabel("Port: "));
         bar.add(jcbPorts);
@@ -89,6 +95,7 @@ class ToolBar extends JPanel implements ActionListener {
         bar.add(jbStop);
         bar.addSeparator();
         bar.add(jbHistory);
+        bar.add(jbLocation);
 
         add(bar);
     }
@@ -157,6 +164,8 @@ class ToolBar extends JPanel implements ActionListener {
 
                 } else if (btn.equals(jbHistory)) {
                     controller.openHistory();
+                } else if (btn.equals(jbLocation)) {
+                    controller.changeDatabasePath();
                 }
             }
         }
