@@ -33,7 +33,7 @@ public class ManagerDBTest {
 
     @Before
     public void setUp() throws Exception {
-        when(mockController.getPathToDatabase()).thenReturn(MOCK_URL);
+        when(mockController.askPathToDatabase()).thenReturn(MOCK_URL);
     }
 
     @After
@@ -44,7 +44,7 @@ public class ManagerDBTest {
     @Test
     public void testConnectToWrongDBFile() {
         // Incorrect database URL or user disallowed URL selection
-        when(mockController.getPathToDatabase()).thenReturn("");
+        when(mockController.askPathToDatabase()).thenReturn("");
 
         assertFalse(managerDB.connect(""));
         assertFalse(managerDB.connect(null));
@@ -53,7 +53,7 @@ public class ManagerDBTest {
     @Test
     public void testConnectToSelectedDBFile() {
         // Correct database URL
-        when(mockController.getPathToDatabase()).thenReturn(MOCK_URL);
+        when(mockController.askPathToDatabase()).thenReturn(MOCK_URL);
 
         // Try connect to incorrect database URL, then select correct
         assertTrue(managerDB.connect("C:/sample.db"));

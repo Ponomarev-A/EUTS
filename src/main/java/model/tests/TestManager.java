@@ -2,8 +2,6 @@ package model.tests;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import controller.Controller;
-import model.Receiver;
-import model.Stand;
 import view.LogPanel;
 
 import javax.swing.*;
@@ -45,8 +43,7 @@ public class TestManager {
     ));
     private static final ThreadFactory TESTING_EXECUTOR = new ThreadFactoryBuilder().setNameFormat("TestingExecutor-%d").setDaemon(true).build();
     private final Controller controller;
-    private final Receiver receiver;
-    private final Stand stand;
+
     /* List of test cases, used by this test manager */
     private List<BaseTestCase> testList = new ArrayList<>();
     /* Map of test results: K - test case ID, V - test result state */
@@ -55,10 +52,8 @@ public class TestManager {
     private long executionTimeMs;
     private ExecutorService testingExecutor;
 
-    public TestManager(Controller controller, Receiver receiver, Stand stand) {
+    public TestManager(Controller controller) {
         this.controller = controller;
-        this.receiver = receiver;
-        this.stand = stand;
     }
 
     public void fillTestList() {
@@ -188,7 +183,7 @@ public class TestManager {
             try {
                 if (testCase.isEnabled()) {
                     publish(resultState);
-                    testCase.runTest(receiver, stand);
+                    testCase.runTest(controller.getReceiver(), controller.getStand());
                     resultState = PASS;
                 } else {
                     resultState = SKIP;

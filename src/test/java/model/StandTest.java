@@ -58,10 +58,11 @@ public class StandTest {
         Stand stand = new Stand(controller, CM);
         Receiver receiver = new Receiver(controller, CM);
 
-        new TestManager(controller, receiver, stand);
+        new TestManager(controller);
 
-        for (int i = 40; i < 33000; i += 10) {
+        for (int i = 40; i < 33000; i += 1) {
             stand.set(Command.FREQUENCY_STAND, i);
+            System.out.println(String.format("Set frequency: %d Hz", i));
         }
     }
 }

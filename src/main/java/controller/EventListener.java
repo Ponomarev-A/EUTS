@@ -1,7 +1,7 @@
 package controller;
 
-import model.Device;
 import model.Receiver;
+import model.Stand;
 import model.tests.TestManager;
 
 import javax.swing.text.AttributeSet;
@@ -26,9 +26,9 @@ interface EventListener {
 
     boolean isConnected();
 
-    Device getReceiver();
+    Receiver getReceiver();
 
-    Device getStand();
+    Stand getStand();
 
     void showMessage(String title, String text);
 
@@ -50,7 +50,7 @@ interface EventListener {
 
     boolean isTestRunning();
 
-    String getPathToDatabase();
+    String askPathToDatabase();
 
     ResultSet selectTestSessions(Receiver receiver, String afterDate, String beforeDate) throws SQLException;
 
@@ -71,4 +71,8 @@ interface EventListener {
     int updateCalibrationCoeffsInDB(Float[] depthCoeffs, Float[] currentCoeffs);
 
     TestManager getTestManager();
+
+    void checkDeviceInDB();
+
+    void askUserAboutExistedReceiver(Receiver receiver);
 }

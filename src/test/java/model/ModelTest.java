@@ -4,7 +4,6 @@ import connections.UARTTest;
 import controller.Controller;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -134,7 +133,6 @@ public class ModelTest {
     }
 
     @Test
-    @Ignore
     public void testTestCaseExecute() throws Exception {
         assertFalse(model.isTestRunning());
         model.startTesting();

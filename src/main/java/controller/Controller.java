@@ -1,9 +1,9 @@
 package controller;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import model.Device;
 import model.Model;
 import model.Receiver;
+import model.Stand;
 import model.tests.TestManager;
 import view.LogPanel;
 import view.View;
@@ -110,12 +110,12 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public Device getReceiver() {
+    public Receiver getReceiver() {
         return model.getReceiver();
     }
 
     @Override
-    public Device getStand() {
+    public Stand getStand() {
         return model.getStand();
     }
 
@@ -244,8 +244,8 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public String getPathToDatabase() {
-        return view.getPathToDatabase();
+    public String askPathToDatabase() {
+        return view.askPathToDatabase();
     }
 
     @Override
@@ -300,6 +300,16 @@ public class Controller implements EventListener {
     @Override
     public TestManager getTestManager() {
         return model.getTestManager();
+    }
+
+    @Override
+    public void checkDeviceInDB() {
+        model.checkDeviceInDB();
+    }
+
+    @Override
+    public void askUserAboutExistedReceiver(Receiver receiver) {
+        view.askUserAboutExistedReceiver(receiver);
     }
 
     public void windowClosing() {

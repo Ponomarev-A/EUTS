@@ -140,8 +140,10 @@ public abstract class Device {
 
     private boolean isConfirmationRequired(Command command) {
         int id = command.getId();
-        return (id >= FREQUENCY_DEVICE.getId() && id <= BACKLIGHT_DEVICE.getId() || id == WRITE_PCB_ID_DEVICE.getId()) ||
-                (id >= FREQUENCY_STAND.getId() && id <= EXT_SENSOR_STAND.getId());
+        return (id >= FREQUENCY_DEVICE.getId() && id <= BACKLIGHT_DEVICE.getId() ||
+                id == WRITE_CALIBR_COEFFS_DEVICE.getId() ||
+                id == WRITE_PCB_ID_DEVICE.getId() ||
+                id >= FREQUENCY_STAND.getId() && id <= EXT_SENSOR_STAND.getId());
     }
 
     int getInteger(Command command, Integer integerValue) throws Exception {

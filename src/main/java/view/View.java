@@ -1,6 +1,7 @@
 package view;
 
 import controller.Controller;
+import model.Receiver;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -51,7 +52,6 @@ public class View extends JFrame {
 
 
     public void init() {
-
         createMainFrame();
         createMainPanel();
         createToolBar();
@@ -154,7 +154,7 @@ public class View extends JFrame {
         jpTests.updateTestControls();
     }
 
-    public String getPathToDatabase() {
+    public String askPathToDatabase() {
         int result = JOptionPane.showOptionDialog(
                 this,
                 "Database file (*.mv.db) not found.\nWhat do you want to do with database file?",
@@ -193,14 +193,16 @@ public class View extends JFrame {
                 );
     }
 
-    private void changeFont(Component component, Font font) {
-        component.setFont(font);
-        if (component instanceof Container) {
-            for (Component child : ((Container) component).getComponents()) {
-                changeFont(child, font);
-            }
+    public void askUserAboutExistedReceiver(Receiver receiver) {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Connected " + receiver + " found in database.\nDo you want to see info about it stored in the database?",
+                "Check receiver in database",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            new HistoryDetailsFrame(controller, receiver);
         }
     }
-
-
 }

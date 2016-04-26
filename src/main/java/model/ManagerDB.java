@@ -72,7 +72,7 @@ public class ManagerDB {
     boolean connect(String url) {
         try {
             if (!new File(url + DB_EXTENSION).isFile()) {
-                url = controller.getPathToDatabase();
+                url = controller.askPathToDatabase();
             }
 
             if (url.isEmpty()) {

@@ -27,41 +27,46 @@ class HistoryDetailsFrame extends JDialog {
 
     private final Controller controller;
 
-    private Receiver receiver;
     private Timestamp timestamp;
+    private Receiver receiver;
     private Map<Integer, TestManager.State> testResults;
     private ArrayList<Float[]> calibrationCoeffs;
+
     private JTable calibrCoeffsTable;
 
-    HistoryDetailsFrame(Controller controller, ArrayList<Object> dataSourceRow) {
+    HistoryDetailsFrame(Controller controller, Receiver receiver) {
         this.controller = controller;
 
-        fillDataSource(dataSourceRow);
+        fillDataSource(receiver);
 
         create();
         pack();
         setVisible(true);
     }
 
-    private void fillDataSource(ArrayList<Object> data) {
+    private void fillDataSource(Receiver receiver) {
+        this.receiver = receiver;
 
-        Integer ID = (Integer) data.get(0);
-        String model = (String) data.get(1);
-        String scheme = (String) data.get(2);
-        String firmware = (String) data.get(3);
-        receiver = new Receiver(ID, model, scheme, firmware);
+        try (ResultSet rs = controller.selectTestSessions(receiver, null, null)) {
+            rs.next();
+            timestamp = rs.getTimestamp(5);
 
-        timestamp = (Timestamp) data.get(4);
+            testResults = new TreeMap<>();
+            for (Object testCaseID : (Object[]) rs.getObject(6))
+                testResults.put((Integer) testCaseID, TestManager.State.PASS);
 
-        testResults = new TreeMap<>();
-        for (Object testCaseID : (Object[]) data.get(5))
-            testResults.put((Integer) testCaseID, TestManager.State.PASS);
+            for (Object testCaseID : (Object[]) rs.getObject(7))
+                testResults.put((Integer) testCaseID, TestManager.State.FAIL);
 
-        for (Object testCaseID : (Object[]) data.get(6))
-            testResults.put((Integer) testCaseID, TestManager.State.FAIL);
-
-        for (Object testCaseID : (Object[]) data.get(7))
-            testResults.put((Integer) testCaseID, TestManager.State.SKIP);
+            for (Object testCaseID : (Object[]) rs.getObject(8))
+                testResults.put((Integer) testCaseID, TestManager.State.SKIP);
+        } catch (SQLException e) {
+            controller.showErrorMessage(
+                    "Read receiver info",
+                    "Read receiver info failed",
+                    e
+            );
+        }
 
         try (ResultSet rs = controller.selectCalibrationCoeffs(receiver)) {
             calibrationCoeffs = new ArrayList<>();
@@ -76,8 +81,8 @@ class HistoryDetailsFrame extends JDialog {
             }
         } catch (SQLException e) {
             controller.showErrorMessage(
-                    "Read details info",
-                    "Read details info failed",
+                    "Read calibration coefficients",
+                    "Read calibration coefficients failed",
                     e
             );
         }

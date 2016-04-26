@@ -85,13 +85,16 @@ class InfoPanel extends JPanel {
         String ID = null;
 
         if (isConnected) {
-            Receiver receiver = (Receiver) controller.getReceiver();
+            Receiver receiver = controller.getReceiver();
 
             receiver.readInfo();
             model = receiver.getModel();
             firmware = receiver.getFirmware();
             scheme = receiver.getScheme();
             ID = receiver.getID() != null ? receiver.getID().toString() : "";
+
+            if (controller.isDBExist())
+                controller.checkDeviceInDB();
         }
 
         jlR_Model.setText(isConnected ? model : "-");
@@ -112,7 +115,7 @@ class InfoPanel extends JPanel {
         String ID = null;
 
         if (isConnected) {
-            Stand stand = (Stand) controller.getStand();
+            Stand stand = controller.getStand();
             stand.readInfo();
             model = stand.getModel();
             firmware = stand.getFirmware();

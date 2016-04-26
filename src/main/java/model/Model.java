@@ -31,10 +31,7 @@ public class Model {
     public Model(Controller controller) {
         this.controller = controller;
         this.managerDB = new ManagerDB(controller);
-    }
-
-    ConnectionManager getConnectionManager() {
-        return CM;
+        this.testManager = new TestManager(controller);
     }
 
     public Receiver getReceiver() {
@@ -87,7 +84,6 @@ public class Model {
             CM = null;
             receiver = null;
             stand = null;
-            testManager = null;
         }
     }
 
@@ -106,7 +102,6 @@ public class Model {
             CM = new ConnectionManager(connection, new ModBus());
             receiver = new Receiver(controller, CM);
             stand = new Stand(controller, CM);
-            testManager = new TestManager(controller, receiver, stand);
 
             receiver.checkConnectionStatus();
             stand.checkConnectionStatus();
@@ -161,10 +156,6 @@ public class Model {
         return managerDB.getFirmwares();
     }
 
-    public String[] getReceiverIDsFromDB() throws SQLException {
-        return managerDB.getIDs();
-    }
-
     public boolean insertResultToDB() {
         try {
             Integer newID = managerDB.getNextUniqueID();
@@ -205,5 +196,32 @@ public class Model {
             );
         }
         return 0;
+    }
+
+    public void checkDeviceInDB() {
+
+        Integer receiverID = receiver.getID();
+
+        // If receiver has ID = 0, then it's new
+        if (receiverID == 0)
+            return;
+
+        try {
+            List<String> listIDs = Arrays.asList(getReceiverIDsFromDB());
+
+            if (listIDs.contains(String.valueOf(receiverID))) {
+                controller.askUserAboutExistedReceiver(receiver);
+            }
+        } catch (SQLException e) {
+            controller.showErrorMessage(
+                    "Check receiver in database",
+                    "Can't get information about existed receivers in database",
+                    e);
+        }
+
+    }
+
+    public String[] getReceiverIDsFromDB() throws SQLException {
+        return managerDB.getIDs();
     }
 }

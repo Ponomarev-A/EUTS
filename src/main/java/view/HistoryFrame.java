@@ -32,6 +32,7 @@ class HistoryFrame extends JFrame {
 
     private final Controller controller;
     private ResultTableModel resultTableModel;
+
     private AutoComboBox jacbID;
     private JComboBox<String> jcbModel;
     private JComboBox<String> jcbScheme;
@@ -97,22 +98,25 @@ class HistoryFrame extends JFrame {
         columnModel.getColumn(7).setMinWidth(70);
         jtResults.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         jtResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
         jtResults.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
-                JTable table = (JTable) me.getSource();
-                Point p = me.getPoint();
-                int row = table.rowAtPoint(p);
-                ArrayList<Object> dataSourceRow = resultTableModel.data.get(row);
-
                 if (me.getClickCount() == 2) {
-                    new HistoryDetailsFrame(controller, dataSourceRow);
+                    JTable table = (JTable) me.getSource();
+                    int row = table.rowAtPoint(me.getPoint());
+                    ArrayList<Object> rowData = resultTableModel.data.get(row);
 
+                    Integer ID = (Integer) rowData.get(resultTableModel.findColumn("ID"));
+                    String model = (String) rowData.get(resultTableModel.findColumn("Model"));
+                    String scheme = (String) rowData.get(resultTableModel.findColumn("Scheme"));
+                    String firmware = (String) rowData.get(resultTableModel.findColumn("Firmware"));
+
+                    new HistoryDetailsFrame(controller, new Receiver(ID, model, scheme, firmware));
                 }
             }
         });
 
         panel.add(new JScrollPane(jtResults));
-
         return panel;
     }
 
