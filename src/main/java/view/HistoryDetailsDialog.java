@@ -95,6 +95,16 @@ class HistoryDetailsDialog extends JDialog {
     }
 
     private void create() {
+        initFrame();
+
+        JPanel jpTop = createTopPanel();
+        JPanel jpBottom = createBottomPanel();
+
+        add(jpTop, BorderLayout.NORTH);
+        add(jpBottom, BorderLayout.CENTER);
+    }
+
+    private void initFrame() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setPreferredSize(new Dimension((int) (FRAME_WIDTH * 0.8), FRAME_HEIGHT));
         setMinimumSize(new Dimension((int) (FRAME_WIDTH * 0.8), FRAME_HEIGHT));
@@ -112,31 +122,31 @@ class HistoryDetailsDialog extends JDialog {
         });
 
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setContentPane(panel);
+    }
 
+    private JPanel createTopPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-        JPanel jpTop = new JPanel();
-        jpTop.setLayout(new BoxLayout(jpTop, BoxLayout.X_AXIS));
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.add(createInfoDetails());
+        leftPanel.add(createControls());
 
-        JPanel jpTopLeft = new JPanel();
-        jpTopLeft.setLayout(new BoxLayout(jpTopLeft, BoxLayout.Y_AXIS));
-        jpTopLeft.add(createInfoDetails());
-        jpTopLeft.add(createControls());
+        panel.add(leftPanel);
+        panel.add(createCalibrationCoeffs());
+        return panel;
+    }
 
-        jpTop.add(jpTopLeft);
-        jpTop.add(createCalibrationCoeffs());
+    private JPanel createBottomPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
 
-        JPanel jpBottom = new JPanel();
-        jpBottom.setLayout(new BorderLayout());
-
-        JTable detailsTable = createDetailsTable();
-
-        jpBottom.add(new JScrollPane(detailsTable));
-
-        add(jpTop);
-        add(jpBottom);
+        panel.add(new JScrollPane(createDetailsTable()));
+        return panel;
     }
 
     private void writeCoeffsToReceiver() {
@@ -227,7 +237,6 @@ class HistoryDetailsDialog extends JDialog {
     }
 
     private JPanel createCalibrationCoeffs() {
-
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         panel.setLayout(new BorderLayout());
@@ -359,9 +368,8 @@ class HistoryDetailsDialog extends JDialog {
                     return Receiver.FREQUENCY_HZ.get(rowIndex);
                 case 1:
                 case 2:
-                    return calibrationCoeffs.get(columnIndex - 1)[rowIndex] != null ?
-                            String.format(Locale.ENGLISH, "%.6f", calibrationCoeffs.get(columnIndex - 1)[rowIndex]) :
-                            1.0;
+                    return String.format(Locale.ENGLISH, "%.6f", calibrationCoeffs.get(columnIndex - 1)[rowIndex] != null ?
+                            calibrationCoeffs.get(columnIndex - 1)[rowIndex] : 1.0f);
                 default:
                     return null;
             }

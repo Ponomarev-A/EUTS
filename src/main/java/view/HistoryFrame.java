@@ -27,7 +27,7 @@ import java.util.List;
  */
 class HistoryFrame extends JFrame {
 
-    private static final int FRAME_WIDTH = 800;
+    private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 600;
 
     private final Controller controller;
@@ -48,16 +48,16 @@ class HistoryFrame extends JFrame {
     }
 
     private void create() {
-        initHistoryFrame();
+        initFrame();
 
         JPanel jpSearchFields = createSearchFields();
         JPanel jpResults = createResultTable();
 
-        add(jpSearchFields);
-        add(jpResults);
+        add(jpSearchFields, BorderLayout.NORTH);
+        add(jpResults, BorderLayout.CENTER);
     }
 
-    private void initHistoryFrame() {
+    private void initFrame() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
@@ -65,7 +65,7 @@ class HistoryFrame extends JFrame {
         setTitle("History");
 
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setContentPane(panel);
     }
@@ -89,14 +89,11 @@ class HistoryFrame extends JFrame {
         resultTableModel = new ResultTableModel();
         jtResults = new JTable(resultTableModel);
         TableColumnModel columnModel = jtResults.getColumnModel();
-        columnModel.getColumn(0).setMinWidth(50);
-        columnModel.getColumn(1).setMinWidth(100);
-        columnModel.getColumn(2).setMinWidth(160);
+        columnModel.getColumn(1).setMinWidth(80);
+        columnModel.getColumn(2).setMinWidth(150);
         columnModel.getColumn(3).setMinWidth(60);
-        columnModel.getColumn(5).setMinWidth(70);
-        columnModel.getColumn(6).setMinWidth(70);
-        columnModel.getColumn(7).setMinWidth(70);
-        jtResults.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        columnModel.getColumn(4).setMinWidth(120);
+
         jtResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         jtResults.addMouseListener(new MouseAdapter() {
@@ -121,16 +118,17 @@ class HistoryFrame extends JFrame {
     }
 
     private JPanel createSelectParameters() {
-        JPanel jpParameters = new JPanel();
-        jpParameters.setLayout(new BoxLayout(jpParameters, BoxLayout.X_AXIS));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
         JPanel jpReceiverFields = createSelectReceiverFields();
         JPanel jpSamplePeriod = createSelectPeriodFields();
 
-        jpParameters.add(jpReceiverFields);
-        jpParameters.add(Box.createHorizontalStrut(20));
-        jpParameters.add(jpSamplePeriod);
-        return jpParameters;
+        panel.add(jpReceiverFields);
+        panel.add(Box.createHorizontalStrut(20));
+        panel.add(jpSamplePeriod);
+
+        return panel;
     }
 
     private JPanel createSelectControls() {
@@ -274,6 +272,22 @@ class HistoryFrame extends JFrame {
             columnTypes.add(Integer.class);
         }
 
+        void setDataSource(ResultSet rs) throws SQLException {
+            data.clear();
+
+            int columnCount = getColumnCount();
+            while (rs.next()) {
+                // здесь будем хранить ячейки одной строки
+                ArrayList<Object> row = new ArrayList<>();
+                for (int i = 0; i < columnCount; i++) {
+                    row.add(rs.getObject(i + 1));
+                }
+                data.add(row);
+            }
+            rs.close();
+            fireTableDataChanged();
+        }
+
         @Override
         public int getRowCount() {
             return data.size();
@@ -320,23 +334,6 @@ class HistoryFrame extends JFrame {
         @Override
         public void setValueAt(Object value, int row, int column) {
             (data.get(row)).set(column, value);
-        }
-
-        void setDataSource(ResultSet rs) throws SQLException {
-            data.clear();
-
-            int columnCount = getColumnCount();
-            while (rs.next()) {
-                // здесь будем хранить ячейки одной строки
-                ArrayList<Object> row = new ArrayList<>();
-                for (int i = 0; i < columnCount; i++) {
-                    row.add(rs.getObject(i + 1));
-                }
-                data.add(row);
-            }
-            rs.close();
-
-            fireTableStructureChanged();
         }
     }
 
