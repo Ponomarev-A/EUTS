@@ -210,7 +210,7 @@ public class Model {
             List<String> listIDs = Arrays.asList(getReceiverIDsFromDB());
 
             if (listIDs.contains(String.valueOf(receiverID))) {
-                controller.askUserAboutExistedReceiver(receiver);
+                controller.askUserShowStoredInDBReceiver(receiver);
             }
         } catch (SQLException e) {
             controller.showErrorMessage(

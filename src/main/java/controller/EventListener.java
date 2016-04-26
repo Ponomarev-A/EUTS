@@ -74,5 +74,7 @@ interface EventListener {
 
     void checkDeviceInDB();
 
-    void askUserAboutExistedReceiver(Receiver receiver);
+    void askUserShowStoredInDBReceiver(Receiver receiver);
+
+    boolean askUserWriteCalibrCoeffsToReceiver();
 }

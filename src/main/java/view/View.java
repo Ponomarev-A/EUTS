@@ -193,7 +193,7 @@ public class View extends JFrame {
                 );
     }
 
-    public void askUserAboutExistedReceiver(Receiver receiver) {
+    public void askUserShowStoredInDBReceiver(Receiver receiver) {
         int result = JOptionPane.showConfirmDialog(
                 this,
                 "Connected " + receiver + " found in database.\nDo you want to see info about it stored in the database?",
@@ -202,7 +202,17 @@ public class View extends JFrame {
         );
 
         if (result == JOptionPane.YES_OPTION) {
-            new HistoryDetailsFrame(controller, receiver);
+            new HistoryDetailsDialog(controller, receiver);
         }
+    }
+
+    public boolean askUserWriteCalibrCoeffsToReceiver() {
+        return JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
+                this,
+                "Calibration coefficients has been changed.\nDo you want write new coefficients into receiver memory?",
+                "Write calibration coefficients",
+                JOptionPane.YES_NO_OPTION
+        );
+
     }
 }

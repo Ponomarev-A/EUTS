@@ -14,13 +14,15 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-class HistoryDetailsFrame extends JDialog {
+class HistoryDetailsDialog extends JDialog {
 
     private final int FRAME_WIDTH = 800;
     private final int FRAME_HEIGHT = 600;
@@ -33,11 +35,15 @@ class HistoryDetailsFrame extends JDialog {
     private ArrayList<Float[]> calibrationCoeffs;
 
     private JTable calibrCoeffsTable;
+    private boolean isCoeffsChanged = false;
+    private boolean isCoeffsCanBeChanged;
 
-    HistoryDetailsFrame(Controller controller, Receiver receiver) {
+
+    HistoryDetailsDialog(final Controller controller, Receiver receiver) {
         this.controller = controller;
 
         fillDataSource(receiver);
+        isCoeffsCanBeChanged = controller.isConnected() && controller.getReceiver().getID().equals(receiver.getID());
 
         create();
         pack();
@@ -96,6 +102,15 @@ class HistoryDetailsFrame extends JDialog {
         setTitle("History details");
         setModal(true);
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (isCoeffsChanged && controller.askUserWriteCalibrCoeffsToReceiver())
+                    writeCoeffsToReceiver();
+                super.windowClosing(e);
+            }
+        });
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -122,6 +137,34 @@ class HistoryDetailsFrame extends JDialog {
 
         add(jpTop);
         add(jpBottom);
+    }
+
+    private void writeCoeffsToReceiver() {
+        float[] coeffs = ArrayUtils.addAll(
+                ArrayUtils.toPrimitive(calibrationCoeffs.get(0)),
+                ArrayUtils.toPrimitive(calibrationCoeffs.get(1))
+        );
+        try {
+            Device receiver = controller.getReceiver();
+            receiver.set(Command.WRITE_CALIBR_COEFFS_DEVICE, coeffs);
+
+            controller.updateCalibrationCoeffsInDB(
+                    calibrationCoeffs.get(0),
+                    calibrationCoeffs.get(1)
+            );
+
+            isCoeffsChanged = false;
+
+            controller.showMessage(
+                    "Write calibration coefficients",
+                    "New calibration coefficients successfully write to\n" + receiver
+            );
+        } catch (Exception e) {
+            controller.showErrorMessage(
+                    "Write calibration coefficients",
+                    "Write calibration coefficients FAILED!",
+                    e);
+        }
     }
 
     private JPanel createInfoDetails() {
@@ -158,69 +201,22 @@ class HistoryDetailsFrame extends JDialog {
     private JPanel createControls() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        boolean isConnected = false;
-        final Device connectedReceiver = controller.getReceiver();
-        if (controller.isConnected() && connectedReceiver.getID().equals(receiver.getID())) {
-            isConnected = true;
-        }
-
         JButton jbRead = new JButton("Read coeffs");
-        jbRead.setEnabled(isConnected);
+        jbRead.setEnabled(isCoeffsCanBeChanged);
         jbRead.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                try {
-                    float[] coeffs = connectedReceiver.getFloatArray(Command.GET_CALIBR_COEFFS_DEVICE);
-                    calibrationCoeffs.set(0, ArrayUtils.toObject(ArrayUtils.subarray(coeffs, 0, 8)));
-                    calibrationCoeffs.set(1, ArrayUtils.toObject(ArrayUtils.subarray(coeffs, 8, 16)));
-
-                    controller.updateCalibrationCoeffsInDB(
-                            calibrationCoeffs.get(0),
-                            calibrationCoeffs.get(1)
-                    );
-                    controller.showMessage(
-                            "Read calibration coefficients",
-                            "Calibration coefficients successfully read from\n" + receiver
-                    );
-                } catch (Exception e) {
-                    controller.showErrorMessage(
-                            "Read calibration coefficients",
-                            "Read calibration coefficients FAILED!",
-                            e);
-                } finally {
-                    ((AbstractTableModel) calibrCoeffsTable.getModel()).fireTableDataChanged();
-                }
+                readCoeffsFromReceiver();
             }
         });
 
 
         JButton jbWrite = new JButton("Write coeffs");
-        jbWrite.setEnabled(isConnected);
+        jbWrite.setEnabled(isCoeffsCanBeChanged);
         jbWrite.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                float[] coeffs = ArrayUtils.addAll(
-                        ArrayUtils.toPrimitive(calibrationCoeffs.get(0)),
-                        ArrayUtils.toPrimitive(calibrationCoeffs.get(1))
-                );
-                try {
-                    Device receiver = controller.getReceiver();
-                    receiver.set(Command.WRITE_CALIBR_COEFFS_DEVICE, coeffs);
-
-                    controller.updateCalibrationCoeffsInDB(
-                            calibrationCoeffs.get(0),
-                            calibrationCoeffs.get(1)
-                    );
-                    controller.showMessage(
-                            "Write calibration coefficients",
-                            "New calibration coefficients successfully write to\n" + receiver
-                    );
-                } catch (Exception e) {
-                    controller.showErrorMessage(
-                            "Write calibration coefficients",
-                            "Write calibration coefficients FAILED!",
-                            e);
-                }
+                writeCoeffsToReceiver();
             }
         });
 
@@ -237,17 +233,10 @@ class HistoryDetailsFrame extends JDialog {
         panel.setLayout(new BorderLayout());
 
         calibrCoeffsTable = new JTable(new CalibrCoeffsTableModel());
+        calibrCoeffsTable.setEnabled(isCoeffsCanBeChanged);
 
         // FIX hack: Resize table height
         calibrCoeffsTable.setPreferredScrollableViewportSize(calibrCoeffsTable.getPreferredSize());
-
-//        TableColumnModel columnModel = table.getColumnModel();
-//        columnModel.getColumn(0).setMaxWidth(50);
-//        columnModel.getColumn(0).setResizable(false);
-//        columnModel.getColumn(1).setMaxWidth(60);
-//        columnModel.getColumn(1).setResizable(false);
-//        columnModel.getColumn(2).setMaxWidth(60);
-//        columnModel.getColumn(2).setResizable(false);
 
         panel.add(new JScrollPane(calibrCoeffsTable));
         return panel;
@@ -264,6 +253,30 @@ class HistoryDetailsFrame extends JDialog {
         table.setRowHeight(20);
 
         return table;
+    }
+
+    private void readCoeffsFromReceiver() {
+        try {
+            float[] coeffs = receiver.getFloatArray(Command.GET_CALIBR_COEFFS_DEVICE);
+            calibrationCoeffs.set(0, ArrayUtils.toObject(ArrayUtils.subarray(coeffs, 0, 8)));
+            calibrationCoeffs.set(1, ArrayUtils.toObject(ArrayUtils.subarray(coeffs, 8, 16)));
+
+            controller.updateCalibrationCoeffsInDB(
+                    calibrationCoeffs.get(0),
+                    calibrationCoeffs.get(1)
+            );
+            controller.showMessage(
+                    "Read calibration coefficients",
+                    "Calibration coefficients successfully read from\n" + receiver
+            );
+        } catch (Exception e) {
+            controller.showErrorMessage(
+                    "Read calibration coefficients",
+                    "Read calibration coefficients FAILED!",
+                    e);
+        } finally {
+            ((AbstractTableModel) calibrCoeffsTable.getModel()).fireTableDataChanged();
+        }
     }
 
     private class DetailsTableModel extends AbstractTableModel {
@@ -366,6 +379,8 @@ class HistoryDetailsFrame extends JDialog {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            isCoeffsChanged = true;
+
             calibrationCoeffs.get(columnIndex - 1)[rowIndex] = Float.valueOf((String) aValue);
         }
     }

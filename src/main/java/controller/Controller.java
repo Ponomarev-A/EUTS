@@ -308,8 +308,13 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void askUserAboutExistedReceiver(Receiver receiver) {
-        view.askUserAboutExistedReceiver(receiver);
+    public void askUserShowStoredInDBReceiver(Receiver receiver) {
+        view.askUserShowStoredInDBReceiver(receiver);
+    }
+
+    @Override
+    public boolean askUserWriteCalibrCoeffsToReceiver() {
+        return view.askUserWriteCalibrCoeffsToReceiver();
     }
 
     public void windowClosing() {

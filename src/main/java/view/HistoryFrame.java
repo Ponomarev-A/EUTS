@@ -111,7 +111,7 @@ class HistoryFrame extends JFrame {
                     String scheme = (String) rowData.get(resultTableModel.findColumn("Scheme"));
                     String firmware = (String) rowData.get(resultTableModel.findColumn("Firmware"));
 
-                    new HistoryDetailsFrame(controller, new Receiver(ID, model, scheme, firmware));
+                    new HistoryDetailsDialog(controller, new Receiver(ID, model, scheme, firmware));
                 }
             }
         });
