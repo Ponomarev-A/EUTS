@@ -50,9 +50,9 @@ interface EventListener {
 
     boolean isTestRunning();
 
-    String askPathToDatabase();
+    void askPathToDatabase();
 
-    void changeDatabasePath();
+    void changeDatabasePath(String path);
 
     ResultSet selectTestSessions(Receiver receiver, String afterDate, String beforeDate) throws SQLException;
 

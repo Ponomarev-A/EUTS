@@ -1,4 +1,4 @@
-package view.AutoCompleteComboBox;
+package view.widget;
 
 import org.apache.commons.lang.WordUtils;
 

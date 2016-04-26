@@ -1,4 +1,4 @@
-package view.AutoCompleteComboBox;
+package view.widget;
 
 import javax.swing.*;
 import java.util.Vector;

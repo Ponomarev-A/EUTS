@@ -3,7 +3,8 @@ package view;
 import com.github.lgooddatepicker.datepicker.DatePicker;
 import controller.Controller;
 import model.Receiver;
-import view.AutoCompleteComboBox.AutoComboBox;
+import view.widget.AutoComboBox;
+import view.widget.GridBagHelper;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -118,15 +119,50 @@ class HistoryFrame extends JFrame {
     }
 
     private JPanel createSelectParameters() {
+
+        jacbID = new AutoComboBox();
+        try {
+            jcbModel = new JComboBox<>(controller.getReceiverModelsFromDB());
+            jcbScheme = new JComboBox<>(controller.getReceiverSchemesFromDB());
+            jcbFirmware = new JComboBox<>(controller.getReceiverFirmwaresFromDB());
+
+            jacbID.setKeyWord(controller.getReceiverIDsFromDB());
+        } catch (SQLException e) {
+            controller.showErrorMessage(
+                    "Read receiver parameters",
+                    "Read receiver parameters from database failed",
+                    e
+            );
+        }
+
+        jacbID.setSelectedIndex(-1);
+        jcbModel.setSelectedIndex(-1);
+        jcbScheme.setSelectedIndex(-1);
+        jcbFirmware.setSelectedIndex(-1);
+
+        jdpFromDate = new DatePicker();
+        jdpToDate = new DatePicker();
+
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.setLayout(new GridBagLayout());
 
-        JPanel jpReceiverFields = createSelectReceiverFields();
-        JPanel jpSamplePeriod = createSelectPeriodFields();
+        GridBagHelper helper = new GridBagHelper();
 
-        panel.add(jpReceiverFields);
-        panel.add(Box.createHorizontalStrut(20));
-        panel.add(jpSamplePeriod);
+        panel.add(new JLabel("Receiver ID"), helper.nextCell().fillHorizontally().gap(20).get());
+        panel.add(jacbID, helper.nextCell().fillHorizontally().gap(10).setWeights(0.3f, 0).get());
+        panel.add(new JLabel("From date"), helper.nextCell().fillHorizontally().setWeights(1.0f, 0).get());
+
+        panel.add(new JLabel("Model"), helper.nextRow().nextCell().fillHorizontally().gap(20).get());
+        panel.add(jcbModel, helper.nextCell().fillHorizontally().gap(10).get());
+        panel.add(jdpFromDate, helper.nextCell().fillHorizontally().get());
+
+        panel.add(new JLabel("Scheme"), helper.nextRow().nextCell().fillHorizontally().gap(20).get());
+        panel.add(jcbScheme, helper.nextCell().fillHorizontally().gap(10).get());
+        panel.add(new JLabel("Before date"), helper.nextCell().fillHorizontally().get());
+
+        panel.add(new JLabel("Firmware"), helper.nextRow().nextCell().fillHorizontally().gap(20).get());
+        panel.add(jcbFirmware, helper.nextCell().fillHorizontally().gap(10).get());
+        panel.add(jdpToDate, helper.nextCell().fillHorizontally().get());
 
         return panel;
     }
@@ -179,69 +215,6 @@ class HistoryFrame extends JFrame {
         jpControls.add(jbClear);
         jpControls.add(jbFind);
         return jpControls;
-    }
-
-    private JPanel createSelectReceiverFields() {
-
-        jacbID = new AutoComboBox();
-        try {
-            jcbModel = new JComboBox<>(controller.getReceiverModelsFromDB());
-            jcbScheme = new JComboBox<>(controller.getReceiverSchemesFromDB());
-            jcbFirmware = new JComboBox<>(controller.getReceiverFirmwaresFromDB());
-
-            jacbID.setKeyWord(controller.getReceiverIDsFromDB());
-        } catch (SQLException e) {
-            controller.showErrorMessage(
-                    "Read receiver parameters",
-                    "Read receiver parameters from database failed",
-                    e
-            );
-        }
-
-        jacbID.setSelectedIndex(-1);
-        jcbModel.setSelectedIndex(-1);
-        jcbScheme.setSelectedIndex(-1);
-        jcbFirmware.setSelectedIndex(-1);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-
-        JPanel pLeft = new JPanel();
-        pLeft.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-        pLeft.setLayout(new BoxLayout(pLeft, BoxLayout.Y_AXIS));
-
-        JPanel pRight = new JPanel();
-        pRight.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-        pRight.setLayout(new GridLayout(4, 1));
-
-        pLeft.add(new JLabel("Receiver ID"));
-        pRight.add(jacbID);
-        pLeft.add(new JLabel("Model"));
-        pRight.add(jcbModel);
-        pLeft.add(new JLabel("Scheme"));
-        pRight.add(jcbScheme);
-        pLeft.add(new JLabel("Firmware"));
-        pRight.add(jcbFirmware);
-
-        panel.add(pLeft);
-        panel.add(pRight);
-
-        return panel;
-    }
-
-    private JPanel createSelectPeriodFields() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        jdpFromDate = new DatePicker();
-        jdpToDate = new DatePicker();
-
-        panel.add(new JLabel("From date"));
-        panel.add(jdpFromDate);
-        panel.add(new JLabel("Before date"));
-        panel.add(jdpToDate);
-
-        return panel;
     }
 
     private static class ResultTableModel extends AbstractTableModel {

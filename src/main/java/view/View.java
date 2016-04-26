@@ -154,29 +154,32 @@ public class View extends JFrame {
         jpTests.updateTestControls();
     }
 
-    public String askPathToDatabase() {
+    public void askPathToDatabase() {
         int result = JOptionPane.showOptionDialog(
                 this,
                 "Choose database file (*.mv.db) location, please.",
                 "Load database",
-                JOptionPane.YES_NO_OPTION,
+                JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                new Object[]{"Open database", "Do not use database"},
+                new Object[]{"Open database", "Do not use database", "Cancel"},
                 null);
 
 
+        String url = null;
         if (result == JOptionPane.YES_OPTION) {
             JFileChooser jFileChooser = new JFileChooser();
             jFileChooser.setDialogTitle("Open/create database file");
             jFileChooser.setFileFilter(DB_FILE_FILTER);
 
             if (jFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                return jFileChooser.getSelectedFile().getPath().split("\\.")[0];
+                url = jFileChooser.getSelectedFile().getPath().split("\\.")[0];
             }
+        } else if (result == JOptionPane.NO_OPTION) {
+            url = "";
         }
 
-        return "";
+        controller.changeDatabasePath(url);
     }
 
     public void openHistoryWindow() {

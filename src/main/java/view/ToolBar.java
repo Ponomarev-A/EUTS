@@ -17,19 +17,19 @@ class ToolBar extends JPanel implements ActionListener {
     private static final Insets NO_MARGIN = new Insets(0, 0, 0, 0);
     private static final int ICON_WIDTH = 30;
     private static final int ICON_HEIGHT = 30;
-    private static final ImageIcon ICON_CONNECT = new ImageIcon(new ImageIcon("resources/icons/connect.png")
+    private static final ImageIcon ICON_CONNECT = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/connect.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
-    private static final ImageIcon ICON_DISCONNECT = new ImageIcon(new ImageIcon("resources/icons/disconnect.png")
+    private static final ImageIcon ICON_DISCONNECT = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/disconnect.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
-    private static final ImageIcon ICON_START = new ImageIcon(new ImageIcon("resources/icons/test_start.png")
+    private static final ImageIcon ICON_START = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/test_start.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
-    private static final ImageIcon ICON_STOP = new ImageIcon(new ImageIcon("resources/icons/test_stop.png")
+    private static final ImageIcon ICON_STOP = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/test_stop.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
-    private static final ImageIcon ICON_HISTORY = new ImageIcon(new ImageIcon("resources/icons/database.png")
+    private static final ImageIcon ICON_HISTORY = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/database.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
-    private static final ImageIcon ICON_REFRESH = new ImageIcon(new ImageIcon("resources/icons/refresh.png")
+    private static final ImageIcon ICON_REFRESH = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/refresh.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
-    private static final ImageIcon ICON_LOCATION = new ImageIcon(new ImageIcon("resources/icons/open.png")
+    private static final ImageIcon ICON_LOCATION = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/open.png"))
             .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
 
     private final Controller controller;
@@ -165,7 +165,7 @@ class ToolBar extends JPanel implements ActionListener {
                 } else if (btn.equals(jbHistory)) {
                     controller.openHistory();
                 } else if (btn.equals(jbLocation)) {
-                    controller.changeDatabasePath();
+                    controller.askPathToDatabase();
                 }
             }
         }

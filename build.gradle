@@ -1,5 +1,5 @@
 group 'EUTS'
-version '0.92'
+version '1.0'
 
 apply plugin: 'java'
 apply plugin: 'idea'

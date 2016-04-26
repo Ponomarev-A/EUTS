@@ -2,7 +2,6 @@ package model;
 
 import controller.Controller;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.ResultSet;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Random;
 
 import static model.tests.BaseTestCase.*;
-import static org.mockito.Mockito.when;
 
 /**
  * Test database manager class
@@ -31,10 +29,6 @@ public class ManagerDBTest {
     private Controller mockController = ModelTest.createMockController();
     private ManagerDB managerDB = new ManagerDB(mockController);
 
-    @Before
-    public void setUp() throws Exception {
-        when(mockController.askPathToDatabase()).thenReturn(MOCK_URL);
-    }
 
     @After
     public void tearDown() throws Exception {
@@ -42,32 +36,21 @@ public class ManagerDBTest {
     }
 
     @Test
-    public void testConnectToWrongDBFile() {
-        // Incorrect database URL or user disallowed URL selection
-        when(mockController.askPathToDatabase()).thenReturn("");
-
-        assertFalse(managerDB.connect(""));
-        assertFalse(managerDB.connect(null));
+    public void testConnectToIncorrectURL() {
+        managerDB.connect("");
+        managerDB.connect(null);
+        managerDB.connect("C:/incorrectURL");
     }
 
     @Test
-    public void testConnectToSelectedDBFile() {
-        // Correct database URL
-        when(mockController.askPathToDatabase()).thenReturn(MOCK_URL);
-
-        // Try connect to incorrect database URL, then select correct
-        assertTrue(managerDB.connect("C:/sample.db"));
-    }
-
-    @Test
-    public void testConnectToDBFile() {
-        assertTrue(managerDB.connect());
+    public void testConnectToDefaultURL() {
+        managerDB.connect();
     }
 
     @Test
     public void testDisconnectFromDB() throws Exception {
-        assertTrue(managerDB.connect(MOCK_URL));
-        assertTrue(managerDB.disconnect());
+        managerDB.connect(MOCK_URL);
+        managerDB.disconnect();
     }
 
     @Test

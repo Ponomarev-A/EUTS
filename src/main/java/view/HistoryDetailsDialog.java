@@ -27,10 +27,10 @@ class HistoryDetailsDialog extends JDialog {
     private final int FRAME_WIDTH = 800;
     private final int FRAME_HEIGHT = 600;
 
-    private final Controller controller;
+    private Controller controller;
 
-    private Timestamp timestamp;
     private Receiver receiver;
+    private Timestamp timestamp;
     private Map<Integer, TestManager.State> testResults;
     private ArrayList<Float[]> calibrationCoeffs;
 
@@ -39,25 +39,32 @@ class HistoryDetailsDialog extends JDialog {
     private boolean isCoeffsCanBeChanged;
 
 
-    HistoryDetailsDialog(final Controller controller, Receiver receiver) {
+    HistoryDetailsDialog(Controller controller, Receiver receiver) {
         this.controller = controller;
 
-        fillDataSource(receiver);
-        isCoeffsCanBeChanged = controller.isConnected() && controller.getReceiver().getID().equals(receiver.getID());
+        // Init by default values
+        timestamp = new Timestamp(0);
+        testResults = new TreeMap<>();
+        calibrationCoeffs = new ArrayList<>();
+        calibrationCoeffs.add(new Float[0]);
+        calibrationCoeffs.add(new Float[0]);
+        isCoeffsCanBeChanged = controller.isConnected() && controller.getReceiver().equals(receiver);
+
+        // if selected receiver "really" connected to stand, then using it, otherwise using "virtual" receiver
+        this.receiver = isCoeffsCanBeChanged ? controller.getReceiver() : receiver;
+
+        fillDataSource();
 
         create();
-        pack();
         setVisible(true);
     }
 
-    private void fillDataSource(Receiver receiver) {
-        this.receiver = receiver;
+    private void fillDataSource() {
 
         try (ResultSet rs = controller.selectTestSessions(receiver, null, null)) {
             rs.next();
             timestamp = rs.getTimestamp(5);
 
-            testResults = new TreeMap<>();
             for (Object testCaseID : (Object[]) rs.getObject(6))
                 testResults.put((Integer) testCaseID, TestManager.State.PASS);
 
@@ -75,7 +82,6 @@ class HistoryDetailsDialog extends JDialog {
         }
 
         try (ResultSet rs = controller.selectCalibrationCoeffs(receiver)) {
-            calibrationCoeffs = new ArrayList<>();
             rs.next();
             for (int i = 1; i <= 2; i++) {
                 Object[] objects = (Object[]) rs.getObject(i);
@@ -83,7 +89,7 @@ class HistoryDetailsDialog extends JDialog {
                 for (int j = 0; j < objects.length; j++) {
                     coeffs[j] = (Float) objects[j];
                 }
-                calibrationCoeffs.add(coeffs);
+                calibrationCoeffs.set(i - 1, coeffs);
             }
         } catch (SQLException e) {
             controller.showErrorMessage(
@@ -102,6 +108,8 @@ class HistoryDetailsDialog extends JDialog {
 
         add(jpTop, BorderLayout.NORTH);
         add(jpBottom, BorderLayout.CENTER);
+
+        pack();
     }
 
     private void initFrame() {

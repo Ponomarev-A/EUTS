@@ -245,14 +245,13 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public String askPathToDatabase() {
-        return view.askPathToDatabase();
+    public void askPathToDatabase() {
+        view.askPathToDatabase();
     }
 
     @Override
-    public void changeDatabasePath() {
-        model.getManagerDB().disconnect();
-        model.getManagerDB().connect(null);
+    public void changeDatabasePath(String path) {
+        model.getManagerDB().connect(path);
 
         view.updateToolBarStates();
     }

@@ -4,8 +4,8 @@ import com.healthmarketscience.sqlbuilder.*;
 import com.healthmarketscience.sqlbuilder.custom.HookType;
 import com.healthmarketscience.sqlbuilder.dbspec.basic.*;
 import controller.Controller;
+import view.LogPanel;
 
-import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
@@ -58,25 +58,25 @@ public class ManagerDB {
         this.controller = controller;
     }
 
-    public boolean connect() {
-        return connect(loadURLFromPrefs());
+    public void connect() {
+        connect(loadURLFromPrefs());
     }
 
     /**
      * Connect to database file with specific URL.
-     * <p>Note: if there is no database by URL path, then file chooser windows has been opened.</p>
-     *
      * @param url path to database file
-     * @return true - if connection opened, or false in other case.
      */
-    public boolean connect(String url) {
+    public void connect(String url) {
         try {
-            if (!new File(url + DB_EXTENSION).isFile()) {
-                url = controller.askPathToDatabase();
-            }
+            if (url == null)
+                return;
 
+            // Close old connection
+            disconnect();
+
+            // Don't use database option
             if (url.isEmpty()) {
-                return false;
+                return;
             }
 
             Class.forName("org.h2.Driver").newInstance();
@@ -88,20 +88,30 @@ public class ManagerDB {
 
             saveURLToPrefs(url);
             createTables();
-            controller.showMessage("Connect to database", "Successfully connected to database.\nPath: " + url + DB_EXTENSION);
+            controller.updateLog("Successfully connected to database.\nPath: " + url + DB_EXTENSION);
 
         } catch (SQLException | InstantiationException | ClassNotFoundException | IllegalAccessException e) {
-            e.printStackTrace();
             controller.showErrorMessage("Connect to database", "Impossible connect to database.\nPath: " + url + DB_EXTENSION, e);
-            return false;
         }
-
-        return true;
     }
 
     private String loadURLFromPrefs() {
         Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
         return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
+    }
+
+    void disconnect() {
+        if (connection == null)
+            return;
+
+        try {
+            if (!connection.isClosed())
+                connection.close();
+
+            controller.updateLog("Successfully disconnected from database.");
+        } catch (SQLException e) {
+            controller.updateLog("Disconnect from database failed!", LogPanel.BOLD, LogPanel.RED);
+        }
     }
 
     private void saveURLToPrefs(String url) {
@@ -177,21 +187,6 @@ public class ManagerDB {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean disconnect() {
-        if (connection == null)
-            return true;
-
-        boolean isClosed = false;
-        try {
-            connection.close();
-            isClosed = connection.isClosed();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return isClosed;
     }
 
     int insert(Receiver receiver, Object[] depthCoeffs, Object[] currentCoeffs) throws SQLException {
