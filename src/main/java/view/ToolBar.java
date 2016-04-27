@@ -18,19 +18,19 @@ class ToolBar extends JPanel implements ActionListener {
     private static final int ICON_WIDTH = 30;
     private static final int ICON_HEIGHT = 30;
     private static final ImageIcon ICON_CONNECT = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/connect.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
     private static final ImageIcon ICON_DISCONNECT = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/disconnect.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
     private static final ImageIcon ICON_START = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/test_start.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
     private static final ImageIcon ICON_STOP = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/test_stop.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
     private static final ImageIcon ICON_HISTORY = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/database.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
     private static final ImageIcon ICON_REFRESH = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/refresh.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
     private static final ImageIcon ICON_LOCATION = new ImageIcon(new ImageIcon(ClassLoader.getSystemResource("icons/open.png"))
-            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_DEFAULT));
+            .getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH));
 
     private final Controller controller;
 

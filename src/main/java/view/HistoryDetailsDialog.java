@@ -10,6 +10,7 @@ import packet.Command;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -268,6 +269,7 @@ class HistoryDetailsDialog extends JDialog {
         columnModel.getColumn(2).setResizable(false);
 
         table.setRowHeight(20);
+        table.setDefaultRenderer(Object.class, new TestStateRenderer());
 
         return table;
     }
@@ -398,6 +400,38 @@ class HistoryDetailsDialog extends JDialog {
             isCoeffsChanged = true;
 
             calibrationCoeffs.get(columnIndex - 1)[rowIndex] = Float.valueOf((String) aValue);
+        }
+    }
+
+
+    private class TestStateRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            int columnStateIndex = table.getColumnModel().getColumnIndex("State");
+            if (columnStateIndex == column) {
+                switch (TestManager.State.valueOf((String) value)) {
+                    case PASS:
+                        c.setBackground(Color.GREEN);
+                        break;
+                    case FAIL:
+                        c.setBackground(Color.RED);
+                        break;
+                    case SKIP:
+                        c.setBackground(Color.LIGHT_GRAY);
+                        break;
+                    case ABORT:
+                        c.setBackground(Color.ORANGE);
+                        break;
+                    case RUN:
+                        c.setBackground(Color.YELLOW);
+                        break;
+                }
+            } else {
+                c.setBackground(table.getBackground());
+            }
+            return c;
         }
     }
 }

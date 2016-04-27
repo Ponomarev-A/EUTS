@@ -7,6 +7,7 @@ import model.tests.TestManager;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -14,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
+
+import static model.tests.TestManager.State.FAIL;
 
 /**
  * Test panel class contains testList list
@@ -78,6 +81,7 @@ class TestsPanel extends JPanel implements ActionListener {
 
         testTableModel = new TestTableModel();
         jtTests = new JTable(testTableModel);
+        jtTests.setDefaultRenderer(Object.class, new TestStateRenderer());
 
         TableColumnModel columnModel = jtTests.getColumnModel();
         columnModel.setColumnSelectionAllowed(false);
@@ -159,7 +163,7 @@ class TestsPanel extends JPanel implements ActionListener {
     private void setCheckFailedTests() {
         for (int i = 0; i < testTableModel.getRowCount(); i++) {
             TestManager.State state = testTableModel.getTestResults().get(testTableModel.getTestList().get(i).getId());
-            testTableModel.setValueAt(state != null && state.equals(TestManager.State.FAIL), i, 1);
+            testTableModel.setValueAt(state != null && state.equals(FAIL), i, 1);
         }
     }
 
@@ -256,6 +260,41 @@ class TestsPanel extends JPanel implements ActionListener {
             if (columnIndex == 1) {
                 testList.get(rowIndex).setEnabled((Boolean) aValue);
             }
+        }
+    }
+
+    private class TestStateRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            int columnStateIndex = table.getColumnModel().getColumnIndex("State");
+            if (columnStateIndex == column) {
+
+                String state = (String) value;
+                if (!state.isEmpty()) {
+                    switch (TestManager.State.valueOf(state)) {
+                        case PASS:
+                            c.setBackground(Color.GREEN);
+                            break;
+                        case FAIL:
+                            c.setBackground(Color.RED);
+                            break;
+                        case SKIP:
+                            c.setBackground(Color.LIGHT_GRAY);
+                            break;
+                        case ABORT:
+                            c.setBackground(Color.ORANGE);
+                            break;
+                        case RUN:
+                            c.setBackground(Color.YELLOW);
+                            break;
+                    }
+                }
+            } else {
+                c.setBackground(table.getBackground());
+            }
+            return c;
         }
     }
 }

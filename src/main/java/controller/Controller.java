@@ -152,14 +152,13 @@ public class Controller implements EventListener {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        view.showErrorMessage(title, text + errorMessage + causeMessage);
+                        view.showErrorMessage(title, text);
                     }
                 });
-            } catch (InterruptedException | InvocationTargetException error) {
-                error.printStackTrace();
+            } catch (InterruptedException | InvocationTargetException ignored) {
             }
         } else {
-            view.showErrorMessage(title, text + errorMessage + causeMessage);
+            view.showErrorMessage(title, text);
         }
 
         updateLog("\n\n" + title, LogPanel.BOLD);
@@ -176,8 +175,7 @@ public class Controller implements EventListener {
                         view.updateLog(text, attributeSet);
                     }
                 });
-            } catch (InterruptedException | InvocationTargetException e) {
-                e.printStackTrace();
+            } catch (InterruptedException | InvocationTargetException ignored) {
             }
         } else {
             view.updateLog(text, attributeSet);
