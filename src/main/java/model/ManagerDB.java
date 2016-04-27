@@ -29,10 +29,11 @@ public class ManagerDB {
     private static final String COLUMN_PASS = "PASS";
     private static final String COLUMN_FAIL = "FAIL";
     private static final String COLUMN_SKIP = "SKIP";
-    private static final String DEFAULT_URL = "./database/history";
-    private static final String PREF_URL = "url";
+
     private static final String NAME = "sa";
     private static final String PASSWORD = "";
+
+    private static final String PREF_URL = "url";
     private static final String DB_EXTENSION = ".mv.db";
 
     private final Controller controller;
@@ -53,51 +54,67 @@ public class ManagerDB {
     private DbColumn dbColumnFail;
     private DbColumn dbColumnSkip;
     private Connection connection;
+    private String URL;
 
     ManagerDB(Controller controller) {
         this.controller = controller;
     }
 
-    public void connect() {
-        connect(loadURLFromPrefs());
+    public String getURL() {
+        return URL + DB_EXTENSION;
     }
 
-    /**
-     * Connect to database file with specific URL.
-     * @param url path to database file
-     */
-    public void connect(String url) {
-        try {
-            if (url == null)
-                return;
-
-            // Close old connection
-            disconnect();
-
-            // Don't use database option
-            if (url.isEmpty()) {
-                return;
-            }
-
-            Class.forName("org.h2.Driver").newInstance();
-            connection = DriverManager.getConnection(
-                    "jdbc:h2:file:" + url + ";",
-                    NAME,
-                    PASSWORD
-            );
-
-            saveURLToPrefs(url);
-            createTables();
-            controller.updateLog("Successfully connected to database.\nPath: " + url + DB_EXTENSION);
-
-        } catch (SQLException | InstantiationException | ClassNotFoundException | IllegalAccessException e) {
-            controller.showErrorMessage("Connect to database", "Impossible connect to database.\nPath: " + url + DB_EXTENSION, e);
+    public void connectToDefaultURL() {
+        String url = loadURLFromPrefs();
+        if (url == null) {
+            controller.askPathToDatabase();
+        } else {
+            connect(url);
         }
     }
 
     private String loadURLFromPrefs() {
         Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
-        return prefs.get(PREF_URL, ManagerDB.DEFAULT_URL);
+        return prefs.get(PREF_URL, null);
+    }
+
+    /**
+     * Connect to database file with specific URL.
+     * @param URL path to database file
+     */
+    public void connect(String URL) {
+        if (URL == null)
+            return;
+
+        this.URL = URL;
+        saveURLToPrefs(this.URL);
+
+        try {
+            // Close old connection
+            disconnect();
+
+            // if URL is empty string, then user choose don't use database option
+            if (this.URL.isEmpty()) {
+                return;
+            }
+
+            Class.forName("org.h2.Driver").newInstance();
+            connection = DriverManager.getConnection(
+                    "jdbc:h2:file:" + this.URL + ";",
+                    NAME,
+                    PASSWORD
+            );
+
+            createTables();
+            controller.updateLog("Successfully connected to database.\nPath: " + this.URL + DB_EXTENSION);
+        } catch (SQLException | InstantiationException | ClassNotFoundException | IllegalAccessException e) {
+            controller.showErrorMessage("Connect to database", "Can't connect to database.\nPath: " + this.URL + DB_EXTENSION, e);
+        }
+    }
+
+    private void saveURLToPrefs(String url) {
+        Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
+        prefs.put(PREF_URL, url);
     }
 
     void disconnect() {
@@ -114,12 +131,7 @@ public class ManagerDB {
         }
     }
 
-    private void saveURLToPrefs(String url) {
-        Preferences prefs = Preferences.userNodeForPackage(ManagerDB.class);
-        prefs.put(PREF_URL, url);
-    }
-
-    private void createTables() {
+    private void createTables() throws SQLException {
 
         DbSpec spec = new DbSpec();
         DbSchema schema = spec.addDefaultSchema();
@@ -173,7 +185,7 @@ public class ManagerDB {
             st.execute(sqlCreateReceiverTable);
             st.execute(sqlCreateSessionTable);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new SQLException("Create new tables in database failed");
         }
     }
 
@@ -184,8 +196,7 @@ public class ManagerDB {
         try (Statement statement = connection.createStatement()) {
             statement.execute("DROP ALL OBJECTS DELETE FILES");
             disconnect();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException ignored) {
         }
     }
 

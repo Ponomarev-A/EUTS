@@ -92,9 +92,6 @@ class InfoPanel extends JPanel {
             firmware = receiver.getFirmware();
             scheme = receiver.getScheme();
             ID = receiver.getID() != null ? receiver.getID().toString() : "";
-
-            if (controller.isDBExist())
-                controller.checkDeviceInDB();
         }
 
         jlR_Model.setText(isConnected ? model : "-");

@@ -82,7 +82,7 @@ public class TestManager {
         this.testRunning = isRun;
     }
 
-    public void startTests() {
+    public void start() {
 
         setTestRunning(true);
         clearTestResultStates();
@@ -119,7 +119,7 @@ public class TestManager {
             testResults.put(testCase.getId(), null);
     }
 
-    public void stopTesting() {
+    public void stop() {
         try {
             testingExecutor.shutdownNow();
 

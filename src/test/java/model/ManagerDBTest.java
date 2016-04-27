@@ -44,7 +44,7 @@ public class ManagerDBTest {
 
     @Test
     public void testConnectToDefaultURL() {
-        managerDB.connect();
+        managerDB.connectToDefaultURL();
     }
 
     @Test

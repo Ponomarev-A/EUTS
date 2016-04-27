@@ -3,6 +3,7 @@ package view;
 import controller.Controller;
 import model.tests.BaseTestCase;
 import model.tests.TestManager;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -86,15 +87,15 @@ class TestsPanel extends JPanel implements ActionListener {
         TableColumnModel columnModel = jtTests.getColumnModel();
         columnModel.setColumnSelectionAllowed(false);
 
-        TableColumn columnNumber = columnModel.getColumn(0);
-        TableColumn columnCheck = columnModel.getColumn(1);
-        TableColumn columnState = columnModel.getColumn(3);
+        TableColumn columnCheck = columnModel.getColumn(TestTableModel.COL_CHECK_INX);
+        TableColumn columnID = columnModel.getColumn(TestTableModel.COL_ID_INX);
+        TableColumn columnState = columnModel.getColumn(TestTableModel.COL_STATE_INX);
 
-        columnNumber.setMaxWidth(50);
-        columnNumber.setResizable(false);
-        columnCheck.setMaxWidth(60);
+        columnID.setMaxWidth(50);
+        columnID.setResizable(false);
+        columnCheck.setMaxWidth(30);
         columnCheck.setResizable(false);
-        columnState.setMaxWidth(100);
+        columnState.setMaxWidth(80);
         columnState.setResizable(false);
 
         jtTests.setColumnModel(columnModel);
@@ -136,7 +137,6 @@ class TestsPanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         switch (e.getActionCommand()) {
             case STRING_CHECK_ALL:
                 setCheckAllTests(true);
@@ -150,31 +150,35 @@ class TestsPanel extends JPanel implements ActionListener {
                 setCheckFailedTests();
                 break;
         }
-
         updateTestList();
     }
 
     private void setCheckAllTests(boolean setChecked) {
         for (int i = 0; i < testTableModel.getRowCount(); i++) {
-            testTableModel.setValueAt(setChecked, i, 1);
+            testTableModel.setValueAt(setChecked, i, TestTableModel.COL_CHECK_INX);
         }
     }
 
     private void setCheckFailedTests() {
         for (int i = 0; i < testTableModel.getRowCount(); i++) {
             TestManager.State state = testTableModel.getTestResults().get(testTableModel.getTestList().get(i).getId());
-            testTableModel.setValueAt(state != null && state.equals(FAIL), i, 1);
+            testTableModel.setValueAt(state != null && state.equals(FAIL), i, TestTableModel.COL_CHECK_INX);
         }
     }
 
     private class TestTableModel extends AbstractTableModel {
 
-        private static final String INDEX = "ID";
-        private static final String CHECK = "Check";
-        private static final String NAME = "Description";
-        private static final String STATE = "State";
+        static final int COL_CHECK_INX = 0;
+        static final int COL_ID_INX = 1;
+        static final int COL_DESC_INX = 2;
+        static final int COL_STATE_INX = 3;
 
-        private List<String> columnNames = Arrays.asList(INDEX, CHECK, NAME, STATE);
+        private List<String> columnNames = Arrays.asList(
+                StringEscapeUtils.unescapeJava("\\u2611"),
+                "ID",
+                "Description",
+                "State"
+        );
 
         private List<BaseTestCase> testList = new ArrayList<>();
         private Map<Integer, TestManager.State> testResults = new TreeMap<>();
@@ -214,15 +218,14 @@ class TestsPanel extends JPanel implements ActionListener {
             TestManager.State state = testResults.get(testCase.getId());
 
             switch (columnIndex) {
-                case 0:
-                    return testCase.getId();
-                case 1:
+                case COL_CHECK_INX:
                     return testCase.isEnabled();
-                case 2:
+                case COL_ID_INX:
+                    return testCase.getId();
+                case COL_DESC_INX:
                     return testCase.getName();
-                case 3:
+                case COL_STATE_INX:
                     return state != null ? state.toString() : "";
-
                 default:
                     return null;
             }
@@ -236,15 +239,14 @@ class TestsPanel extends JPanel implements ActionListener {
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             switch (columnIndex) {
-                case 0:
-                    return Number.class;
-                case 1:
+                case COL_CHECK_INX:
                     return Boolean.class;
-                case 2:
+                case COL_ID_INX:
+                    return Number.class;
+                case COL_DESC_INX:
                     return String.class;
-                case 3:
+                case COL_STATE_INX:
                     return String.class;
-
                 default:
                     return Object.class;
             }
@@ -252,12 +254,12 @@ class TestsPanel extends JPanel implements ActionListener {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex == 1;
+            return columnIndex == COL_CHECK_INX;
         }
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            if (columnIndex == 1) {
+            if (columnIndex == COL_CHECK_INX) {
                 testList.get(rowIndex).setEnabled((Boolean) aValue);
             }
         }
@@ -268,9 +270,7 @@ class TestsPanel extends JPanel implements ActionListener {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            int columnStateIndex = table.getColumnModel().getColumnIndex("State");
-            if (columnStateIndex == column) {
-
+            if (column == TestTableModel.COL_STATE_INX) {
                 String state = (String) value;
                 if (!state.isEmpty()) {
                     switch (TestManager.State.valueOf(state)) {

@@ -87,8 +87,7 @@ public class LogPanel extends JPanel {
             doc.remove(0, doc.getLength());
             jepLog.setCaretPosition(0);
 
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+        } catch (BadLocationException ignored) {
         }
     }
 

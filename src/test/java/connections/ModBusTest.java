@@ -52,7 +52,6 @@ public class ModBusTest {
             method.setAccessible(true);
             return method.invoke(targetObject, argObjects);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
             return null;
         }
     }

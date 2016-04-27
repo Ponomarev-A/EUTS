@@ -54,6 +54,8 @@ interface EventListener {
 
     void changeDatabasePath(String path);
 
+    String getDatabaseURL();
+
     ResultSet selectTestSessions(Receiver receiver, String afterDate, String beforeDate) throws SQLException;
 
     ResultSet selectCalibrationCoeffs(Receiver receiver) throws SQLException;
@@ -74,7 +76,7 @@ interface EventListener {
 
     TestManager getTestManager();
 
-    void checkDeviceInDB();
+    void checkReceiverInDB();
 
     void askUserShowStoredInDBReceiver(Receiver receiver);
 

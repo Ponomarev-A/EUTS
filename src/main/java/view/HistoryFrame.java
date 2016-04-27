@@ -63,7 +63,7 @@ class HistoryFrame extends JFrame {
         setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         setLocationRelativeTo(null);
-        setTitle("History");
+        setTitle("History (" + controller.getDatabaseURL() + ")");
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());

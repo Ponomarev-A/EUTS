@@ -24,7 +24,8 @@ public class View extends JFrame {
 
     static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
     static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);
-    static final Font BIG_FONT = new Font(null, Font.PLAIN, 18);
+    static final Image ICON = new ImageIcon(ClassLoader.getSystemResource("icons/icon.png")).getImage();
+
 
     private static final int FRAME_HEIGHT = 800;
     private static final int FRAME_WIDTH = 1200;
@@ -68,9 +69,11 @@ public class View extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         setTitle("Electronic Units Test Stand (EUTS) application");
+        setIconImage(ICON);
 
         // Set new default font to labels
-        UIManager.put("Label.font", BIG_FONT);
+        UIManager.put("Label.font", new Font(null, Font.PLAIN, 18));
+        UIManager.put("Button.font", new Font(null, Font.PLAIN, 16));
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -118,7 +121,7 @@ public class View extends JFrame {
 
     public void showErrorMessage(String title, String text) {
         JOptionPane.showMessageDialog(
-                getFocusOwner(),
+                null,
                 text,
                 title,
                 JOptionPane.ERROR_MESSAGE
@@ -127,7 +130,7 @@ public class View extends JFrame {
 
     public void showMessage(String title, String text) {
         JOptionPane.showMessageDialog(
-                getFocusOwner(),
+                null,
                 text,
                 title,
                 JOptionPane.INFORMATION_MESSAGE
@@ -157,12 +160,12 @@ public class View extends JFrame {
     public void askPathToDatabase() {
         int result = JOptionPane.showOptionDialog(
                 this,
-                "Choose database file (*.mv.db) location, please.",
-                "Load database",
+                "Do you want store test results in database?",
+                "Database use",
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
-                new Object[]{"Open database", "Do not use database", "Cancel"},
+                new Object[]{"Yes, use database", "No, don't use database", "Cancel, do nothing"},
                 null);
 
 

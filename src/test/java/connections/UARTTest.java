@@ -40,8 +40,7 @@ public class UARTTest {
         try {
             when(mockUART.open()).thenReturn(true);
             when(mockUART.close()).thenReturn(true);
-        } catch (SerialPortException e) {
-            e.printStackTrace();
+        } catch (SerialPortException ignored) {
         }
         try {
             doAnswer(new Answer<Void>() {

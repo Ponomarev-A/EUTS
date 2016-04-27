@@ -51,11 +51,7 @@ public class Model {
     }
 
     public void init() {
-        managerDB.connect();
-    }
-
-    public List<String> getAvailableCOMPorts() {
-        return Arrays.asList(UART.getPortNames());
+        managerDB.connectToDefaultURL();
     }
 
     public void deinit() {
@@ -85,6 +81,10 @@ public class Model {
             receiver = null;
             stand = null;
         }
+    }
+
+    public List<String> getAvailableCOMPorts() {
+        return Arrays.asList(UART.getPortNames());
     }
 
     public void connectToDevice(String port) {
@@ -121,15 +121,11 @@ public class Model {
     }
 
     public void startTesting() {
-        testManager.startTests();
+        testManager.start();
     }
 
     public void stopTesting() {
-        testManager.stopTesting();
-    }
-
-    public boolean isReceiverConnected() {
-        return receiver != null && receiver.getConnectionStatus() == ConnectionStatus.CONNECTED;
+        testManager.stop();
     }
 
     public boolean isStandConnected() {
@@ -198,7 +194,9 @@ public class Model {
         return 0;
     }
 
-    public void checkDeviceInDB() {
+    public void checkReceiverInDB() {
+        if (!managerDB.exist() || !isReceiverConnected())
+            return;
 
         Integer receiverID = receiver.getID();
 
@@ -219,6 +217,10 @@ public class Model {
                     e);
         }
 
+    }
+
+    public boolean isReceiverConnected() {
+        return receiver != null && receiver.getConnectionStatus() == ConnectionStatus.CONNECTED;
     }
 
     public String[] getReceiverIDsFromDB() throws SQLException {

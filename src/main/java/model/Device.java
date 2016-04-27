@@ -83,9 +83,6 @@ public abstract class Device {
             FailReceivePacket failReceivePacket = new FailReceivePacket(String.format("Receive packet %s\n with value %s\n from device %s",
                     packet.getCommand(), packet.getDataAsInt(), this.toString()));
             failReceivePacket.initCause(e);
-
-            e.printStackTrace();
-
             throw failReceivePacket;
         }
 
@@ -107,9 +104,6 @@ public abstract class Device {
             FailSendPacket failSendPacket = new FailSendPacket(String.format("Can't send command %s\n with value %s\n to device %s",
                     packet.getCommand(), packet.getDataAsInt(), this.toString()));
             failSendPacket.initCause(e);
-
-            e.printStackTrace();
-
             throw failSendPacket;
         }
     }

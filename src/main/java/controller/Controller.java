@@ -30,22 +30,16 @@ public class Controller implements EventListener {
     private Model model;
 
     public Controller() {
+        model = new Model(this);
+        view = new View(this);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                model = new Model(Controller.this);
-                view = new View(Controller.this);
+        view.init();
+        view.updateDeviceInfo();
+        view.updateTestControls();
 
-                view.init();
-                view.updateDeviceInfo();
-                view.updateTestControls();
+        model.init();
 
-                model.init();
-
-                view.updateToolBarStates();
-            }
-        });
+        view.updateToolBarStates();
     }
 
     @Override
@@ -70,6 +64,8 @@ public class Controller implements EventListener {
                 view.updateDeviceInfo();
                 view.updateTestControls();
                 view.fillTestList();
+
+                checkReceiverInDB();
             }
         });
     }
@@ -130,8 +126,7 @@ public class Controller implements EventListener {
                         view.showMessage(title, text);
                     }
                 });
-            } catch (InterruptedException | InvocationTargetException error) {
-                error.printStackTrace();
+            } catch (InterruptedException | InvocationTargetException ignored) {
             }
         } else {
             view.showMessage(title, text);
@@ -224,8 +219,7 @@ public class Controller implements EventListener {
                         view.updateTestList();
                     }
                 });
-            } catch (InterruptedException | InvocationTargetException e) {
-                e.printStackTrace();
+            } catch (InterruptedException | InvocationTargetException ignored) {
             }
         } else {
             view.updateTestList();
@@ -252,6 +246,11 @@ public class Controller implements EventListener {
         model.getManagerDB().connect(path);
 
         view.updateToolBarStates();
+    }
+
+    @Override
+    public String getDatabaseURL() {
+        return model.getManagerDB().getURL();
     }
 
     @Override
@@ -309,8 +308,8 @@ public class Controller implements EventListener {
     }
 
     @Override
-    public void checkDeviceInDB() {
-        model.checkDeviceInDB();
+    public void checkReceiverInDB() {
+        model.checkReceiverInDB();
     }
 
     @Override
