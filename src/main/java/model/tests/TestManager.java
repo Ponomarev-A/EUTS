@@ -5,7 +5,6 @@ import controller.Controller;
 import view.LogPanel;
 
 import javax.swing.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -138,14 +137,21 @@ public class TestManager {
 
     private void printTestResults(long executionTimeMs) {
         Collection<State> testStates = testResults.values();
-        SimpleDateFormat sdf = new SimpleDateFormat("mm:ss,SS");
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-        controller.updateLog("Tests results:", LogPanel.BOLD);
-        controller.updateLog(String.format("%-10s%d", "Passed: ", Collections.frequency(testStates, PASS)), LogPanel.BOLD, LogPanel.GREEN);
-        controller.updateLog(String.format("%-10s%d", "Failed: ", Collections.frequency(testStates, FAIL)), LogPanel.BOLD, LogPanel.RED);
-        controller.updateLog(String.format("%-10s%d", "Skipped: ", Collections.frequency(testStates, SKIP)), LogPanel.BOLD);
-        controller.updateLog(String.format("Total time: %s", sdf.format(new Date(executionTimeMs))), LogPanel.BOLD);
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTimeInMillis(executionTimeMs);
+
+        int passedCount = Collections.frequency(testStates, PASS);
+        int failedCount = Collections.frequency(testStates, FAIL);
+        int skippedCount = Collections.frequency(testStates, SKIP);
+        int totalCount = passedCount + failedCount + skippedCount;
+
+        controller.updateLog(String.format("Total executed tests: %d.\nTest results:", totalCount), LogPanel.BOLD);
+        controller.updateLog(String.format("  %-10s%d", "Passed: ", passedCount), LogPanel.BOLD, LogPanel.GREEN);
+        controller.updateLog(String.format("  %-10s%d", "Failed: ", failedCount), LogPanel.BOLD, LogPanel.RED);
+        controller.updateLog(String.format("  %-10s%d", "Skipped: ", skippedCount), LogPanel.BOLD, LogPanel.GRAY);
+        controller.updateLog(String.format("\nTotal tests execute time: %d min %d sec %d msec",
+                calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND), calendar.get(Calendar.MILLISECOND)), LogPanel.BOLD);
     }
 
     public Integer[] getTestIDs(State state) {

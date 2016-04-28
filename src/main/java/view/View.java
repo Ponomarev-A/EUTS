@@ -21,6 +21,7 @@ public class View extends JFrame {
     static final Color DARK_GREEN = new Color(0, 130, 0);
     static final Color BLACK = Color.black;
     static final Color RED = Color.RED;
+    static final Color GRAY = Color.LIGHT_GRAY;
 
     static final Font TITLE_FONT = new Font(null, Font.BOLD, 20);
     static final Border TITLE_BORDER = BorderFactory.createLineBorder(Color.BLACK, 3);

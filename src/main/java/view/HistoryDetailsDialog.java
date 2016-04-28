@@ -284,6 +284,9 @@ class HistoryDetailsDialog extends JDialog {
                     calibrationCoeffs.get(0),
                     calibrationCoeffs.get(1)
             );
+
+            isCoeffsChanged = false;
+
             controller.showMessage(
                     "Read calibration coefficients",
                     "Calibration coefficients successfully read from\n" + receiver

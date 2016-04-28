@@ -26,6 +26,7 @@ public class LogPanel extends JPanel {
     public static final SimpleAttributeSet RED = new SimpleAttributeSet();
     public static final SimpleAttributeSet GREEN = new SimpleAttributeSet();
     public static final SimpleAttributeSet BLACK = new SimpleAttributeSet();
+    public static final SimpleAttributeSet GRAY = new SimpleAttributeSet();
 
     static {
         StyleConstants.setBold(BOLD, true);
@@ -33,6 +34,7 @@ public class LogPanel extends JPanel {
         StyleConstants.setForeground(RED, View.RED);
         StyleConstants.setForeground(GREEN, View.DARK_GREEN);
         StyleConstants.setForeground(BLACK, View.BLACK);
+        StyleConstants.setForeground(GRAY, View.GRAY);
     }
 
     private final SimpleAttributeSet set = new SimpleAttributeSet();
