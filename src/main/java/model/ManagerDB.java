@@ -80,6 +80,7 @@ public class ManagerDB {
 
     /**
      * Connect to database file with specific URL.
+     *
      * @param URL path to database file
      */
     public void connect(String URL) {
@@ -105,6 +106,7 @@ public class ManagerDB {
                     PASSWORD
             );
 
+            setTraceDatabaseToFile(TraceLevel.OFF);
             createTables();
             controller.updateLog("Successfully connected to database.\nPath: " + this.URL + DB_EXTENSION);
         } catch (SQLException | InstantiationException | ClassNotFoundException | IllegalAccessException e) {
@@ -128,6 +130,17 @@ public class ManagerDB {
             controller.updateLog("Successfully disconnected from database.");
         } catch (SQLException e) {
             controller.updateLog("Disconnect from database failed!", LogPanel.BOLD, LogPanel.RED);
+        }
+    }
+
+    private void setTraceDatabaseToFile(TraceLevel level) throws SQLException {
+        if (connection == null)
+            return;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(String.format("SET TRACE_LEVEL_FILE %d", level.ordinal()));
+        } catch (SQLException ignored) {
+            throw new SQLException("Set trace level of database is failed");
         }
     }
 
@@ -381,4 +394,6 @@ public class ManagerDB {
     String[] getIDs() throws SQLException {
         return selectParameter(dbColumnReceiverID, COLUMN_ID);
     }
+
+    private enum TraceLevel {OFF, ERROR, INFO, DEBUG}
 }
